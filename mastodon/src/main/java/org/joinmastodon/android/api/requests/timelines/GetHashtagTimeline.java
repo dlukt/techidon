@@ -29,5 +29,6 @@ public class GetHashtagTimeline extends MastodonAPIRequest<List<Status>>{
 				addQueryParameter("none[]", tag);
 		if(replyVisibility != null)
 			addQueryParameter("reply_visibility", replyVisibility);
+		removeUnsupportedItems=true;
 	}
 }

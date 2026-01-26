@@ -26,5 +26,6 @@ public class GetPublicTimeline extends MastodonAPIRequest<List<Status>>{
 			addQueryParameter("limit", limit+"");
 		if(replyVisibility != null)
 			addQueryParameter("reply_visibility", replyVisibility);
+		removeUnsupportedItems=true;
 	}
 }

@@ -20,5 +20,6 @@ public class GetListTimeline extends MastodonAPIRequest<List<Status>> {
             addQueryParameter("since_id", sinceID);
         if(replyVisibility != null)
             addQueryParameter("reply_visibility", replyVisibility);
+        removeUnsupportedItems=true;
     }
 }

@@ -29,6 +29,7 @@ public class GetAccountStatuses extends MastodonAPIRequest<List<Status>>{
 			case OWN_POSTS_AND_REPLIES -> addQueryParameter("exclude_reblogs", "true");
 			case PINNED -> addQueryParameter("pinned", "true");
 		}
+		removeUnsupportedItems=true;
 	}
 
 	public enum Filter{
