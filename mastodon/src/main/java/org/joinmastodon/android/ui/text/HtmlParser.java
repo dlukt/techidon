@@ -38,6 +38,7 @@ import org.jsoup.select.NodeVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -114,10 +115,21 @@ public class HtmlParser{
 			}
 		}
 
-		Map<String, String> idsByUrl=mentions.stream().filter(mention -> mention.id != null).collect(Collectors.toMap(m->m.url, m->m.id));
+		Map<String, String> idsByUrl = new HashMap<>();
+		for (Mention mention : mentions) {
+			if (mention.id != null) {
+				idsByUrl.put(mention.url, mention.id);
+			}
+		}
 		// Hashtags in remote posts have remote URLs, these have local URLs so they don't match.
 //		Map<String, String> tagsByUrl=tags.stream().collect(Collectors.toMap(t->t.url, t->t.name));
-		Map<String, Hashtag> tagsByTag=tags.stream().distinct().collect(Collectors.toMap(t->t.name.toLowerCase(), Function.identity()));
+		Map<String, Hashtag> tagsByTag = new HashMap<>();
+		for (Hashtag tag : tags) {
+			String lowerName = tag.name.toLowerCase();
+			if (!tagsByTag.containsKey(lowerName)) {
+				tagsByTag.put(lowerName, tag);
+			}
+		}
 
 		final SpannableStringBuilder ssb=new SpannableStringBuilder();
 		int colorInsert=UiUtils.getThemeColor(context, R.attr.colorM3Success);
@@ -232,15 +244,12 @@ public class HtmlParser{
 
 	public static void parseCustomEmoji(SpannableStringBuilder ssb, List<Emoji> emojis){
 		if(emojis==null) return;
-		Map<String, Emoji> emojiByCode =
-			emojis.stream()
-			.collect(
-				Collectors.toMap(e->e.shortcode, Function.identity(), (emoji1, emoji2) -> {
-					// Ignore duplicate shortcodes and just take the first, it will be
-					// the same emoji anyway
-					return emoji1;
-				})
-			);
+		Map<String, Emoji> emojiByCode = new HashMap<>(emojis.size());
+		for (Emoji e : emojis) {
+			if (!emojiByCode.containsKey(e.shortcode)) {
+				emojiByCode.put(e.shortcode, e);
+			}
+		}
 
 		Matcher matcher=EMOJI_CODE_PATTERN.matcher(ssb);
 		int spanCount=0;
