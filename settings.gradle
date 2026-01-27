@@ -19,5 +19,5 @@ dependencyResolutionManagement {
 		}
 	}
 }
-rootProject.name = "Moshidon"
+rootProject.name = "Techidon"
 include ':mastodon'
