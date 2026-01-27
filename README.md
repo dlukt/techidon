@@ -1,18 +1,16 @@
-# ![MoshidonLogo](mastodon/src/main/res/mipmap-xhdpi/ic_launcher_round.png) Moshidon, the material you mastodon client!
+# ![TechidonLogo](mastodon/src/main/res/mipmap-xhdpi/ic_launcher_round.png) Techidon, the material you mastodon client!
 
 
 > A fast, highly customizable, up-to-date fork of [megalodon](https://github.com/sk22/megalodon) adding important features such as a fully federated timeline, unlisted posting, drafts, scheduled posts, bookmarks, and alt text warnings. 
 
 
-## Download Now
+## Download
 
-<a href="https://play.google.com/store/apps/details?id=org.joinmastodon.android.moshinda"><img height="35" alt="Get it on Google Play" src="img/google-play-badge.png"></a> <a href="https://f-droid.org/pt_BR/packages/org.joinmastodon.android.moshinda"><img height="35" alt="Get it on F-Droid" src="img/f-droid-badge.png"></a> <a href="https://apt.izzysoft.de/fdroid/index/apk/org.joinmastodon.android.moshinda"><img height="35" alt="Get it on IzzyOnDroid" src="img/izzy-badge.png"></a>
-
-[![GitHub Release Download](https://img.shields.io/badge/dynamic/json?color=282C37&label=Download%20APK&query=%24.tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2FLucasGGamerM%2Fmoshidon%2Freleases%2Flatest&style=for-the-badge)](https://github.com/LucasGGamerM/moshidon/releases/latest/download/moshidon.apk) [![Translation status](https://translate.codeberg.org/widgets/moshidon/-/svg-badge.svg)](https://translate.codeberg.org/engage/moshidon/) [![GitHub Nightly Download](https://img.shields.io/badge/dynamic/json?color=282C37&label=Download%20Nightly%20APK&query=%24.tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2FLucasGGamerM%2Fmoshidon%2Freleases%2Flatest&style=for-the-badge)](https://github.com/LucasGGamerM/moshidon-nightly/releases/latest/download/moshidon-nightly.apk) [![GitHub Nightly Build Download](https://github.com/LucasGGamerM/moshidon/actions/workflows/nightly-builds.yml/badge.svg)](https://github.com/LucasGGamerM/moshidon/actions/workflows/nightly-builds.yml) 
+Coming soon!
 
 ## Donate
 
-<a href="https://github.com/sponsors/LucasGGamerM">Github Sponsors</a> | <a href="https://liberapay.com/LucasGGamerM/donate">Liberapay</a> | Monero Wallet Key: `4886mdarcyB6Yf8Qc6vDJBK1fz6ibHFLZUmHb4GZZz9yLGNhcG3XC64e5UZ8dVQYTLZb82W6P9WhteowW4STJEec97Gf22j`
+<a href="https://github.com/sponsors/deicod">Github Sponsors</a>
 
 ## Key Features
 
@@ -39,14 +37,14 @@ Write posts and save them, or schedule them to post later. Edit and delete your 
 
 ### Alt Text Tag & Reminder
 
-An unobtrusive ALT tag appears on images with alt text. Clicking on the icon makes the alt text appear. By default, Moshidon will show a warning to add alt text if your post has any attachments lacking alt text. This is for better accessibility, and it can be disabled in settings. You can also hide from your feed all posts that are lacking in alt text. 
+An unobtrusive ALT tag appears on images with alt text. Clicking on the icon makes the alt text appear. By default, Techidon will show a warning to add alt text if your post has any attachments lacking alt text. This is for better accessibility, and it can be disabled in settings. You can also hide from your feed all posts that are lacking in alt text.
 
 [ image with alt text icon higlighted ]
 [ alt text expanded ]
 
 ### Themes & Customization
 
-Moshidon is designed according to Material Design principles. Follow your device's light or dark mode settings or change colour palette - your system's default, purple, black & white, "pitch black" (battery saving) and more. Customize your experience by moving or renaming the publish button, show or hide sensitive media by default, reduce motion, collapse long posts, add haptic feedback, or making the fave button a heart &hearts; or a star &starf;. 
+Techidon is designed according to Material Design principles. Follow your device's light or dark mode settings or change colour palette - your system's default, purple, black & white, "pitch black" (battery saving) and more. Customize your experience by moving or renaming the publish button, show or hide sensitive media by default, reduce motion, collapse long posts, add haptic feedback, or making the fave button a heart &hearts; or a star &starf;.
 
 ### Not Just For Mastodon
 
@@ -77,13 +75,13 @@ See all public posts from servers your server federates with and fetch profiles 
 
 ## Installation & Releases
 
-Moshidon is available on GitHub, Google Play, F-Droid, and the IzzyOnDroid repo. All sources provide the same ` moshidon.apk ` stable release. Older releases are available on the [Releases](https://github.com/LucasGGamerM/moshidon/releases) page. 
+Techidon is available on GitHub, Google Play, F-Droid, and the IzzyOnDroid repo. All sources provide the same ` techidon.apk ` stable release. Older releases are available on the [Releases](https://github.com/LucasGGamerM/techidon/releases) page.
 
 ### How to Install from GitHub
-[Download the latest stable release from Github](https://github.com/LucasGGamerM/moshidon/releases/latest/download/moshidon.apk) and open it. You might have to accept installing APK files from your browser. Moshidon will automatically check for new updates available on GitHub and offer to download and install them within the app. You can also manually press “Check for updates” at the bottom of the settings page.
+[Download the latest stable release from Github](https://github.com/LucasGGamerM/techidon/releases/latest/download/techidon.apk) and open it. You might have to accept installing APK files from your browser. Techidon will automatically check for new updates available on GitHub and offer to download and install them within the app. You can also manually press “Check for updates” at the bottom of the settings page.
 
 ### Nightly Version
-All ` moshidon-night.apk ` nightly builds can be downloaded on the [Nightly Releases](https://github.com/LucasGGamerM/moshidon-nightly/releases) page. This is an unstable version with an integrated updater for development and testing purposes. If you find any bugs with it, please file a bug report on our [Issues](https://github.com/LucasGGamerM/moshidon/issues) page.
+All ` techidon-night.apk ` nightly builds can be downloaded on the [Nightly Releases](https://github.com/LucasGGamerM/techidon-nightly/releases) page. This is an unstable version with an integrated updater for development and testing purposes. If you find any bugs with it, please file a bug report on our [Issues](https://github.com/LucasGGamerM/techidon/issues) page.
 
 ## Building & Contributing
 
@@ -99,13 +97,12 @@ This project is released under the [GPL-3 License](./LICENSE).
 
 ## Contact & Support
 
-**<a rel="me" href="https://floss.social/@moshidon">@moshidon@floss.social</a>**
+**<a rel="me" href="https://floss.social/@techidon">@techidon@floss.social</a>**
 
-[Official Matrix Chatroom](https://matrix.to/#/#moshidon:floss.social) 
+[Official Matrix Chatroom](https://matrix.to/#/#techidon:floss.social)
 
 [F.A.Q.](FAQ.md)
 
-[Moshidon's CSAE policy](CSAE-POLICY.md)
+[Techidon's CSAE policy](CSAE-POLICY.md)
 
-[Moshidon Roadmap](https://github.com/users/LucasGGamerM/projects/1)
-
+[Techidon Roadmap](https://github.com/users/LucasGGamerM/projects/1)
