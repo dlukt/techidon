@@ -82,7 +82,6 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info){
 				super.onInitializeAccessibilityNodeInfo(host, info);
 				info.setClassName(Button.class.getName());
-				info.setText(item.parentFragment.getString(descriptionForId(host.getId())));
 			}
 		};
 
@@ -142,6 +141,12 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			favorite.setSelected(item.status.favourited);
 			bookmark.setSelected(item.status.bookmarked);
 			boost.setEnabled(item.status.isReblogPermitted(item.accountID));
+
+			updateButtonDescription(reply);
+			updateButtonDescription(boost);
+			updateButtonDescription(favorite);
+			updateButtonDescription(bookmark);
+			updateButtonDescription(share);
 
 			int nextPos = getAbsoluteAdapterPosition() + 1;
 			boolean nextIsWarning = item.parentFragment.getDisplayItems().size() > nextPos &&
@@ -237,9 +242,15 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			applyInteraction(v, status -> {
 				if(status == null)
 					return;
-				boost.setSelected(!status.reblogged);
-				vibrateForAction(boost, !status.reblogged);
-				AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setReblogged(status, !status.reblogged, null, r->boostConsumer(v, r));
+				boolean newReblogged = !status.reblogged;
+				boost.setSelected(newReblogged);
+				String desc = item.parentFragment.getString(newReblogged ? R.string.button_reblogged : R.string.button_reblog);
+				boost.setContentDescription(desc);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					boost.setTooltipText(desc);
+				}
+				vibrateForAction(boost, newReblogged);
+				AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setReblogged(status, newReblogged, null, r->boostConsumer(v, r));
 			});
 		}
 
@@ -352,9 +363,15 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			applyInteraction(v, status -> {
 				if(status == null)
 					return;
-				favorite.setSelected(!status.favourited);
-				vibrateForAction(favorite, !status.favourited);
-				AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setFavorited(status, !status.favourited, r->{
+				boolean newFavorited = !status.favourited;
+				favorite.setSelected(newFavorited);
+				String desc = item.parentFragment.getString(newFavorited ? R.string.button_favorited : R.string.button_favorite);
+				favorite.setContentDescription(desc);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					favorite.setTooltipText(desc);
+				}
+				vibrateForAction(favorite, newFavorited);
+				AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setFavorited(status, newFavorited, r->{
 					if (status.favourited && !GlobalUserPreferences.reduceMotion && !GlobalUserPreferences.likeIcon) {
 						v.startAnimation(spin);
 					}
@@ -385,9 +402,15 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 					status -> {
 						if(status == null)
 							return;
-						bookmark.setSelected(!status.bookmarked);
-						vibrateForAction(bookmark, !status.bookmarked);
-						AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setBookmarked(status, !status.bookmarked, r->{
+						boolean newBookmarked = !status.bookmarked;
+						bookmark.setSelected(newBookmarked);
+						String desc = item.parentFragment.getString(newBookmarked ? R.string.remove_bookmark : R.string.add_bookmark);
+						bookmark.setContentDescription(desc);
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+							bookmark.setTooltipText(desc);
+						}
+						vibrateForAction(bookmark, newBookmarked);
+						AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setBookmarked(status, newBookmarked, r->{
 							UiUtils.opacityIn(v);
 						});
 					});
@@ -420,15 +443,15 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			return true;
 		}
 
-		private int descriptionForId(int id){
+		private int descriptionForId(int id, Status status){
 			if(id==R.id.reply_btn)
 				return R.string.button_reply;
 			if(id==R.id.boost_btn)
-				return R.string.button_reblog;
+				return status.reblogged ? R.string.button_reblogged : R.string.button_reblog;
 			if(id==R.id.favorite_btn)
-				return R.string.button_favorite;
+				return status.favourited ? R.string.button_favorited : R.string.button_favorite;
 			if(id==R.id.bookmark_btn)
-				return R.string.add_bookmark;
+				return status.bookmarked ? R.string.remove_bookmark : R.string.add_bookmark;
 			if(id==R.id.share_btn)
 				return R.string.button_share;
 			return 0;
@@ -443,6 +466,14 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 					item.status, item.accountID, null,
 					interactionConsumer
 			);
+		}
+
+		private void updateButtonDescription(View view) {
+			String desc = item.parentFragment.getString(descriptionForId(view.getId(), item.status));
+			view.setContentDescription(desc);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				view.setTooltipText(desc);
+			}
 		}
 
 		private static void vibrateForAction(View view, boolean isPositive) {
