@@ -1,0 +1,4 @@
+## 2024-05-23 - Stored XSS in Server Description WebView
+**Vulnerability:** `SettingsServerAboutFragment` displayed server extended description in a WebView with JavaScript enabled and without sanitization. A malicious or compromised Mastodon instance could inject scripts via the "About" page content.
+**Learning:** Even in "federated" apps, data from other instances (servers) should be treated as untrusted user input. WebViews, even when loading data with a `null` base URL (sandboxed to `about:blank`), can still execute scripts that might attempt phishing or exploit WebView vulnerabilities.
+**Prevention:** Always disable JavaScript in WebViews unless strictly necessary. Sanitize HTML content using libraries like Jsoup (e.g., `Jsoup.clean(html, Safelist.relaxed())`) before displaying it in a WebView.

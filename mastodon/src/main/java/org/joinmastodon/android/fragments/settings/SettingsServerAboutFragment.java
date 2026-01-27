@@ -44,6 +44,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
+
 import me.grishka.appkit.api.Callback;
 import me.grishka.appkit.api.ErrorResponse;
 import me.grishka.appkit.api.SimpleCallback;
@@ -68,11 +71,9 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 		loadData();
 	}
 
-	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	public View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		webView=new WebView(getActivity());
-		webView.getSettings().setJavaScriptEnabled(true);
 		webView.setWebViewClient(new WebViewClient(){
 			@Override
 			public void onPageFinished(WebView view, String url){
@@ -187,7 +188,7 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 							}
 
 							HashMap<String, String> templateParams=new HashMap<>();
-							templateParams.put("content", result.content);
+							templateParams.put("content", Jsoup.clean(result.content, Safelist.relaxed()));
 							templateParams.put("colorSurface", getThemeColorAsCss(R.attr.colorM3Surface, 1));
 							templateParams.put("colorOnSurface", getThemeColorAsCss(R.attr.colorM3OnSurface, 1));
 							templateParams.put("colorPrimary", getThemeColorAsCss(R.attr.colorM3Primary, 1));
