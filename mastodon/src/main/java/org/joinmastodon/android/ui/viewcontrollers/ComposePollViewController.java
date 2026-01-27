@@ -176,7 +176,30 @@ public class ComposePollViewController{
 		option.edit.addTextChangedListener(new LengthLimitHighlighter(fragment.getActivity(), maxPollOptionLength).setListener(isOverLimit->{
 			option.view.setForeground(fragment.getResources().getDrawable(isOverLimit ? R.drawable.bg_m3_outlined_text_field_error_nopad : R.drawable.bg_m3_outlined_text_field_nopad, fragment.getActivity().getTheme()));
 		}));
+
+		option.deleteBtn=option.view.findViewById(R.id.delete_btn);
+		option.deleteBtn.setOnClickListener(v->removePollOption(option));
+		updatePollOptionDeleteButtons();
+
 		return option;
+	}
+
+	private void removePollOption(DraftPollOption option){
+		UiUtils.beginLayoutTransition(pollWrap);
+		pollOptions.remove(option);
+		pollOptionsView.removeView(option.view);
+		addPollOptionBtn.setEnabled(pollOptions.size()<maxPollOptions);
+		updatePollOptionHints();
+		updatePollOptionDeleteButtons();
+		pollChanged=true;
+		fragment.updatePublishButtonState();
+	}
+
+	private void updatePollOptionDeleteButtons(){
+		boolean show=pollOptions.size()>2;
+		for(DraftPollOption opt:pollOptions){
+			opt.deleteBtn.setVisibility(show ? View.VISIBLE : View.GONE);
+		}
 	}
 
 	private void updatePollOptionHints(){
@@ -301,6 +324,7 @@ public class ComposePollViewController{
 		public EditText edit;
 		public View view;
 		public View dragger;
+		public View deleteBtn;
 	}
 
 	private class OptionDragListener implements ReorderableLinearLayout.OnDragListener{
@@ -367,6 +391,7 @@ public class ComposePollViewController{
 				pollOptions.remove(dpo);
 				pollOptionsView.removeView(view);
 				addPollOptionBtn.setEnabled(pollOptions.size()<maxPollOptions);
+				updatePollOptionDeleteButtons();
 				return;
 			}
 			ReorderableLinearLayout.OnDragListener.super.onDragEnd(view);

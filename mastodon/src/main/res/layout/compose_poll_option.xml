@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="horizontal"
 	android:layout_width="match_parent"
@@ -11,11 +11,12 @@
 	
 	<EditText
 		android:id="@+id/edit"
-		android:layout_width="match_parent"
+		android:layout_width="0dp"
+		android:layout_weight="1"
 		android:layout_height="56dp"
 		android:background="@null"
 		android:paddingStart="16dp"
-		android:paddingEnd="48dp"
+		android:paddingEnd="4dp"
 		android:textAppearance="@style/m3_body_large"
 		android:textColor="?colorM3OnSurface"
 		android:textColorHint="?colorM3OnSurfaceVariant"
@@ -23,6 +24,17 @@
 		android:elevation="0dp"
 		android:saveEnabled="false"
 		android:singleLine="true"/>
+
+	<ImageButton
+		android:id="@+id/delete_btn"
+		android:layout_width="48dp"
+		android:layout_height="56dp"
+		android:src="@drawable/ic_fluent_delete_24_regular"
+		android:background="?android:selectableItemBackground"
+		android:contentDescription="@string/delete_poll_option"
+		android:tint="?colorM3OnSurfaceVariant"
+		android:scaleType="center"
+		/>
 
 	<ImageView
 		android:id="@+id/dragger_thingy"
@@ -36,4 +48,4 @@
 		android:src="@drawable/ic_fluent_re_order_dots_vertical_20_filled"
 		tools:ignore="RtlSymmetry" />
 
-</FrameLayout>
+</LinearLayout>
