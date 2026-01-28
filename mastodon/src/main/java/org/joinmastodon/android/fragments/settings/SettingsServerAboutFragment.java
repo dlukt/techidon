@@ -74,6 +74,9 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 	@Override
 	public View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		webView=new WebView(getActivity());
+		// 🛡️ Sentinel: Explicitly disable JS and file access for security (defense in depth)
+		webView.getSettings().setJavaScriptEnabled(false);
+		webView.getSettings().setAllowFileAccess(false);
 		webView.setWebViewClient(new WebViewClient(){
 			@Override
 			public void onPageFinished(WebView view, String url){
