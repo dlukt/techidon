@@ -7,7 +7,8 @@
 	android:paddingEnd="24dp"
 	android:paddingTop="12dp"
 	android:paddingBottom="12dp"
-	android:background="?colorM3SurfaceVariant">
+	android:background="?colorM3SurfaceVariant"
+	android:foreground="?android:attr/selectableItemBackground">
 
 	<RadioButton
 		android:id="@+id/radiobtn"
