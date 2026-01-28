@@ -5,7 +5,8 @@
 	android:layout_height="wrap_content"
 	android:paddingHorizontal="12dp"
 	android:paddingVertical="8dp"
-	android:clipToPadding="false">
+	android:clipToPadding="false"
+	android:background="?android:attr/selectableItemBackground">
 
 	<ImageView
 		android:id="@+id/avatar"
