@@ -15,3 +15,9 @@
 **Learning:** Standard list items often have a background color (like `?colorM3SurfaceVariant` for highlighted or special items). Applying `android:background="?selectableItemBackground"` on these removes the color. The correct pattern is to use `android:foreground="?selectableItemBackground"`, which layers the ripple *over* the existing background, preserving the design while adding interaction feedback.
 
 **Action:** Use `android:foreground` for ripple effects on Views that already have a defined background color.
+
+## 2025-05-24 - Status Icons Accessibility
+
+**Learning:** Setting `android:contentDescription` on an ImageView while also setting `android:importantForAccessibility="no"` is an anti-pattern. It suggests the developer recognized the semantic value (by providing a description) but then mistakenly hid it from assistive technologies, likely thinking it was redundant visual decoration. For status icons like "Bot" or "Locked", this information is critical and not always redundant with the text.
+
+**Action:** Always check `android:importantForAccessibility` when you see `android:contentDescription`. If the icon conveys unique status information, remove `importantForAccessibility="no"`.

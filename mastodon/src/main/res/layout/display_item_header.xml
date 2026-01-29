@@ -169,7 +169,6 @@
 			android:layout_marginStart="4sp"
 			android:layout_gravity="center_vertical"
 			android:visibility="gone"
-			android:importantForAccessibility="no"
 			android:contentDescription="@string/sk_icon_bot"
 			android:src="@drawable/ic_fluent_bot_20_filled" />
 
