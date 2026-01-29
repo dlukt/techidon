@@ -7,3 +7,8 @@
 **Vulnerability:** The app excluded sensitive `accounts.json` from backups using `dataExtractionRules` (Android 12+) but failed to define `fullBackupContent` (Android 6-11). Since `minSdk` is 23, devices running Android 6-11 would default to backing up all files, including unencrypted auth tokens, to the cloud.
 **Learning:** When supporting a wide range of Android versions, newer security features (like `dataExtractionRules`) often do not backport. Always verify security configurations against the `minSdk`.
 **Prevention:** Explicitly define `android:fullBackupContent` in `AndroidManifest.xml` alongside `android:dataExtractionRules` if supporting Android versions below 12.
+
+## 2024-05-23 - Unsafe URI Scheme Handling in HtmlParser
+**Vulnerability:** `HtmlParser` created clickable `LinkSpan`s for any `href` attribute in `<a>` tags, including `javascript:`, `file:`, and `content:` schemes. Opening these links could lead to XSS (via `javascript:`) or local file exposure (via `file:`/`content:`).
+**Learning:** Parsing HTML for display often involves creating interactive elements. Validating the URL scheme at the point of parsing is a critical defense-in-depth measure, ensuring that even if the UI layer (e.g. `UiUtils`) is permissive, malicious links are never rendered as clickable.
+**Prevention:** Validate URI schemes against an allowlist (or blocklist of known bad schemes) before creating `URLSpan` or custom link spans. Use `Uri.parse()` and check `getScheme()`.
