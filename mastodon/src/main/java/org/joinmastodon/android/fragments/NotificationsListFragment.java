@@ -172,14 +172,20 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 						if(getActivity()==null)
 							return;
 
-						Set<String> needRelationships=result.items.stream()
-								.filter(ntf->ntf.status==null && !relationships.containsKey(ntf.account.id))
-								.map(ntf->ntf.account.id)
-								.collect(Collectors.toSet());
+						java.util.HashSet<String> needRelationships=new java.util.HashSet<>();
+						for(Notification ntf:result.items){
+							if(ntf.status==null && ntf.account!=null && !relationships.containsKey(ntf.account.id)){
+								needRelationships.add(ntf.account.id);
+							}
+						}
 						loadRelationships(needRelationships);
 
 						maxID=result.maxID;
-						onDataLoaded(result.items.stream().filter(n->n.type!=null).collect(Collectors.toList()), !result.items.isEmpty());
+						ArrayList<Notification> validItems = new ArrayList<>(result.items.size());
+						for(Notification n : result.items){
+							if(n.type != null) validItems.add(n);
+						}
+						onDataLoaded(validItems, !result.items.isEmpty());
 						if(bannerHelper!=null) bannerHelper.onBannerBecameVisible();
 						reloadingFromCache=false;
 						if (getParentFragment() instanceof NotificationsFragment nf) {
