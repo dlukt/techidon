@@ -58,7 +58,6 @@
 			android:layout_marginEnd="4dp"
 			android:layout_gravity="center_vertical"
 			android:visibility="gone"
-			android:importantForAccessibility="no"
 			android:contentDescription="@string/sk_icon_bot"
 			android:tint="?colorM3Secondary"
 			android:src="@drawable/ic_fluent_bot_16_filled" />
