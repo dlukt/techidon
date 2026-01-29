@@ -1,6 +1,7 @@
 package org.joinmastodon.android.ui.text;
 
 import android.content.Context;
+import android.net.Uri;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.SpannableStringBuilder;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -150,6 +152,10 @@ public class HtmlParser{
 						case "a" -> {
 							Object linkObject=null;
 							String href=el.attr("href");
+							if (isUnsafeUrl(href)) {
+								// 🛡️ Sentinel: Prevent XSS by ignoring unsafe schemes
+								break;
+							}
 							LinkSpan.Type linkType;
 							String text=el.text();
 							if(!TextUtils.isEmpty(text) && (el.hasClass("hashtag") || text.startsWith("#"))){
@@ -345,6 +351,19 @@ public class HtmlParser{
 					text.setSpan(fg, matcher.start(), matcher.end(), 0);
 				}
 			}
+		}
+	}
+
+	private static boolean isUnsafeUrl(String url) {
+		if (TextUtils.isEmpty(url)) return true;
+		try {
+			Uri uri = Uri.parse(url);
+			String scheme = uri.getScheme();
+			if (scheme == null) return false;
+			scheme = scheme.toLowerCase(Locale.US);
+			return "javascript".equals(scheme) || "vbscript".equals(scheme) || "file".equals(scheme) || "content".equals(scheme) || "data".equals(scheme) || "jar".equals(scheme);
+		} catch (Exception e) {
+			return true;
 		}
 	}
 }
