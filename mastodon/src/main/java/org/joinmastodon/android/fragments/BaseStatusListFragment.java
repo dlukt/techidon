@@ -145,7 +145,14 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		for(T s:items){
 			displayItems.addAll(buildDisplayItems(s));
 		}
-		loadRelationships(items.stream().map(DisplayItemsParent::getAccountID).filter(Objects::nonNull).collect(Collectors.toSet()));
+
+		java.util.HashSet<String> accountsToLoad = new java.util.HashSet<>();
+		for(T s:items){
+			String id=s.getAccountID();
+			if(id!=null && !relationships.containsKey(id))
+				accountsToLoad.add(id);
+		}
+		loadRelationships(accountsToLoad);
 	}
 
 	@Override
@@ -167,7 +174,14 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		}
 		if(notify)
 			adapter.notifyItemRangeInserted(0, offset);
-		loadRelationships(items.stream().map(DisplayItemsParent::getAccountID).filter(Objects::nonNull).collect(Collectors.toSet()));
+
+		java.util.HashSet<String> accountsToLoad = new java.util.HashSet<>();
+		for(T s:items){
+			String id=s.getAccountID();
+			if(id!=null && !relationships.containsKey(id))
+				accountsToLoad.add(id);
+		}
+		loadRelationships(accountsToLoad);
 		return offset;
 	}
 
@@ -862,11 +876,17 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	protected void loadRelationships(Set<String> ids){
 		if(ids.isEmpty())
 			return;
-		ids=ids.stream().filter(id->!relationships.containsKey(id)).collect(Collectors.toSet());
-		if(ids.isEmpty())
+
+		ArrayList<String> toLoad=new ArrayList<>(ids.size());
+		for(String id:ids){
+			if(!relationships.containsKey(id))
+				toLoad.add(id);
+		}
+
+		if(toLoad.isEmpty())
 			return;
 		// TODO somehow manage these and cancel outstanding requests on refresh
-		new GetAccountRelationships(ids)
+		new GetAccountRelationships(toLoad)
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(List<Relationship> result){
