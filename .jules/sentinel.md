@@ -12,3 +12,8 @@
 **Vulnerability:** `HtmlParser` created clickable `LinkSpan`s for any `href` attribute in `<a>` tags, including `javascript:`, `file:`, and `content:` schemes. Opening these links could lead to XSS (via `javascript:`) or local file exposure (via `file:`/`content:`).
 **Learning:** Parsing HTML for display often involves creating interactive elements. Validating the URL scheme at the point of parsing is a critical defense-in-depth measure, ensuring that even if the UI layer (e.g. `UiUtils`) is permissive, malicious links are never rendered as clickable.
 **Prevention:** Validate URI schemes against an allowlist (or blocklist of known bad schemes) before creating `URLSpan` or custom link spans. Use `Uri.parse()` and check `getScheme()`.
+
+## 2026-01-30 - Intent Redirection via HtmlParser
+**Vulnerability:** `HtmlParser` prohibited common unsafe schemes like `javascript` and `file` but allowed the `intent` scheme. This could allow a malicious post to trigger arbitrary Android Intents (Intent Redirection) when a user clicks a link.
+**Learning:** Blocklists often miss platform-specific schemes like `intent:`. Whitelisting known safe schemes is generally safer.
+**Prevention:** Explicitly filter `intent:` schemes in URL handling logic.
