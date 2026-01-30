@@ -361,7 +361,7 @@ public class HtmlParser{
 			String scheme = uri.getScheme();
 			if (scheme == null) return false;
 			scheme = scheme.toLowerCase(Locale.US);
-			return "javascript".equals(scheme) || "vbscript".equals(scheme) || "file".equals(scheme) || "content".equals(scheme) || "data".equals(scheme) || "jar".equals(scheme);
+			return "javascript".equals(scheme) || "vbscript".equals(scheme) || "file".equals(scheme) || "content".equals(scheme) || "data".equals(scheme) || "jar".equals(scheme) || "intent".equals(scheme);
 		} catch (Exception e) {
 			return true;
 		}

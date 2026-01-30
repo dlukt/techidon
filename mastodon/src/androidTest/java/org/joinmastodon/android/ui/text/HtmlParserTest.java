@@ -34,4 +34,12 @@ public class HtmlParserTest {
         assertEquals("Should create LinkSpan for https: URI", 1, spans.length);
         assertEquals("https://mastodon.social", spans[0].getLink());
     }
+
+    @Test
+    public void testIntentLinkIgnored() {
+        String html = "<a href=\"intent://example.com#Intent;scheme=http;package=com.example;end\">Click me</a>";
+        SpannableStringBuilder ssb = HtmlParser.parse(html, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "1");
+        LinkSpan[] spans = ssb.getSpans(0, ssb.length(), LinkSpan.class);
+        assertEquals("Should not create LinkSpan for intent: URI", 0, spans.length);
+    }
 }
