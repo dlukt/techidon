@@ -21,3 +21,7 @@
 **Learning:** Setting `android:contentDescription` on an ImageView while also setting `android:importantForAccessibility="no"` is an anti-pattern. It suggests the developer recognized the semantic value (by providing a description) but then mistakenly hid it from assistive technologies, likely thinking it was redundant visual decoration. For status icons like "Bot" or "Locked", this information is critical and not always redundant with the text.
 
 **Action:** Always check `android:importantForAccessibility` when you see `android:contentDescription`. If the icon conveys unique status information, remove `importantForAccessibility="no"`.
+
+## 2025-10-21 - InputType for Custom Dialogs
+**Learning:** Custom dialog layouts often neglect `android:inputType` on `EditText` fields, resulting in a poor keyboard experience (e.g., lack of auto-capitalization for titles).
+**Action:** Audit `EditText` elements in layout files used for dialogs and add appropriate `inputType` (e.g., `textCapSentences` for titles/names) to reduce user friction.
