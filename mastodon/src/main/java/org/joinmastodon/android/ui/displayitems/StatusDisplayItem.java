@@ -34,6 +34,7 @@ import org.joinmastodon.android.model.Attachment;
 import org.joinmastodon.android.model.DisplayItemsParent;
 import org.joinmastodon.android.model.FilterContext;
 import org.joinmastodon.android.model.FilterResult;
+import org.joinmastodon.android.model.Hashtag;
 import org.joinmastodon.android.model.LegacyFilter;
 import org.joinmastodon.android.model.Notification;
 import org.joinmastodon.android.model.Poll;
@@ -48,6 +49,7 @@ import org.joinmastodon.android.ui.viewholders.AccountViewHolder;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -210,27 +212,42 @@ public abstract class StatusDisplayItem{
 						fragment instanceof HashtagTimelineFragment ||
 						fragment instanceof ListTimelineFragment
 				) && fragment.getParentFragment() instanceof HomeTabFragment home){
-					home.getHashtags().stream()
-							.filter(followed->status.tags.stream()
-									.anyMatch(hashtag->followed.name.equalsIgnoreCase(hashtag.name)))
-							.findAny()
-							// post contains a hashtag the user is following
-							.ifPresent(hashtag->items.add(new ReblogOrReplyLineStatusDisplayItem(
-									parentID, fragment, hashtag.name, List.of(),
-									R.drawable.ic_fluent_number_symbol_20sp_filled, null,
-									i->UiUtils.openHashtagTimeline(fragment.getActivity(), accountID, hashtag),
-									status
-							)));
+					// Bolt: Replaced stream with loop to reduce allocation
+					Collection<Hashtag> followedHashtags = home.getHashtags();
+					Hashtag foundHashtag = null;
+					search:
+					for(Hashtag followed : followedHashtags) {
+						for(Hashtag tag : status.tags) {
+							if(followed.name.equalsIgnoreCase(tag.name)) {
+								foundHashtag = followed;
+								break search;
+							}
+						}
+					}
+					// post contains a hashtag the user is following
+					if (foundHashtag != null) {
+						Hashtag finalFoundHashtag = foundHashtag;
+						items.add(new ReblogOrReplyLineStatusDisplayItem(
+								parentID, fragment, finalFoundHashtag.name, List.of(),
+								R.drawable.ic_fluent_number_symbol_20sp_filled, null,
+								i -> UiUtils.openHashtagTimeline(fragment.getActivity(), accountID, finalFoundHashtag),
+								status
+						));
+					}
 				}
 
 				if(replyLine!=null){
-					Optional<ReblogOrReplyLineStatusDisplayItem> primaryLine=items.stream()
-							.filter(i->i instanceof ReblogOrReplyLineStatusDisplayItem)
-							.map(ReblogOrReplyLineStatusDisplayItem.class::cast)
-							.findFirst();
+					// Bolt: Replaced stream with loop to reduce allocation
+					ReblogOrReplyLineStatusDisplayItem primaryLine=null;
+					for(StatusDisplayItem item : items) {
+						if(item instanceof ReblogOrReplyLineStatusDisplayItem) {
+							primaryLine = (ReblogOrReplyLineStatusDisplayItem) item;
+							break;
+						}
+					}
 
-					if(primaryLine.isPresent()){
-						primaryLine.get().extra=replyLine;
+					if(primaryLine!=null){
+						primaryLine.extra=replyLine;
 					}else{
 						items.add(replyLine);
 					}
@@ -303,7 +320,13 @@ public abstract class StatusDisplayItem{
 				contentItems.add(new DummyStatusDisplayItem(parentID, fragment));
 			}
 
-			List<Attachment> imageAttachments=statusForContent.mediaAttachments.stream().filter(att->att.type.isImage()).collect(Collectors.toList());
+			// Bolt: Replaced stream with loop to reduce allocation
+			List<Attachment> imageAttachments=new ArrayList<>();
+			for(Attachment att : statusForContent.mediaAttachments) {
+				if(att.type.isImage()) {
+					imageAttachments.add(att);
+				}
+			}
 			if(!imageAttachments.isEmpty() && (flags&FLAG_NO_MEDIA_PREVIEW)==0){
 				int color=UiUtils.getThemeColor(fragment.getContext(), R.attr.colorM3SurfaceVariant);
 				for(Attachment att : imageAttachments){
