@@ -126,6 +126,7 @@ import org.joinmastodon.android.ui.sheets.MuteAccountConfirmationSheet;
 import org.joinmastodon.android.ui.sheets.BlockDomainConfirmationSheet;
 import org.joinmastodon.android.ui.text.CustomEmojiSpan;
 import org.joinmastodon.android.ui.text.HtmlParser;
+import org.joinmastodon.android.utils.SecurityUtils;
 import org.joinmastodon.android.utils.Tracking;
 import org.parceler.Parcels;
 
@@ -198,6 +199,11 @@ public class UiUtils {
 	}
 
 	public static void launchWebBrowser(Context context, String url) {
+		if (SecurityUtils.isUnsafeUrl(url)) {
+			Log.w("UiUtils", "Blocked unsafe URL: " + url);
+			Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show();
+			return;
+		}
 		if(GlobalUserPreferences.removeTrackingParams)
 			url=Tracking.removeTrackingParameters(url);
 		try {

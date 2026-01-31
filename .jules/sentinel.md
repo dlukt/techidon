@@ -17,3 +17,8 @@
 **Vulnerability:** `HtmlParser` prohibited common unsafe schemes like `javascript` and `file` but allowed the `intent` scheme. This could allow a malicious post to trigger arbitrary Android Intents (Intent Redirection) when a user clicks a link.
 **Learning:** Blocklists often miss platform-specific schemes like `intent:`. Whitelisting known safe schemes is generally safer.
 **Prevention:** Explicitly filter `intent:` schemes in URL handling logic.
+
+## 2024-05-23 - Intent Redirection and Unsafe URL Launch Prevention
+**Vulnerability:** The application used `UiUtils.launchWebBrowser` (which calls `Uri.parse` and `Intent.ACTION_VIEW`) without validating the URL scheme. This allowed malicious inputs (e.g., from API responses like preview cards or server descriptions) to launch arbitrary intents (`intent://`) or access local files (`file://`), leading to potential Intent Redirection or data leakage.
+**Learning:** `Uri.parse()` combined with `Intent.ACTION_VIEW` interprets `intent:` schemes by default on Android. Simply expecting "web" URLs is insufficient; explicit validation of the scheme is required before passing a URI to an Intent.
+**Prevention:** Centralize URL safety checks (e.g., `SecurityUtils.isUnsafeUrl`) and enforce them at all "sink" points where URLs effectively leave the app boundary or enter unsafe contexts (WebViews, Intents). Block `intent`, `file`, `content`, `javascript`, etc.

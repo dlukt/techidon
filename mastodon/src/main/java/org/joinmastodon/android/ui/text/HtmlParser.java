@@ -28,6 +28,7 @@ import org.joinmastodon.android.model.FilterResult;
 import org.joinmastodon.android.model.Hashtag;
 import org.joinmastodon.android.model.Mention;
 import org.joinmastodon.android.ui.utils.UiUtils;
+import org.joinmastodon.android.utils.SecurityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -152,7 +153,7 @@ public class HtmlParser{
 						case "a" -> {
 							Object linkObject=null;
 							String href=el.attr("href");
-							if (isUnsafeUrl(href)) {
+							if (SecurityUtils.isUnsafeUrl(href)) {
 								// 🛡️ Sentinel: Prevent XSS by ignoring unsafe schemes
 								break;
 							}
@@ -354,16 +355,4 @@ public class HtmlParser{
 		}
 	}
 
-	private static boolean isUnsafeUrl(String url) {
-		if (TextUtils.isEmpty(url)) return true;
-		try {
-			Uri uri = Uri.parse(url);
-			String scheme = uri.getScheme();
-			if (scheme == null) return false;
-			scheme = scheme.toLowerCase(Locale.US);
-			return "javascript".equals(scheme) || "vbscript".equals(scheme) || "file".equals(scheme) || "content".equals(scheme) || "data".equals(scheme) || "jar".equals(scheme) || "intent".equals(scheme);
-		} catch (Exception e) {
-			return true;
-		}
-	}
 }

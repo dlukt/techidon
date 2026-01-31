@@ -34,6 +34,7 @@ import org.joinmastodon.android.ui.utils.UiUtils;
 import org.joinmastodon.android.ui.viewholders.AccountViewHolder;
 import org.joinmastodon.android.ui.viewholders.SimpleListItemViewHolder;
 import org.joinmastodon.android.ui.views.FixedAspectRatioImageView;
+import org.joinmastodon.android.utils.SecurityUtils;
 import org.joinmastodon.android.utils.ViewImageLoaderHolderTarget;
 import org.parceler.Parcels;
 
@@ -85,6 +86,7 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url){
+				if (SecurityUtils.isUnsafeUrl(url)) return true;
 				Uri uri=Uri.parse(url);
 				if(uri.getScheme().equals("http") || uri.getScheme().equals("https")){
 					UiUtils.openURL(getActivity(),accountID, url);
