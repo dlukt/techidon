@@ -41,12 +41,10 @@ import org.joinmastodon.android.ui.views.MediaGridLayout;
 import org.joinmastodon.android.utils.TypedObjectPool;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import me.grishka.appkit.imageloader.ImageLoaderViewHolder;
 import me.grishka.appkit.imageloader.requests.ImageLoaderRequest;
@@ -201,11 +199,20 @@ public class MediaGridStatusDisplayItem extends StatusDisplayItem{
 				if (item.status.translation != null){
 					if(item.status.translationState==Status.TranslationState.SHOWN){
 						if(!item.translatedAttachments.containsKey(att.id)){
-							Optional<Translation.MediaAttachment> translatedAttachment=Arrays.stream(item.status.translation.mediaAttachments).filter(mediaAttachment->mediaAttachment.id.equals(att.id)).findFirst();
-							translatedAttachment.ifPresent(mediaAttachment->{
-								item.translatedAttachments.put(mediaAttachment.id, new Pair<>(att.description, mediaAttachment.description));
-								att.description=mediaAttachment.description;
-							});
+							// Bolt: Replaced stream with loop to reduce allocation in hot path
+							Translation.MediaAttachment found = null;
+							if (item.status.translation.mediaAttachments != null) {
+								for (Translation.MediaAttachment ma : item.status.translation.mediaAttachments) {
+									if (ma.id.equals(att.id)) {
+										found = ma;
+										break;
+									}
+								}
+							}
+							if (found != null) {
+								item.translatedAttachments.put(found.id, new Pair<>(att.description, found.description));
+								att.description = found.description;
+							}
 						}else{
 							//SAFETY: must be non-null, as we check if the map contains the attachment before
 							att.description=Objects.requireNonNull(item.translatedAttachments.get(att.id)).second;

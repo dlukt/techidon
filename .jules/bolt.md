@@ -9,3 +9,7 @@
 ## 2025-05-26 - [BaseStatusListFragment Optimizations]
 **Learning:** `BaseStatusListFragment` is the ancestor for all timeline fragments. Optimizations here (like removing Streams in `onAppendItems`) have global impact. The `loadRelationships` method is called frequently during scrolling/pagination, making it a prime target for allocation reduction.
 **Action:** Prioritize moving high-frequency logic in `BaseStatusListFragment` from Streams to loops.
+
+## 2025-10-25 - [Stream Allocation in MediaGridStatusDisplayItem]
+**Learning:** `MediaGridStatusDisplayItem.onBind` (hot path) was using `Arrays.stream()` to find translated attachments, causing unnecessary object allocations (Stream, Optional, lambda) during scrolling.
+**Action:** Replaced stream with a simple loop.
