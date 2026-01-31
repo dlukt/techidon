@@ -711,6 +711,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			};
 			avatar.setOutlineProvider(roundCornersOutline);
 			avatar.setClipToOutline(true);
+			avatar.setContentDescription(getString(R.string.avatar_description, status.account.getDisplayName()));
 			avatar.setOnClickListener(v->{
 				Bundle args=new Bundle();
 				args.putString("account", accountID);

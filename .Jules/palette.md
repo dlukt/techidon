@@ -25,3 +25,7 @@
 ## 2025-10-21 - InputType for Custom Dialogs
 **Learning:** Custom dialog layouts often neglect `android:inputType` on `EditText` fields, resulting in a poor keyboard experience (e.g., lack of auto-capitalization for titles).
 **Action:** Audit `EditText` elements in layout files used for dialogs and add appropriate `inputType` (e.g., `textCapSentences` for titles/names) to reduce user friction.
+
+## 2026-02-17 - Redundant vs. Interactive Avatars
+**Learning:** In complex views like Compose, avatars serve different purposes. The 'self' avatar is often purely decorative/indicative (name is present), while 'reply' avatars are interactive navigation targets. Treating them identically leads to noise (reading redundant info) or barriers (missing labels on links).
+**Action:** Audit avatars in complex screens. If decorative/redundant, hide with `importantForAccessibility="no"`. If interactive (links to profile), ensure dynamic `contentDescription` is set programmatically.
