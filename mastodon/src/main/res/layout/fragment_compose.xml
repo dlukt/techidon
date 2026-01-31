@@ -81,7 +81,8 @@
 						android:layout_marginTop="16dp"
 						android:layout_alignParentStart="true"
 						android:layout_alignParentTop="true"
-						android:layout_marginEnd="12dp" />
+						android:layout_marginEnd="12dp"
+						android:importantForAccessibility="no" />
 
 					<org.joinmastodon.android.ui.views.HeaderSubtitleLinearLayout
 						android:id="@+id/name_wrap"
