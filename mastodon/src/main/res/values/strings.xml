@@ -118,6 +118,8 @@
 	<string name="notification_channel_audio_player">Audio playback</string>
 	<string name="play">Play</string>
 	<string name="pause">Pause</string>
+	<string name="seek_forward_10_seconds">Forward 10 seconds</string>
+	<string name="seek_rewind_5_seconds">Rewind 5 seconds</string>
 	<string name="log_out">Log out</string>
 	<string name="add_account">Add account</string>
 	<string name="search_hint">Search</string>
