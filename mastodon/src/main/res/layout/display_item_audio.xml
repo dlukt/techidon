@@ -43,6 +43,7 @@
 		
 		<ImageButton
 			android:id="@+id/forward_btn"
+			android:contentDescription="@string/seek_forward_10_seconds"
 			android:layout_width="96dp"
 			android:layout_height="96dp"
 			android:layout_gravity="center_vertical|end"
@@ -53,6 +54,7 @@
 
 		<ImageButton
 			android:id="@+id/rewind_btn"
+			android:contentDescription="@string/seek_rewind_5_seconds"
 			android:layout_width="96dp"
 			android:layout_height="96dp"
 			android:layout_gravity="center_vertical|start"
