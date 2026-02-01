@@ -86,7 +86,11 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 
 	@Override
 	public int getImageCount(){
-		return (int) status.reactions.stream().filter(r->r.getUrl(playGifs)!=null).count();
+		int count=0;
+		for(EmojiReaction r:status.reactions){
+			if(r.getUrl(playGifs)!=null) count++;
+		}
+		return count;
 	}
 
 	@Override
@@ -189,7 +193,11 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			AccountSession session=item.parentFragment.getSession();
 			instance=item.parentFragment.getInstance().get();
 			if(instance.configuration!=null && instance.configuration.reactions!=null && instance.configuration.reactions.maxReactions!=0){
-				meReactionCount=(int) item.status.reactions.stream().filter(r->r.me).count();
+				int count=0;
+				for(EmojiReaction r:item.status.reactions){
+					if(r.me) count++;
+				}
+				meReactionCount=count;
 				boolean canReact=meReactionCount<instance.configuration.reactions.maxReactions;
 				addButton.setClickable(canReact);
 				addButton.setAlpha(canReact ? 1 : ALPHA_DISABLED);
@@ -286,11 +294,14 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			item.createRequest(emoji, existing==null ? 1 : existing.count, false, null, (status)->{
 				resetBtn.run();
 				if(finalExisting==null){
-					int pos=status.reactions.stream()
-							.filter(r->r.name.equals(info!=null ? info.shortcode : emoji))
-							.findFirst()
-							.map(r->status.reactions.indexOf(r))
-							.orElse(item.status.reactions.size());
+					String targetName=info!=null ? info.shortcode : emoji;
+					int pos=item.status.reactions.size();
+					for(int i=0;i<status.reactions.size();i++){
+						if(status.reactions.get(i).name.equals(targetName)){
+							pos=i;
+							break;
+						}
+					}
 					boolean previouslyEmpty=item.status.reactions.isEmpty();
 					item.status.reactions.add(pos, info!=null ? EmojiReaction.of(info, me) : EmojiReaction.of(emoji, me));
 					if(previouslyEmpty)
@@ -355,14 +366,20 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			List<EmojiReaction> toRemove=new ArrayList<>();
 			for(int i=0;i<item.status.reactions.size();i++){
 				EmojiReaction reaction=item.status.reactions.get(i);
-				Optional<EmojiReaction> newReactionOptional=reactions.stream().filter(r->r.name.equals(reaction.name)).findFirst();
-				if(newReactionOptional.isEmpty()){ // deleted reactions
+				EmojiReaction newReaction=null;
+				for(EmojiReaction r:reactions){
+					if(r.name.equals(reaction.name)){
+						newReaction=r;
+						break;
+					}
+				}
+
+				if(newReaction==null){ // deleted reactions
 					toRemove.add(reaction);
 					continue;
 				}
 
 				// changed reactions
-				EmojiReaction newReaction=newReactionOptional.get();
 				if(reaction.count!=newReaction.count || reaction.me!=newReaction.me || reaction.pendingChange!=newReaction.pendingChange){
 					if(newReaction.pendingChange){
 						View holderView=list.getChildAt(i);
@@ -387,7 +404,14 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			boolean pendingAddReaction=false;
 			for(int i=0;i<reactions.size();i++){
 				EmojiReaction reaction=reactions.get(i);
-				if(item.status.reactions.stream().anyMatch(r->r.name.equals(reaction.name)))
+				boolean exists=false;
+				for(EmojiReaction r:item.status.reactions){
+					if(r.name.equals(reaction.name)){
+						exists=true;
+						break;
+					}
+				}
+				if(exists)
 					continue;
 
 				// new reactions
@@ -414,7 +438,10 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 				progress.setVisibility(View.GONE);
 			}
 
-			int newMeReactionCount=(int) reactions.stream().filter(r->r.me || r.pendingChange).count();
+			int newMeReactionCount=0;
+			for(EmojiReaction r:reactions){
+				if(r.me || r.pendingChange) newMeReactionCount++;
+			}
 			if (newMeReactionCount!=meReactionCount){
 				meReactionCount=newMeReactionCount;
 				updateAddButtonClickable();

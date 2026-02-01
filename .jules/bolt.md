@@ -13,3 +13,7 @@
 ## 2025-10-25 - [Stream Allocation in MediaGridStatusDisplayItem]
 **Learning:** `MediaGridStatusDisplayItem.onBind` (hot path) was using `Arrays.stream()` to find translated attachments, causing unnecessary object allocations (Stream, Optional, lambda) during scrolling.
 **Action:** Replaced stream with a simple loop.
+
+## 2025-10-26 - [Stream Allocation in EmojiReactionsStatusDisplayItem]
+**Learning:** `EmojiReactionsStatusDisplayItem` used Java Streams extensively (`filter`, `count`, `findFirst`, `anyMatch`) in `onBind` and `updateReactions`. These are called during scrolling and when reactions update, causing allocation churn.
+**Action:** Replaced all stream usages with loops, reducing allocation overhead and improving scrolling smoothness.
