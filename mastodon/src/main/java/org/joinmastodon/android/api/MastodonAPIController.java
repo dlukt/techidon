@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
@@ -159,7 +160,7 @@ public class MastodonAPIController{
 								try{
 									if(BuildConfig.DEBUG){
 										JsonElement respJson=JsonParser.parseReader(reader);
-										Log.d(TAG, logTag(session)+"response body: "+respJson);
+										Log.d(TAG, logTag(session)+"response body: "+redactSensitiveData(respJson));
 										if(req.respTypeToken!=null)
 											respObj=gson.fromJson(respJson, req.respTypeToken.getType());
 										else if(req.respClass!=null)
@@ -253,5 +254,27 @@ public class MastodonAPIController{
 
 	private static String logTag(AccountSession session){
 		return "["+(session==null ? "no-auth" : session.getID())+"] ";
+	}
+
+	private JsonElement redactSensitiveData(JsonElement element) {
+		if (element.isJsonObject()) {
+			JsonObject newObject = new JsonObject();
+			for (Map.Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet()) {
+				String key = entry.getKey();
+				if (key.equalsIgnoreCase("access_token") || key.equalsIgnoreCase("refresh_token") || key.equalsIgnoreCase("client_secret")) {
+					newObject.addProperty(key, "[REDACTED]");
+				} else {
+					newObject.add(key, redactSensitiveData(entry.getValue()));
+				}
+			}
+			return newObject;
+		} else if (element.isJsonArray()) {
+			JsonArray newArray = new JsonArray();
+			for (JsonElement item : element.getAsJsonArray()) {
+				newArray.add(redactSensitiveData(item));
+			}
+			return newArray;
+		}
+		return element;
 	}
 }
