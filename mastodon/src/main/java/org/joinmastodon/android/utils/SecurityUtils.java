@@ -29,7 +29,8 @@ public class SecurityUtils {
 					"content".equals(scheme) ||
 					"data".equals(scheme) ||
 					"jar".equals(scheme) ||
-					"intent".equals(scheme);
+					"intent".equals(scheme) ||
+					"blob".equals(scheme);
 		} catch (Exception e) {
 			return true;
 		}

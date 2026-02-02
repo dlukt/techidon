@@ -78,6 +78,7 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 		// 🛡️ Sentinel: Explicitly disable JS and file access for security (defense in depth)
 		webView.getSettings().setJavaScriptEnabled(false);
 		webView.getSettings().setAllowFileAccess(false);
+		webView.getSettings().setAllowContentAccess(false);
 		webView.setWebViewClient(new WebViewClient(){
 			@Override
 			public void onPageFinished(WebView view, String url){
@@ -88,7 +89,8 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 			public boolean shouldOverrideUrlLoading(WebView view, String url){
 				if (SecurityUtils.isUnsafeUrl(url)) return true;
 				Uri uri=Uri.parse(url);
-				if(uri.getScheme().equals("http") || uri.getScheme().equals("https")){
+				String scheme=uri.getScheme();
+				if(scheme!=null && (scheme.equals("http") || scheme.equals("https"))){
 					UiUtils.openURL(getActivity(),accountID, url);
 				}else{
 					Intent intent=new Intent(Intent.ACTION_VIEW, uri);
