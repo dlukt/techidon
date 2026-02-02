@@ -17,3 +17,7 @@
 ## 2025-10-26 - [Stream Allocation in EmojiReactionsStatusDisplayItem]
 **Learning:** `EmojiReactionsStatusDisplayItem` used Java Streams extensively (`filter`, `count`, `findFirst`, `anyMatch`) in `onBind` and `updateReactions`. These are called during scrolling and when reactions update, causing allocation churn.
 **Action:** Replaced all stream usages with loops, reducing allocation overhead and improving scrolling smoothness.
+
+## 2025-05-27 - [Stream Allocation in StatusInteractionController]
+**Learning:** `StatusInteractionController.setFavorited` used `Stream.filter().findFirst()` to check for existing reactions. This runs on every favorite action (interaction latency).
+**Action:** Replaced Stream usage with a single loop to find matches, avoiding object allocation and reducing GC pressure during user interaction.

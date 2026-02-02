@@ -24,7 +24,6 @@ import org.joinmastodon.android.model.StatusPrivacy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import me.grishka.appkit.api.Callback;
@@ -97,16 +96,24 @@ public class StatusInteractionController{
 		for(EmojiReaction reaction:status.reactions){
 			reactions.add(reaction.copy());
 		}
-		Optional<EmojiReaction> existingReaction=reactions.stream().filter(r->r.me).findFirst();
-		Optional<EmojiReaction> existingDefaultReaction=reactions.stream().filter(r->r.name.equals(defaultReactionEmoji)).findFirst();
-		if(existingReaction.isPresent() && !favorited){
-			existingReaction.get().me=false;
-			existingReaction.get().count--;
-			existingReaction.get().pendingChange=true;
-		}else if(existingDefaultReaction.isPresent() && favorited){
-			existingDefaultReaction.get().count++;
-			existingDefaultReaction.get().me=true;
-			existingDefaultReaction.get().pendingChange=true;
+		EmojiReaction existingReaction=null;
+		EmojiReaction existingDefaultReaction=null;
+		for(EmojiReaction r:reactions){
+			if(existingReaction==null && r.me)
+				existingReaction=r;
+			if(existingDefaultReaction==null && r.name.equals(defaultReactionEmoji))
+				existingDefaultReaction=r;
+			if(existingReaction!=null && existingDefaultReaction!=null)
+				break;
+		}
+		if(existingReaction!=null && !favorited){
+			existingReaction.me=false;
+			existingReaction.count--;
+			existingReaction.pendingChange=true;
+		}else if(existingDefaultReaction!=null && favorited){
+			existingDefaultReaction.count++;
+			existingDefaultReaction.me=true;
+			existingDefaultReaction.pendingChange=true;
 		}else if(favorited){
 			EmojiReaction reaction=null;
 			if(reactionIsCustom){
