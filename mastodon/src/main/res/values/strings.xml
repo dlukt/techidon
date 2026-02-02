@@ -732,4 +732,12 @@
 	<string name="unpin_post">Unpin from profile</string>
 	<string name="post_pinned">Post has been pinned</string>
 	<string name="post_unpinned">Post has been unpinned</string>
+	<plurals name="characters_remaining">
+		<item quantity="one">%d character remaining</item>
+		<item quantity="other">%d characters remaining</item>
+	</plurals>
+	<plurals name="characters_over_limit">
+		<item quantity="one">%d character over limit</item>
+		<item quantity="other">%d characters over limit</item>
+	</plurals>
 </resources>

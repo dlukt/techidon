@@ -1022,7 +1022,15 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 		if (localOnly && AccountSessionManager.get(accountID).getLocalPreferences().glitchInstance) {
 			charCount -= GLITCH_LOCAL_ONLY_SUFFIX.length();
 		}
-		charCounter.setText(String.valueOf(charLimit-charCount));
+		int remaining = charLimit - charCount;
+		charCounter.setText(String.valueOf(remaining));
+
+		if (remaining >= 0) {
+			charCounter.setContentDescription(getResources().getQuantityString(R.plurals.characters_remaining, remaining, remaining));
+		} else {
+			int over = -remaining;
+			charCounter.setContentDescription(getResources().getQuantityString(R.plurals.characters_over_limit, over, over));
+		}
 
 		text.removeSpan(overLimitBG);
 		text.removeSpan(overLimitFG);
