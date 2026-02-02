@@ -29,3 +29,7 @@
 ## 2026-02-17 - Redundant vs. Interactive Avatars
 **Learning:** In complex views like Compose, avatars serve different purposes. The 'self' avatar is often purely decorative/indicative (name is present), while 'reply' avatars are interactive navigation targets. Treating them identically leads to noise (reading redundant info) or barriers (missing labels on links).
 **Action:** Audit avatars in complex screens. If decorative/redundant, hide with `importantForAccessibility="no"`. If interactive (links to profile), ensure dynamic `contentDescription` is set programmatically.
+
+## 2026-02-02 - Context for Dynamic Counters
+**Learning:** Numeric counters (like character limits) are visually clear but semantically ambiguous to screen readers when announced as just a number. Adding dynamic context ("X characters remaining") via `contentDescription` significantly improves clarity without changing the visual design.
+**Action:** Audit dynamic numeric text views (counters, timers) and ensure they have a `contentDescription` that provides full context (e.g., "remaining", "elapsed") updated in sync with the text.
