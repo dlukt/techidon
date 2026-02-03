@@ -7,3 +7,8 @@
 **Vulnerability:** `SettingsServerAboutFragment`'s `WebViewClient` implementation was susceptible to a `NullPointerException` (DoS) when handling URLs with null schemes (e.g. relative URLs), and it implicitly allowed content provider access (`content://`) which is unnecessary and risky. Additionally, `SecurityUtils` did not block `blob:` schemes.
 **Learning:** `Uri.getScheme()` can return null, so always check for null before invoking methods on the scheme string. Defense in depth for WebViews should always include `setAllowContentAccess(false)` unless explicitly needed.
 **Prevention:** Always enable `setAllowContentAccess(false)` on WebViews. Always null-check schemes from `Uri.parse()`.
+
+## 2026-02-03 - Information Leakage in FileProvider
+**Vulnerability:** `TweakedFileProvider` was logging file URIs and selection arguments (potential PII/sensitive queries) to the system log in all builds, including release.
+**Learning:** Extending Android components (like `FileProvider`) often encourages overriding methods for debugging, but these overrides must be strictly guarded. Reliance on ProGuard to strip logs is risky.
+**Prevention:** Always wrap `Log` calls in `if (BuildConfig.DEBUG)` or use a logging facade. Audit all `FileProvider` subclasses for sensitive logging.
