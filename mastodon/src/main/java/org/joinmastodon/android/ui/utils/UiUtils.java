@@ -161,7 +161,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1968,26 +1967,29 @@ public class UiUtils {
 		String localizedPronouns=context.getString(R.string.sk_pronouns_label).toLowerCase();
 
 		// higher = worse. the lowest number wins. also i'm sorry for writing this
-		ToIntFunction<AccountField> comparePronounFields=(f)->{
-			String t=f.name.toLowerCase();
+		String bestPronouns = null;
+		int bestScore = Integer.MAX_VALUE;
+
+		for (AccountField f : account.fields) {
+			String t = f.name.toLowerCase();
 			int localizedIndex = t.indexOf(localizedPronouns);
 			int englishIndex = t.indexOf("pronouns");
 			// neutralizing an english fallback failure if the localized pronoun already succeeded
 			// -t.length() + t.length() = 0 -> so the low localized score doesn't get obscured
 			if (englishIndex < 0) englishIndex = localizedIndex > -1 ? -t.length() : t.length();
 			if (localizedIndex < 0) localizedIndex = t.length();
-			return (localizedIndex + t.length()) + (englishIndex + t.length()) * 100;
-		};
+			int score = (localizedIndex + t.length()) + (englishIndex + t.length()) * 100;
 
-		// debugging:
-//		List<Integer> ints = account.fields.stream().map(comparePronounFields::applyAsInt).collect(Collectors.toList());
-//		List<AccountField> sorted = account.fields.stream().sorted(Comparator.comparingInt(comparePronounFields)).collect(Collectors.toList());
+			if (score < bestScore) {
+				String extracted = UiUtils.extractPronounsFromField(localizedPronouns, f);
+				if (extracted != null) {
+					bestScore = score;
+					bestPronouns = extracted;
+				}
+			}
+		}
 
-		return account.fields.stream()
-				.sorted(Comparator.comparingInt(comparePronounFields))
-				.map(f->UiUtils.extractPronounsFromField(localizedPronouns, f))
-				.filter(Objects::nonNull)
-				.findFirst();
+		return Optional.ofNullable(bestPronouns);
 	}
 
 	public static void opacityIn(View v){
