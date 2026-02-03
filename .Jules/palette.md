@@ -33,3 +33,7 @@
 ## 2026-02-02 - Context for Dynamic Counters
 **Learning:** Numeric counters (like character limits) are visually clear but semantically ambiguous to screen readers when announced as just a number. Adding dynamic context ("X characters remaining") via `contentDescription` significantly improves clarity without changing the visual design.
 **Action:** Audit dynamic numeric text views (counters, timers) and ensure they have a `contentDescription` that provides full context (e.g., "remaining", "elapsed") updated in sync with the text.
+
+## 2026-05-24 - Composite Button Accessibility
+**Learning:** Interactive Linear/Relative layouts acting as buttons often contain multiple child TextViews (label + value). Screen readers traverse these children individually, which is disjointed. Setting `contentDescription` on the parent container (e.g., "Poll length: 1 day") provides a unified, button-like experience.
+**Action:** Identify clickable ViewGroups and consolidate child text into a single `contentDescription` on the parent, updating it programmatically when values change.

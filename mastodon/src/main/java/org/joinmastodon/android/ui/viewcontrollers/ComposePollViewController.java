@@ -116,8 +116,8 @@ public class ComposePollViewController{
 			updatePollOptionHints();
 			pollDuration=savedInstanceState.getInt("pollDuration");
 			pollIsMultipleChoice=savedInstanceState.getBoolean("pollMultiple");
-			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), pollDuration));
-			pollStyleValue.setText(pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice);
+			updatePollDurationDisplay();
+			updatePollStyleDisplay();
 		}else if(savedInstanceState!=null && !pollOptions.isEmpty()){ // Fragment was recreated but instance was retained
 			pollWrap.setVisibility(View.VISIBLE);
 			ArrayList<DraftPollOption> oldOptions=new ArrayList<>(pollOptions);
@@ -127,8 +127,8 @@ public class ComposePollViewController{
 				opt.edit.setText(oldOpt.edit.getText());
 			}
 			updatePollOptionHints();
-			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), pollDuration));
-			pollStyleValue.setText(pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice);
+			updatePollDurationDisplay();
+			updatePollStyleDisplay();
 		}else if(savedInstanceState==null && fragment.editingStatus!=null && fragment.editingStatus.poll!=null){
 			pollWrap.setVisibility(View.VISIBLE);
 			for(Poll.Option eopt:fragment.editingStatus.poll.options){
@@ -140,13 +140,25 @@ public class ComposePollViewController{
 			else if(fragment.editingStatus.poll.expiresAt!=null)
 				pollDuration=(int)fragment.editingStatus.poll.expiresAt.minus(fragment.editingStatus.createdAt.toEpochMilli(), ChronoUnit.MILLIS).getEpochSecond();
 			updatePollOptionHints();
-			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), pollDuration));
 			pollIsMultipleChoice=fragment.editingStatus.poll.multiple;
-			pollStyleValue.setText(pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice);
+			updatePollDurationDisplay();
+			updatePollStyleDisplay();
 		}else{
-			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), 24*3600));
-			pollStyleValue.setText(R.string.compose_poll_single_choice);
+			updatePollDurationDisplay();
+			updatePollStyleDisplay();
 		}
+	}
+
+	private void updatePollDurationDisplay() {
+		String durationString = UiUtils.formatDuration(fragment.getContext(), pollDuration);
+		pollDurationValue.setText(durationString);
+		pollDurationButton.setContentDescription(fragment.getString(R.string.poll_length) + ": " + durationString);
+	}
+
+	private void updatePollStyleDisplay() {
+		int styleRes = pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice;
+		pollStyleValue.setText(styleRes);
+		pollStyleButton.setContentDescription(fragment.getString(R.string.poll_style) + ": " + fragment.getString(styleRes));
 	}
 
 	private DraftPollOption createDraftPollOption(boolean animated){
@@ -230,7 +242,7 @@ public class ComposePollViewController{
 				.setTitle(R.string.poll_length)
 				.setPositiveButton(R.string.ok, (dialog, which)->{
 					pollDuration=POLL_LENGTH_OPTIONS[chosenOption[0]];
-					pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), pollDuration));
+					updatePollDurationDisplay();
 				})
 				.setNegativeButton(R.string.cancel, null)
 				.show();
@@ -243,7 +255,7 @@ public class ComposePollViewController{
 				.setTitle(R.string.poll_style_title)
 				.setPositiveButton(R.string.ok, (dlg, which)->{
 					pollIsMultipleChoice=option[0]==R.id.multiple_choice;
-					pollStyleValue.setText(pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice);
+					updatePollStyleDisplay();
 				})
 				.setNegativeButton(R.string.cancel, null)
 				.show();
