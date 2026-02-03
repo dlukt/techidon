@@ -106,7 +106,13 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 		emojiHelper.setText(parsedName);
 		if(status!=null){
 			// visibility toggle can't do much for non-"image" attachments
-			hasVisibilityToggle=status.mediaAttachments.stream().anyMatch(m -> m.type.isImage());
+			hasVisibilityToggle = false;
+			for (org.joinmastodon.android.model.Attachment m : status.mediaAttachments) {
+				if (m.type.isImage()) {
+					hasVisibilityToggle = true;
+					break;
+				}
+			}
 		}
 		this.extraText=extraText;
 		emojiHelper.addText(extraText);
@@ -503,13 +509,19 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 			menu.findItem(R.id.delete_and_redraft).setVisible(!isPostScheduled && item.status!=null && isOwnPost);
 			menu.findItem(R.id.pin).setVisible(!isPostScheduled && item.status!=null && isOwnPost && !item.status.pinned);
 			menu.findItem(R.id.unpin).setVisible(!isPostScheduled && item.status!=null && isOwnPost && item.status.pinned);
-			menu.findItem(R.id.mute_conversation).setVisible((item.status!=null && !item.status.muted && !isPostScheduled) && (isOwnPost || item.status.mentions.stream().anyMatch(m->{
-				if(m==null)
-					return false;
-				return AccountSessionManager.get(item.parentFragment.getAccountID()).self.id.equals(m.id) ||
-						AccountSessionManager.get(item.parentFragment.getAccountID()).self.getFullyQualifiedName().equals(m.username) ||
-						AccountSessionManager.get(item.parentFragment.getAccountID()).self.acct.equals(m.acct);
-			})));
+			boolean mentioned = false;
+			if (item.status != null && item.status.mentions != null) {
+				Account self = AccountSessionManager.get(item.parentFragment.getAccountID()).self;
+				for (Mention m : item.status.mentions) {
+					if (m != null && (self.id.equals(m.id) ||
+							self.getFullyQualifiedName().equals(m.username) ||
+							self.acct.equals(m.acct))) {
+						mentioned = true;
+						break;
+					}
+				}
+			}
+			menu.findItem(R.id.mute_conversation).setVisible((item.status!=null && !item.status.muted && !isPostScheduled) && (isOwnPost || mentioned));
 			menu.findItem(R.id.unmute_conversation).setVisible(item.status!=null && item.status.muted);
 			menu.findItem(R.id.open_in_browser).setVisible(!isPostScheduled && item.status!=null);
 			menu.findItem(R.id.copy_link).setVisible(!isPostScheduled && item.status!=null);

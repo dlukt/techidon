@@ -21,3 +21,7 @@
 ## 2025-05-27 - [Stream Allocation in StatusInteractionController]
 **Learning:** `StatusInteractionController.setFavorited` used `Stream.filter().findFirst()` to check for existing reactions. This runs on every favorite action (interaction latency).
 **Action:** Replaced Stream usage with a single loop to find matches, avoiding object allocation and reducing GC pressure during user interaction.
+
+## 2025-10-27 - [Stream Allocation in UiUtils and HeaderStatusDisplayItem]
+**Learning:** `UiUtils.extractPronouns` used complex stream logic (sorted, map, filter, findFirst) which allocated Comparators, Streams, and Optionals. This is called during view binding for account lists. `HeaderStatusDisplayItem` also used streams for visibility toggles and menu updates.
+**Action:** Replaced stream logic with simple loops. In `UiUtils`, replaced sort-then-find with a single-pass search for the best match (O(N) vs O(N log N)).
