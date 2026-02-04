@@ -20,4 +20,5 @@ dependencyResolutionManagement {
 	}
 }
 rootProject.name = "Techidon"
+include ':appkit'
 include ':mastodon'

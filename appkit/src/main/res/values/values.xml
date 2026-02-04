@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr format="color|reference" name="actionBarIconTint"/>
+    <attr format="reference" name="appkitBackDrawable"/>
+    <attr format="string|reference" name="appkitDefaultErrorText"/>
+    <attr format="reference" name="appkitEmptyButtonStyle"/>
+    <attr format="reference" name="appkitEmptyTextAppearance"/>
+    <attr format="reference" name="appkitErrorButtonStyle"/>
+    <attr format="string|reference" name="appkitRetryButtonText"/>
+    <attr format="color|reference" name="appkitToolbarBackground"/>
+    <attr format="dimension" name="appkitToolbarElevation"/>
+    <attr format="reference" name="emptyViewLayout"/>
+    <attr format="reference" name="errorViewLayout"/>
+    <dimen name="navigation_spinner_popup_yoffset">-48dip</dimen>
+    <item name="content" type="id"/>
+    <item name="error" type="id"/>
+    <item name="fragment_wrap" type="id"/>
+    <item name="loading" type="id"/>
+    <item name="tag_detach_listener" type="id"/>
+    <item name="tag_image_load_task" type="id"/>
+    <item name="tag_visibility_anim" type="id"/>
+    <string name="empty_list">This list is empty</string>
+    <style name="Theme.AppKit" parent="android:Theme.Material.NoActionBar">
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowActionBar">false</item>
+		<item name="emptyViewLayout">@layout/appkit_empty</item>
+		<item name="errorViewLayout">@layout/appkit_error</item>
+		<item name="android:navigationBarColor">#000</item>
+		<item name="android:titleTextAppearance">@android:style/TextAppearance.Material.Widget.Toolbar.Title</item>
+		<item name="android:subtitleTextAppearance">@android:style/TextAppearance.Material.Widget.Toolbar.Subtitle</item>
+		<item name="appkitToolbarBackground">?android:attr/colorPrimary</item>
+		<item name="appkitToolbarElevation">3dp</item>
+		<item name="actionBarIconTint">?android:colorControlNormal</item>
+		<item name="appkitEmptyTextAppearance">?android:textAppearanceMedium</item>
+
+		<item name="appkitDefaultErrorText">Error</item>
+		<item name="appkitRetryButtonText">Retry</item>
+	</style>
+    <style name="Theme.AppKit.Light" parent="android:Theme.Material.Light.NoActionBar">
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowActionBar">false</item>
+		<item name="emptyViewLayout">@layout/appkit_empty</item>
+		<item name="errorViewLayout">@layout/appkit_error</item>
+		<item name="android:navigationBarColor">#000</item>
+		<item name="android:titleTextAppearance">@android:style/TextAppearance.Material.Widget.Toolbar.Title</item>
+		<item name="android:subtitleTextAppearance">@android:style/TextAppearance.Material.Widget.Toolbar.Subtitle</item>
+		<item name="appkitToolbarBackground">?android:attr/colorPrimary</item>
+		<item name="appkitToolbarElevation">3dp</item>
+		<item name="actionBarIconTint">?android:colorControlNormal</item>
+		<item name="appkitEmptyTextAppearance">?android:textAppearanceMedium</item>
+
+		<item name="appkitDefaultErrorText">Error</item>
+		<item name="appkitRetryButtonText">Retry</item>
+	</style>
+</resources>

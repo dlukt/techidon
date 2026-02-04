@@ -1,0 +1,16 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml:2:1-71
+INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml:2:1-71
+	package
+		INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml:2:11-69
+uses-sdk
+INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml
+INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/darko/go/src/github.com/deicod/techidon/appkit/src/main/AndroidManifest.xml

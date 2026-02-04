@@ -1,0 +1,30 @@
+plugins {
+	id 'com.android.library'
+}
+
+android {
+	compileSdk = 35
+	defaultConfig {
+		minSdk = 23
+	}
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+	}
+	namespace = 'me.grishka.appkit'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
+}
+
+dependencies {
+	api 'androidx.annotation:annotation:1.6.0'
+	api 'androidx.core:core:1.13.1'
+	api 'androidx.fragment:fragment:1.8.9'
+	implementation 'com.squareup.okhttp3:okhttp:3.14.9'
+	implementation 'me.grishka.litex:recyclerview:1.2.1.1'
+	implementation 'me.grishka.litex:swiperefreshlayout:1.1.0.1'
+	implementation 'me.grishka.litex:viewpager:1.0.0'
+	implementation 'me.grishka.litex:collection:1.1.0'
+}
