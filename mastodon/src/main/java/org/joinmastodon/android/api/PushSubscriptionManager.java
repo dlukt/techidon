@@ -126,7 +126,8 @@ public class PushSubscriptionManager{
 		// to avoid NonFreeNet in F-Droid, this registration is disabled in it
 		// see https://github.com/LucasGGamerM/moshidon/issues/206 for more context
 		if(BuildConfig.BUILD_TYPE.equals("fdroidRelease") || TextUtils.isEmpty(deviceToken)){
-			Log.d(TAG, "Skipping registering for FCM push notifications");
+			if(BuildConfig.DEBUG)
+				Log.d(TAG, "Skipping registering for FCM push notifications");
 			return;
 		}
 
@@ -136,7 +137,8 @@ public class PushSubscriptionManager{
 
 	public void registerAccountForPush(PushSubscription subscription, String endpoint){
 		MastodonAPIController.runInBackground(()->{
-			Log.d(TAG, "registerAccountForPush: started for "+accountID);
+			if(BuildConfig.DEBUG)
+				Log.d(TAG, "registerAccountForPush: started for "+accountID);
 			String encodedPublicKey, encodedAuthKey, pushAccountID;
 			try{
 				KeyPairGenerator generator=KeyPairGenerator.getInstance("EC");
@@ -178,7 +180,8 @@ public class PushSubscriptionManager{
 
 	public void registerAccountForPush(PushSubscription subscription, Boolean standard, String endpoint, String p256dh, String auth){
 		MastodonAPIController.runInBackground(()->{
-			Log.d(TAG, "registerAccountForPush: started for "+accountID);
+			if(BuildConfig.DEBUG)
+				Log.d(TAG, "registerAccountForPush: started for "+accountID);
 			new RegisterForPushNotifications(endpoint,
 					standard,
 					p256dh,
@@ -194,7 +197,8 @@ public class PushSubscriptionManager{
 									return;
 								session.pushSubscription=result;
 								AccountSessionManager.getInstance().writeAccountsFile();
-								Log.d(TAG, "Successfully registered "+accountID+" for push notifications");
+								if(BuildConfig.DEBUG)
+									Log.d(TAG, "Successfully registered "+accountID+" for push notifications");
 							});
 						}
 
@@ -413,9 +417,11 @@ public class PushSubscriptionManager{
 					registerAllAccountsForPush(true);
 				}else{
 					Log.e(TAG, "FCM registration intent did not contain registration_id: "+intent);
-					Bundle extras=intent.getExtras();
-					for(String key:extras.keySet()){
-						Log.i(TAG, key+" -> "+extras.get(key));
+					if(BuildConfig.DEBUG){
+						Bundle extras=intent.getExtras();
+						for(String key:extras.keySet()){
+							Log.i(TAG, key+" -> "+extras.get(key));
+						}
 					}
 				}
 			}

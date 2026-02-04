@@ -34,7 +34,8 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	@Override
 	public void onNewEndpoint(@NotNull Context context, @NotNull PushEndpoint endpoint, @NotNull String instance) {
 		// Called when a new endpoint be used for sending push messages
-		Log.d(TAG, "onNewEndpoint: New Endpoint " + endpoint.getUrl() + " for "+ instance);
+		if(BuildConfig.DEBUG)
+			Log.d(TAG, "onNewEndpoint: New Endpoint " + endpoint.getUrl() + " for "+ instance);
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
 		if (account != null) {
 			PublicKeySet ks = endpoint.getPubKeySet();
@@ -50,7 +51,8 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	@Override
 	public void onRegistrationFailed(@NotNull Context context, @NotNull FailedReason reason, @NotNull String instance) {
 		// called when the registration is not possible, eg. no network
-		Log.d(TAG, "onRegistrationFailed: " + instance);
+		if(BuildConfig.DEBUG)
+			Log.d(TAG, "onRegistrationFailed: " + instance);
 		//re-register for gcm
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
 		if (account != null)
@@ -60,7 +62,8 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	@Override
 	public void onUnregistered(@NotNull Context context, @NotNull String instance) {
 		// called when this application is unregistered from receiving push messages
-		Log.d(TAG, "onUnregistered: " + instance);
+		if(BuildConfig.DEBUG)
+			Log.d(TAG, "onUnregistered: " + instance);
 		//re-register for gcm
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
 		if (account != null)
@@ -69,7 +72,8 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 
 	@Override
 	public void onMessage(@NotNull Context context, @NotNull PushMessage message, @NotNull String instance) {
-		Log.d(TAG, "New message for " + instance);
+		if(BuildConfig.DEBUG)
+			Log.d(TAG, "New message for " + instance);
 		// Called when a new message is received. The message contains the full POST body of the push message
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
 
@@ -78,7 +82,8 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 
 		if (message.getDecrypted()) {
 			// If the mastodon server supports the standard webpush, we can directly use the content
-			Log.d(TAG, "Push message correctly decrypted");
+			if(BuildConfig.DEBUG)
+				Log.d(TAG, "Push message correctly decrypted");
 			PushNotification pn = MastodonAPIController.gson.fromJson(new String(message.getContent(), Charsets.UTF_8), PushNotification.class);
 			new GetNotificationByID(pn.notificationId)
 					.setCallback(new Callback<>(){
@@ -95,7 +100,8 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 					.exec(instance);
 		} else {
 			// else, we have to sync with the server
-			Log.d(TAG, "Server doesn't support standard webpush, fetching one notification");
+			if(BuildConfig.DEBUG)
+				Log.d(TAG, "Server doesn't support standard webpush, fetching one notification");
 			fetchOneNotification(context, account, (notif) -> () -> new PushNotificationReceiver().notifyUnifiedPush(context, account, notif));
 		}
 	}

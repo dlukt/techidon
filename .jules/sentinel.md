@@ -12,3 +12,8 @@
 **Vulnerability:** `TweakedFileProvider` was logging file URIs and selection arguments (potential PII/sensitive queries) to the system log in all builds, including release.
 **Learning:** Extending Android components (like `FileProvider`) often encourages overriding methods for debugging, but these overrides must be strictly guarded. Reliance on ProGuard to strip logs is risky.
 **Prevention:** Always wrap `Log` calls in `if (BuildConfig.DEBUG)` or use a logging facade. Audit all `FileProvider` subclasses for sensitive logging.
+
+## 2024-05-23 - Sensitive Data Leakage in BroadcastReceivers
+**Vulnerability:** `UnifiedPushNotificationReceiver` was logging sensitive endpoint URLs and instance names in release builds via `Log.d`.
+**Learning:** BroadcastReceivers handling third-party data (like push endpoints) must be treated as sensitive. `Log.d` is not always automatically stripped and can leak PII or tokens.
+**Prevention:** Explicitly guard all sensitive `Log` calls with `if (BuildConfig.DEBUG)`.
