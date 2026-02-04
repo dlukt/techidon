@@ -161,6 +161,9 @@
 	<string name="report_personal_subtitle">Here are your options for controlling what you see on Mastodon:</string>
 	<string name="back">Back</string>
 	<string name="search_communities">Server name or URL</string>
+	<string name="pick_server_for_me">Pick for me</string>
+	<string name="popular_on_mastodon">Popular on Mastodon</string>
+	<string name="signup_random_server_explain">We’ll pick a server based on your language if you continue without selecting one.</string>
 	<string name="instance_rules_title">Server rules</string>
 	<string name="instance_rules_subtitle">By continuing, you agree to follow by the following rules set and enforced by the %s moderators.</string>
 	<string name="signup_title">Create account</string>

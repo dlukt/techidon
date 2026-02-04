@@ -218,6 +218,24 @@
     <string name="sk_icon_people">People</string>
     <string name="sk_icon_health">Health</string>
     <string name="sk_icon_important">Important</string>
+
+    <!-- Defaults for strings present only in localized resources -->
+    <string name="sk_again_for_system_keyboard">Tap again for system keyboard</string>
+    <string name="sk_disable_marquee">Disable scrolling text in title bars</string>
+    <string name="sk_enable_delete_notifications">Enable deleting notifications</string>
+    <string name="sk_load_missing_posts_newest_first">Newest first (descending)</string>
+    <string name="sk_load_missing_posts_oldest_first">Oldest first (ascending)</string>
+    <string name="sk_message_cache_cleared">Message cache cleared</string>
+    <string name="sk_notify_posts">Post notifications</string>
+    <string name="sk_open_in_account">Open in other account</string>
+    <string name="sk_private_note_confirm">Confirm changes to note</string>
+    <string name="sk_save_changes">Save changes</string>
+    <string name="sk_settings_emoji_reactions_in_lists">Show emoji reactions in timelines</string>
+    <string name="sk_settings_emoji_reactions_in_lists_explanation">Whether emoji reactions should be displayed in timelines. If disabled, emoji reactions will only appear when viewing a thread.</string>
+    <string name="sk_settings_load_missing_posts">Load missing posts</string>
+    <string name="sk_settings_show_new_posts_button">Show new posts button</string>
+    <string name="sk_spectator_mode">Spectator mode</string>
+    <string name="sk_tabs_disable_swipe">Disable swiping between tabs</string>
     <string name="sk_icon_chat">Chat</string>
     <string name="sk_icon_shield">Shield</string>
     <string name="sk_icon_book">Book</string>

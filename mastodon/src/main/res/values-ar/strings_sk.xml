@@ -253,10 +253,18 @@
     <string name="sk_search_suicide_message">إذا كنت تبحث عن إشارة لعدم الانتحار، فها هي. إذا كنت تعاني من ضائقة و/أو تراودك أفكار انتحارية، وإذا كنت بحاجة إلى مساعدة، فيمكنك الاتصال بخط المساعدة للوقاية من الانتحار إن كنت في مِحنة.</string>
     <string name="sk_load_missing_posts_above">حمِّل المنشورات الحديثة</string>
     <string name="sk_load_missing_posts_below">حمِّل المنشورات القديمة</string>
-    <string name="sk_time_seconds">%d ثواني</string>
-    <string name="sk_time_minutes">%d دقائق</string>
-    <string name="sk_time_hours">%d ساعات</string>
-    <string name="sk_time_days">%d أيام</string>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d ثواني</item>
+    </plurals>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d دقائق</item>
+    </plurals>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d ساعات</item>
+    </plurals>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d أيام</item>
+    </plurals>
     <string name="sk_search_suicide_hotlines">للعثور على خط للمساعدة</string>
     <string name="sk_confirm_delete_scheduled_post_title">احذف المنشور المُبَرمَج</string>
     <string name="sk_compose_scheduled">مُبَرمَج لـ</string>

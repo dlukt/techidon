@@ -1,4 +1,4 @@
-Moshidon, resmi uygulamada eksik olan önemli özellikleri ekleyen <a href="https://github.com/mastodon/mastodon-android">resmi Mastodon Android uygulamasının</a> değiştirilmiş bir sürümüdür; örneğin, birleşik zaman çizelgesi, listelenmemiş gönderi ve resim açıklaması görüntüleyicisi.
+Techidon, resmi uygulamada eksik olan önemli özellikleri ekleyen <a href="https://github.com/mastodon/mastodon-android">resmi Mastodon Android uygulamasının</a> değiştirilmiş bir sürümüdür; örneğin, birleşik zaman çizelgesi, listelenmemiş gönderi ve resim açıklaması görüntüleyicisi.
 
 <b>Temel özellikler</b>
 

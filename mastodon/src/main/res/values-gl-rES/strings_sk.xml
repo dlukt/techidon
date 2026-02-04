@@ -352,10 +352,14 @@
     <string name="sk_search_fediverse">Buscar o Fediverso</string>
     <string name="sk_tab_notifications">Notificacións</string>
     <string name="sk_pronouns_label">Pronomes</string>
-    <string name="sk_time_seconds">%d segundos</string>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d segundos</item>
+    </plurals>
     <string name="sk_mute_label">Duración</string>
     <string name="sk_settings_show_emoji_reactions_only_opened">Só cando as publicacións son abertas</string>
-    <string name="sk_time_hours">%d horas</string>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d horas</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_hide_empty">Ocultar reaccións de emoticonas valeiras</string>
     <string name="sk_settings_show_emoji_reactions">Mostrar reaccións de emoticonas nas cronoloxías</string>
     <plurals name="sk_posts_count_label">
@@ -366,7 +370,9 @@
     <string name="sk_suicide_search_terms">Suicidio</string>
     <string name="sk_duration_minutes_5">5 minutos</string>
     <string name="sk_load_missing_posts_above">Cargar publicacións máis recentes</string>
-    <string name="sk_time_days">%d días</string>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d días</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_always">Amosar sempre o botón engadir</string>
     <string name="sk_duration_indefinite">Indefinido</string>
     <string name="sk_search_suicide_hotlines">Buscar unha liña de axuda</string>
@@ -384,7 +390,9 @@
     <string name="sk_settings_emoji_reactions_explanation">Mostra reaccións de emoticonas ás publicacións e déixate engadir as túas propias. Varios servidores do Fediverso soportan isto, pero Mastodon non.</string>
     <string name="sk_duration_days_3">3 días</string>
     <string name="sk_search_suicide_title">En caso de que esteas en apuros…</string>
-    <string name="sk_time_minutes">%d minutos</string>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d minutos</item>
+    </plurals>
     <plurals name="sk_users_reacted_with">
         <item quantity="one">Un usuario reaccionou con %2$s</item>
         <item quantity="other">%1$,d usuarios reaccionaron con %2$s</item>

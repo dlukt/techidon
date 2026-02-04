@@ -390,13 +390,21 @@
     <string name="sk_suicide_helplines_url">https://findahelpline.com</string>
     <string name="sk_settings_load_missing_posts">Cargar los mensajes que faltan</string>
     <string name="sk_load_missing_posts_newest_first">Lo más nuevo primero (hacia abajo)</string>
-    <string name="sk_time_minutes">%d minutos</string>
-    <string name="sk_time_hours">%d horas</string>
-    <string name="sk_time_days">%d días</string>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d minutos</item>
+    </plurals>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d horas</item>
+    </plurals>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d días</item>
+    </plurals>
     <string name="sk_suicide_search_terms">Suicidio</string>
     <string name="sk_search_suicide_message">Si buscas una señal para no suicidarte, es ésta. Por favor, piensa el ponerte en contacto con una línea directa para ayuda al suicido si estás angustiado.</string>
     <string name="sk_load_missing_posts_below">Cargar publicaciones más antiguas</string>
-    <string name="sk_time_seconds">%d segundos</string>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d segundos</item>
+    </plurals>
     <string name="sk_load_missing_posts_above">Cargar publicaciones más recientes</string>
     <string name="sk_trending_posts_info_banner">Estas publicaciones están ganando adeptos en Fediverse.</string>
     <string name="sk_trending_links_info_banner">Estas noticias están dando que hablar en todo el Fediverso.</string>

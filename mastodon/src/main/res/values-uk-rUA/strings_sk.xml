@@ -396,11 +396,19 @@
     <string name="sk_load_missing_posts_below">Завантажити давніші дописи</string>
     <string name="sk_load_missing_posts_above">Завантажити новіші дописи</string>
     <string name="sk_trending_links_info_banner">Ці новини обговорюють у всьому Федісвіті.</string>
-    <string name="sk_time_minutes">%d хвилин</string>
-    <string name="sk_time_hours">%d годин</string>
-    <string name="sk_time_seconds">%d секунд</string>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d хвилин</item>
+    </plurals>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d годин</item>
+    </plurals>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d секунд</item>
+    </plurals>
     <string name="sk_trending_posts_info_banner">Ці дописи зараз набирають популярності у Федісвіті.</string>
-    <string name="sk_time_days">%d днів</string>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d днів</item>
+    </plurals>
     <string name="sk_blocked_accounts">Заблоковані облікові записи</string>
     <string name="sk_muted_accounts">Ігноровані облікові записи</string>
     <string name="sk_settings_like_icon">Використовувати серце як піктограму «Вподобане»</string>

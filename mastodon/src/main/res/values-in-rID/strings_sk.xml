@@ -374,14 +374,20 @@
     <plurals name="sk_posts_count_label">
         <item quantity="other">kiriman</item>
     </plurals>
-    <string name="sk_time_seconds">%d detik</string>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d detik</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_only_opened">Hanya ketika kiriman dibuka</string>
-    <string name="sk_time_hours">%d jam</string>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d jam</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_hide_empty">Sembunyikan reaksi emoji kosong</string>
     <string name="sk_settings_show_emoji_reactions">Tampilkan reaksi emoji di lini masa</string>
     <string name="sk_suicide_search_terms">Bunuh diri</string>
     <string name="sk_load_missing_posts_above">Muat kiriman baru</string>
-    <string name="sk_time_days">%d hari</string>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d hari</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_always">Selalu tampilkan tombol tambahkan</string>
     <string name="sk_search_suicide_hotlines">Temukan hotline</string>
     <string name="sk_do_not_show_again">Jangan tampilkan lagi</string>
@@ -389,7 +395,9 @@
     <string name="sk_trending_posts_info_banner">Kiriman berikut mendapatkan daya tarik di Fediverse.</string>
     <string name="sk_load_missing_posts_below">Muat kiriman lama</string>
     <string name="sk_search_suicide_title">Jika Anda dalam kesulitan…</string>
-    <string name="sk_time_minutes">%d menit</string>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d menit</item>
+    </plurals>
     <string name="sk_search_suicide_message">Jika Anda mencari tanda untuk tidak melakukan bunuh diri, ini adalah tanda itu. Tolong pertimbangkan untuk menghubungi hotline bunuh diri lokal jika Anda dalam kesulitan.</string>
     <string name="sk_trending_links_info_banner">Berita berikut sedang dibicarakan di Fediverse.</string>
     <string name="sk_post_contains_media">Kiriman berisi media</string>

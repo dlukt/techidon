@@ -75,13 +75,13 @@ See all public posts from servers your server federates with and fetch profiles 
 
 ## Installation & Releases
 
-Techidon is available on GitHub, Google Play, F-Droid, and the IzzyOnDroid repo. All sources provide the same ` techidon.apk ` stable release. Older releases are available on the [Releases](https://github.com/LucasGGamerM/techidon/releases) page.
+Techidon is available on GitHub, Google Play, F-Droid, and the IzzyOnDroid repo. All sources provide the same ` techidon.apk ` stable release. Older releases are available on the [Releases](https://github.com/deicod/techidon/releases) page.
 
 ### How to Install from GitHub
-[Download the latest stable release from Github](https://github.com/LucasGGamerM/techidon/releases/latest/download/techidon.apk) and open it. You might have to accept installing APK files from your browser. Techidon will automatically check for new updates available on GitHub and offer to download and install them within the app. You can also manually press “Check for updates” at the bottom of the settings page.
+[Download the latest stable release from Github](https://github.com/deicod/techidon/releases/latest/download/techidon.apk) and open it. You might have to accept installing APK files from your browser. Techidon will automatically check for new updates available on GitHub and offer to download and install them within the app. You can also manually press “Check for updates” at the bottom of the settings page.
 
 ### Nightly Version
-All ` techidon-night.apk ` nightly builds can be downloaded on the [Nightly Releases](https://github.com/LucasGGamerM/techidon-nightly/releases) page. This is an unstable version with an integrated updater for development and testing purposes. If you find any bugs with it, please file a bug report on our [Issues](https://github.com/LucasGGamerM/techidon/issues) page.
+All ` techidon-night.apk ` nightly builds can be downloaded on the [Nightly Releases](https://github.com/deicod/techidon-nightly/releases) page. This is an unstable version with an integrated updater for development and testing purposes. If you find any bugs with it, please file a bug report on our [Issues](https://github.com/deicod/techidon/issues) page.
 
 ## Building & Contributing
 
@@ -105,4 +105,4 @@ This project is released under the [GPL-3 License](./LICENSE).
 
 [Techidon's CSAE policy](CSAE-POLICY.md)
 
-[Techidon Roadmap](https://github.com/users/LucasGGamerM/projects/1)
+[Techidon Roadmap](https://github.com/users/deicod/projects/1)

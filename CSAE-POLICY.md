@@ -1,10 +1,10 @@
 # CSAE Policy
-## "Moshidon" CSAE Policy
+## "Techidon" CSAE Policy
 > CSAE refers to child sexual abuse and exploitation, including content or behavior that sexually exploits, abuses, or endangers children. This includes, for example, grooming a child for sexual exploitation, sextorting a child, trafficking of a child for sex, or otherwise sexually exploiting a child. – Google Child Safety Standards Policy
 
 ## Posting or linking to CSAE
 
-“Moshidon” allows you to create posts on your account’s server.
+“Techidon” allows you to create posts on your account’s server.
 
 Using the application to post or link to CSAE is strictly prohibited.
 
@@ -54,4 +54,4 @@ Google maintains a list of organisations to report CSAE organised by country.
 If your country is not listed there it may be listed at INHOPE.
 
 ## Contact 
-If you have any questions about this CSAE policy please contact moshidon.app@gmail.com.
+If you have any questions about this CSAE policy please contact techidon.app@gmail.com.

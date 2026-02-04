@@ -371,9 +371,13 @@
     <string name="sk_reacted_with">%1$s 回应了 %2$s</string>
     <string name="sk_bubble_timeline_info_banner">这些是实例管理员从网络中最新精选出来的嘟文。</string>
     <string name="sk_search_fediverse">搜索联邦宇宙</string>
-    <string name="sk_time_seconds">%d 秒</string>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d 秒</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_only_opened">仅当嘟文被打开时</string>
-    <string name="sk_time_hours">%d 时</string>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d 时</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_hide_empty">隐藏空的表情回应</string>
     <string name="sk_settings_show_emoji_reactions">在时间线中显示表情回应</string>
     <plurals name="sk_posts_count_label">
@@ -381,14 +385,18 @@
     </plurals>
     <string name="sk_suicide_search_terms">自杀</string>
     <string name="sk_load_missing_posts_above">加载较新的嘟文</string>
-    <string name="sk_time_days">%d 天</string>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d 天</item>
+    </plurals>
     <string name="sk_settings_show_emoji_reactions_always">始终显示添加按钮</string>
     <string name="sk_search_suicide_hotlines">查找求助热线</string>
     <string name="sk_do_not_show_again">下次不再显示</string>
     <string name="sk_trending_posts_info_banner">这些嘟文正在联邦宇宙上引起关注。</string>
     <string name="sk_load_missing_posts_below">加载较旧的嘟文</string>
     <string name="sk_search_suicide_title">如果你遇到了困难…</string>
-    <string name="sk_time_minutes">%d 分</string>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d 分</item>
+    </plurals>
     <string name="sk_search_suicide_message">如果你正在寻找一个不自杀的理由，这就是了。如果你遇到困难，请考虑联系你所在地的自杀干预热线。</string>
     <string name="sk_trending_links_info_banner">这些新闻故事正在联邦宇宙上被讨论。</string>
     <string name="sk_post_contains_media">嘟文包含媒体</string>

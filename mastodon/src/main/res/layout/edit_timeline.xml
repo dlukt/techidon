@@ -190,7 +190,7 @@
 					android:drawablePadding="16dp"
 					android:text="@string/sk_hashtag_timeline_local_only_switch" />
 
-				<org.joinmastodon.android.ui.views.M3Switch
+				<de.icod.techidon.ui.views.M3Switch
 					android:id="@+id/local_only_switch"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"

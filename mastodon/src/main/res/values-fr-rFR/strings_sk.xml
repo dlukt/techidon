@@ -395,10 +395,18 @@
     <string name="sk_trending_links_info_banner">Ces actualités font parler d’elles dans tout le Fediverse.</string>
     <string name="sk_load_missing_posts_above">Charger les messages les plus récents</string>
     <string name="sk_load_missing_posts_below">Charger les anciens messages</string>
-    <string name="sk_time_seconds">%d secondes</string>
-    <string name="sk_time_minutes">%d minutes</string>
-    <string name="sk_time_hours">%d heures</string>
-    <string name="sk_time_days">%d jours</string>
+    <plurals name="sk_time_seconds">
+        <item quantity="other">%d secondes</item>
+    </plurals>
+    <plurals name="sk_time_minutes">
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="sk_time_hours">
+        <item quantity="other">%d heures</item>
+    </plurals>
+    <plurals name="sk_time_days">
+        <item quantity="other">%d jours</item>
+    </plurals>
     <string name="sk_trending_posts_info_banner">Ces publications gagnent actuellement du terrain sur le Fediverse.</string>
     <string name="sk_blocked_accounts">Comptes bloqués</string>
     <string name="sk_muted_accounts">Comptes masqués</string>

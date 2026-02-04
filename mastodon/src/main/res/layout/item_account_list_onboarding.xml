@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<org.joinmastodon.android.ui.views.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<de.icod.techidon.ui.views.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
@@ -56,7 +56,7 @@
 		android:layout_marginStart="8dp"
 		android:duplicateParentState="true">
 
-		<org.joinmastodon.android.ui.views.ProgressBarButton
+		<de.icod.techidon.ui.views.ProgressBarButton
 			android:id="@+id/button"
 			android:layout_width="wrap_content"
 			android:layout_height="32dp"
@@ -121,4 +121,4 @@
 		android:layout_alignParentLeft="true"
 		android:layout_marginLeft="-16dp"/>
 
-</org.joinmastodon.android.ui.views.CheckableRelativeLayout>
+</de.icod.techidon.ui.views.CheckableRelativeLayout>

@@ -8,6 +8,7 @@
     <string name="mo_color_palette_black_and_white">Black and White</string>
     <string name="mo_app_username" translatable="false">\@techidon</string>
     <string name="mo_enable_dividers">Show post dividers</string>
+    <string name="mo_disable_dividers">Disable post dividers</string>
     <string name="mo_relocate_publish_button">Relocate publish button</string>
     <string name="mo_hide_compose_button_while_scrolling_setting">Hide compose button while scrolling</string>
     <string name="mo_welcome_text">To get started, please enter your home instance’s domain name below.</string>
@@ -34,6 +35,7 @@
     <string name="mo_change_default_reply_visibility_to_unlisted">Reply as \'Unlisted\' by default</string>
     <string name="mo_composer_behavior">Composer\'s Behavior</string>
     <string name="mo_notification_management_settings">Manage Notifications</string>
+    <string name="mo_miscellaneous_settings">Miscellaneous settings</string>
     <string name="mo_open_camera">Take picture</string>
     <string name="mo_camera_not_available">No camera available!</string>
 	<string name="mo_muted_conversation_successfully">Successfully muted conversation</string>
@@ -84,7 +86,7 @@
     <string name="mo_severity_suspend">Blocked</string>
 	<string name="mo_filter_notifications">Filter notifications</string>
 
-	<string name="mo_repo_url" translatable="false">https://github.com/LucasGGamerM/techidon</string>
+	<string name="mo_repo_url" translatable="false">https://github.com/deicod/techidon</string>
 	<string name="mo_donate_url" translatable="false">https://github.com/sponsors/deicod</string>
 
 <!--    Settings summaries-->
@@ -108,6 +110,7 @@
     <string name="mo_settings_show_posts_without_alt">Show media posts with missing alt text</string>
 	<string name="mo_double_tap_to_search">Double tap to open search</string>
 	<string name="mo_double_tap_to_swipe_between_tabs">Double tap to swipe between tabs</string>
+	<string name="mo_disable_double_tap_to_swipe_between_tabs">Disable double tap to swipe between tabs</string>
 	<string name="mo_haptic_feedback">Haptic feedback</string>
 	<string name="mo_swap_bookmark_with_reblog">Swap bookmark with reblog action</string>
 	<string name="mo_download_latest_nightly_release">Download latest nightly release</string>
@@ -128,9 +131,9 @@
 
 	<!--	Temporary Strings. They exist in strings_sk.xml, but are not available on Megalodon's weblate-->
 	<string name="mo_muted_accounts">Muted accounts</string>
-	<!--	<string name="mo_mutes">Mutes</string>-->
+	<string name="mo_mutes">Mutes</string>
 	<string name="mo_blocked_accounts">Blocked accounts</string>
-<!--	<string name="mo_blocks">Blocks</string>-->
+	<string name="mo_blocks">Blocks</string>
 	<string name="mo_mute_notifications">Hide notifications from this user?</string>
 	<string name="import_settings_confirm">Confirm to import settings?</string>
 	<string name="import_settings_confirm_body">All current settings and timelines will be overwritten! This action cannot be undone.</string>

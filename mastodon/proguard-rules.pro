@@ -21,17 +21,17 @@
 #-renamesourcefileattribute SourceFile
 
 # Keep all model classes as they're used with gson and their names are shown in errors
--keep public class org.joinmastodon.android.model.**{
+-keep public class de.icod.techidon.model.**{
 	<fields>;
 }
 
 # Inner classes in api requests are used with gson
--keepclassmembers class org.joinmastodon.android.api.**$*{
+-keepclassmembers class de.icod.techidon.api.**$*{
 	*;
 }
 
 # i don't know how proguard works
--keep class org.joinmastodon.android.** { *; }
+-keep class de.icod.techidon.** { *; }
 
 # i still don't know how proguard works
 -dontwarn android.app.BroadcastOptions
@@ -53,7 +53,7 @@
 -keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken
 
 #-keep class javax.** { *; }
--keep class org.joinmastodon.android.** { *; }
+-keep class de.icod.techidon.** { *; }
 
 # Parceler library
 -keep interface org.parceler.Parcel

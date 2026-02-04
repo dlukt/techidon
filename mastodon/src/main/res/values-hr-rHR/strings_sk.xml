@@ -34,7 +34,7 @@
     <string name="sk_translate_show_original">Prikaži original</string>
     <string name="sk_post_language">Jezik: %s</string>
     <string name="sk_available_languages">Dostupni jezici</string>
-    <string name="sk_language_name">%s (%s)</string>
+    <string name="sk_language_name">%1$s (%2$s)</string>
     <string name="sk_confirm_clear_recent_languages">Jesi li siguran da želiš izbrisati listu nedavno korištenih jezika\?</string>
     <string name="sk_example_domain">primjer.social</string>
     <string name="sk_settings_tabs_disable_swipe">Onemogući prelazak između kartica</string>

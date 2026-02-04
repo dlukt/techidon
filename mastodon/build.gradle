@@ -8,17 +8,20 @@ java {
 	}
 }
 
+base {
+	archivesName = "techidon"
+}
+
 android {
-	compileSdk 33
+	compileSdk = 35
 	defaultConfig {
-		manifestPlaceholders = [oAuthScheme:"moshidon-android-auth"]
-		archivesBaseName = "techidon"
-		applicationId "org.joinmastodon.android.moshinda"
-		minSdk 23
-		targetSdk 34
-		versionCode 110
-		versionName "2.3.0+fork.110.moshinda"
-		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+		manifestPlaceholders = [oAuthScheme:"techidon-android-auth"]
+		applicationId = "de.icod.techidon"
+		minSdk = 23
+		targetSdk = 35
+		versionCode = 110
+		versionName = "2.3.0+fork.110.techidon"
+		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resourceConfigurations += ['ar-rSA', 'ar-rDZ', 'be-rBY', 'bn-rBD', 'bs-rBA', 'ca-rES', 'cs-rCZ', 'da-rDK', 'de-rDE', 'el-rGR', 'es-rES', 'eu-rES', 'fa-rIR', 'fi-rFI', 'fil-rPH', 'fr-rFR', 'ga-rIE', 'gd-rGB', 'gl-rES', 'hi-rIN', 'hr-rHR', 'hu-rHU', 'hy-rAM', 'ig-rNG', 'in-rID', 'is-rIS', 'it-rIT', 'iw-rIL', 'ja-rJP', 'kab', 'ko-rKR', 'my-rMM', 'nl-rNL', 'no-rNO', 'oc-rFR', 'pl-rPL', 'pt-rBR', 'pt-rPT', 'ro-rRO', 'ru-rRU', 'si-rLK', 'sl-rSI', 'sv-rSE', 'th-rTH', 'tr-rTR', 'uk-rUA', 'ur-rIN', 'vi-rVN', 'zh-rCN', 'zh-rTW']
     }
 
@@ -52,40 +55,41 @@ android {
 			}
 		}
 
-//		release{
-//			storeFile = file("keystore/release_keystore.jks")
-//			storePassword System.getenv("RELEASE_SIGNING_STORE_PASSWORD")
-//			if (storePassword == null) {
-//				Properties properties = new Properties()
-//				properties.load(project.rootProject.file('local.properties').newDataInputStream())
-//				storePassword = properties.getProperty('RELEASE_SIGNING_STORE_PASSWORD')
-//			}
-//			keyAlias System.getenv("RELEASE_SIGNING_KEY_ALIAS")
-//			if (keyAlias == null) {
-//				Properties properties = new Properties()
-//				properties.load(project.rootProject.file('local.properties').newDataInputStream())
-//				keyAlias = properties.getProperty('RELEASE_SIGNING_KEY_ALIAS')
-//			}
-//			keyPassword System.getenv("RELEASE_SIGNING_KEY_PASSWORD")
-//			if (keyPassword == null) {
-//				Properties properties = new Properties()
-//				properties.load(project.rootProject.file('local.properties').newDataInputStream())
-//				keyPassword = properties.getProperty('RELEASE_SIGNING_KEY_PASSWORD')
-//			}
-//		}
+		release{
+			storeFile = file("keystore/upload_keystore.jks")
+			storePassword System.getenv("UPLOAD_SIGNING_STORE_PASSWORD")
+			if (storePassword == null) {
+				Properties properties = new Properties()
+				properties.load(project.rootProject.file('local.properties').newDataInputStream())
+				storePassword = properties.getProperty('UPLOAD_SIGNING_STORE_PASSWORD')
+			}
+			keyAlias System.getenv("UPLOAD_SIGNING_KEY_ALIAS")
+			if (keyAlias == null) {
+				Properties properties = new Properties()
+				properties.load(project.rootProject.file('local.properties').newDataInputStream())
+				keyAlias = properties.getProperty('UPLOAD_SIGNING_KEY_ALIAS')
+			}
+			keyPassword System.getenv("UPLOAD_SIGNING_KEY_PASSWORD")
+			if (keyPassword == null) {
+				Properties properties = new Properties()
+				properties.load(project.rootProject.file('local.properties').newDataInputStream())
+				keyPassword = properties.getProperty('UPLOAD_SIGNING_KEY_PASSWORD')
+			}
+		}
 	}
 
 	buildTypes {
 		release {
-			minifyEnabled true
-			shrinkResources true
+			minifyEnabled = true
+			shrinkResources = true
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+			signingConfig = signingConfigs.release
 		}
 		debug{
-			debuggable true
-			versionNameSuffix '-debug'
-			applicationIdSuffix '.debug'
-			manifestPlaceholders = [oAuthScheme:"moshidon-android-debug-auth"]
+			debuggable = true
+			versionNameSuffix = '-debug'
+			applicationIdSuffix = '.debug'
+			manifestPlaceholders = [oAuthScheme:"techidon-android-debug-auth"]
 		}
 		githubRelease{
 			initWith release
@@ -100,22 +104,24 @@ android {
 			}
 			applicationIdSuffix '.nightly'
 
-			signingConfig signingConfigs.nightly
-			manifestPlaceholders = [oAuthScheme:"moshidon-android-nightly-auth"]
+			signingConfig = signingConfigs.nightly
+			manifestPlaceholders = [oAuthScheme:"techidon-android-nightly-auth"]
 		}
 		playRelease{
 			initWith release
-			minifyEnabled true
-			shrinkResources true
-			versionNameSuffix '-play'
+			minifyEnabled = true
+			shrinkResources = true
+			versionNameSuffix = '-play'
 		}
 		githubRelease {
 			initWith release
-			versionNameSuffix '-github'
+			versionNameSuffix = '-github'
 		}
 		fdroidRelease {
 			initWith release
-			vcsInfo.include true
+			vcsInfo {
+				include = true
+			}
 			// The F-droid build system doesn't like this at all for some reason.
 //			versionNameSuffix '-fdroid'
 //			signingConfig signingConfigs.release
@@ -124,7 +130,7 @@ android {
 	compileOptions {
 		sourceCompatibility JavaVersion.VERSION_17
 		targetCompatibility JavaVersion.VERSION_17
-		coreLibraryDesugaringEnabled true
+		coreLibraryDesugaringEnabled = true
 	}
 	sourceSets{
 		githubRelease{
@@ -134,14 +140,14 @@ android {
 			setRoot "src/debug"
 		}
 	}
-	namespace 'org.joinmastodon.android'
+	namespace = 'de.icod.techidon'
 	lint {
-		abortOnError false
-		checkReleaseBuilds false
+		abortOnError = false
+		checkReleaseBuilds = false
 	}
 
 	buildFeatures {
-		buildConfig true
+		buildConfig = true
 	}
 }
 
@@ -168,6 +174,10 @@ dependencies {
 
 	androidTestImplementation 'androidx.test:core:1.5.0'
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-	androidTestImplementation 'androidx.test:runner:1.5.2'
-	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+androidTestImplementation 'androidx.test:runner:1.5.2'
+androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
 }
