@@ -25,3 +25,7 @@
 ## 2025-10-27 - [Stream Allocation in UiUtils and HeaderStatusDisplayItem]
 **Learning:** `UiUtils.extractPronouns` used complex stream logic (sorted, map, filter, findFirst) which allocated Comparators, Streams, and Optionals. This is called during view binding for account lists. `HeaderStatusDisplayItem` also used streams for visibility toggles and menu updates.
 **Action:** Replaced stream logic with simple loops. In `UiUtils`, replaced sort-then-find with a single-pass search for the best match (O(N) vs O(N log N)).
+
+## 2024-05-27 - [Stream Allocation in PreviewlessMediaGridStatusDisplayItem]
+**Learning:** `PreviewlessMediaGridStatusDisplayItem.onBind` (hot path) was using `Arrays.stream()` to find translated attachments, causing unnecessary object allocations. This was missed when `MediaGridStatusDisplayItem` was optimized.
+**Action:** Replaced stream with a simple loop, following the pattern from `MediaGridStatusDisplayItem`.
