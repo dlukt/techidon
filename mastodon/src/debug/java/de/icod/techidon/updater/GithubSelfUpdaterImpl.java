@@ -224,7 +224,7 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 		if(state!=UpdateState.DOWNLOADED)
 			throw new IllegalStateException();
 		Uri uri;
-		Intent intent=new Intent(Intent.ACTION_INSTALL_PACKAGE);
+		Intent intent=new Intent(Intent.ACTION_VIEW);
 		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
 			uri=new Uri.Builder().scheme("content").authority(activity.getPackageName()+".self_update_provider").path("update.apk").build();
 			intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -315,8 +315,10 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 	public void handleIntentFromInstaller(Intent intent, Activity activity){
 		int status=intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 0);
 		if(status==PackageInstaller.STATUS_PENDING_USER_ACTION){
-			Intent confirmIntent=intent.getParcelableExtra(Intent.EXTRA_INTENT);
-			activity.startActivity(confirmIntent);
+			Intent confirmIntent=getParcelableExtraIntentCompat(intent, Intent.EXTRA_INTENT);
+			if(confirmIntent!=null){
+				activity.startActivity(confirmIntent);
+			}
 		}else if(status!=PackageInstaller.STATUS_SUCCESS){
 			String msg=intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
 			Toast.makeText(activity, activity.getString(R.string.error)+":\n"+msg, Toast.LENGTH_LONG).show();
@@ -330,6 +332,15 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 		if(apk.exists())
 			apk.delete();
 		state=UpdateState.NO_UPDATE;
+	}
+
+	private static Intent getParcelableExtraIntentCompat(Intent intent, String name){
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.TIRAMISU){
+			return intent.getParcelableExtra(name, Intent.class);
+		}
+		@SuppressWarnings("deprecation")
+		Intent extra=intent.getParcelableExtra(name);
+		return extra;
 	}
 
 	/*public static class InstallerStatusReceiver extends BroadcastReceiver{
