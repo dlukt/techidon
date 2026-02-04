@@ -180,6 +180,7 @@
 	<string name="resent_email">Confirmation email sent</string>
 	<string name="compose_hint">Type or paste what’s on your mind</string>
 	<string name="content_warning">Content warning</string>
+	<string name="remove_content_warning">Remove content warning</string>
 	<string name="save">Save</string>
 	<string name="add_alt_text">Add alt text</string>
 	<string name="visibility_public">Public</string>
@@ -226,6 +227,7 @@
 	<string name="media_no_description">Media without description</string>
 	<string name="add_media">Add media</string>
 	<string name="add_poll">Add a poll</string>
+	<string name="remove_poll">Remove poll</string>
 	<string name="emoji">Emoji</string>
 	<string name="home_timeline">Home timeline</string>
 	<string name="my_profile">My profile</string>

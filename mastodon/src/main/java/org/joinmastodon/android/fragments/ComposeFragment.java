@@ -477,6 +477,12 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			spoilerEdit.setText(getArguments().getString("sourceSpoiler", editingStatus.spoilerText));
 			spoilerBtn.setSelected(true);
 		}
+		if (hasSpoiler) {
+			spoilerBtn.setContentDescription(getString(R.string.remove_content_warning));
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				spoilerBtn.setTooltipText(getString(R.string.remove_content_warning));
+			}
+		}
 
 		sensitive = savedInstanceState==null && editingStatus != null ? editingStatus.sensitive
 				: savedInstanceState!=null && savedInstanceState.getBoolean("sensitive", false);
@@ -1536,8 +1542,16 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 
 
 	public void updateMediaPollStates(){
-		pollBtn.setSelected(pollViewController.isShown());
-		mediaBtn.setEnabled(!pollViewController.isShown() && mediaViewController.canAddMoreAttachments());
+		boolean isPollShown = pollViewController.isShown();
+		pollBtn.setSelected(isPollShown);
+
+		int pollDescRes = isPollShown ? R.string.remove_poll : R.string.add_poll;
+		pollBtn.setContentDescription(getString(pollDescRes));
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			pollBtn.setTooltipText(getString(pollDescRes));
+		}
+
+		mediaBtn.setEnabled(!isPollShown && mediaViewController.canAddMoreAttachments());
 		pollBtn.setEnabled(mediaViewController.isEmpty());
 	}
 
@@ -1562,6 +1576,11 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			sensitiveBtn.setVisibility(mediaViewController.getMediaAttachmentsCount() > 0 ? View.VISIBLE : View.GONE);
 		}
 		updateSensitive();
+		int spoilerDescRes = hasSpoiler ? R.string.remove_content_warning : R.string.content_warning;
+		spoilerBtn.setContentDescription(getString(spoilerDescRes));
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			spoilerBtn.setTooltipText(getString(spoilerDescRes));
+		}
 	}
 
 	private void toggleSensitive() {

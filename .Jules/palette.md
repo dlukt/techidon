@@ -37,3 +37,7 @@
 ## 2026-05-24 - Composite Button Accessibility
 **Learning:** Interactive Linear/Relative layouts acting as buttons often contain multiple child TextViews (label + value). Screen readers traverse these children individually, which is disjointed. Setting `contentDescription` on the parent container (e.g., "Poll length: 1 day") provides a unified, button-like experience.
 **Action:** Identify clickable ViewGroups and consolidate child text into a single `contentDescription` on the parent, updating it programmatically when values change.
+
+## 2026-05-25 - Initialization of Toggle Button State
+**Learning:** Updating content descriptions only in click listeners is insufficient if the view can be initialized in a toggled state (e.g., restoring draft or state). The accessibility properties must be synchronized with the visual state during view creation/binding as well.
+**Action:** When setting a toggle button's state programmatically (e.g., `setSelected(true)`) in `onCreate` or `onBindViewHolder`, immediately update its `contentDescription` to match.
