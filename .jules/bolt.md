@@ -29,3 +29,7 @@
 ## 2024-05-27 - [Stream Allocation in PreviewlessMediaGridStatusDisplayItem]
 **Learning:** `PreviewlessMediaGridStatusDisplayItem.onBind` (hot path) was using `Arrays.stream()` to find translated attachments, causing unnecessary object allocations. This was missed when `MediaGridStatusDisplayItem` was optimized.
 **Action:** Replaced stream with a simple loop, following the pattern from `MediaGridStatusDisplayItem`.
+
+## 2025-10-28 - [Stream Allocation in UiUtils.loadCustomEmojiInTextView]
+**Learning:** `UiUtils.loadCustomEmojiInTextView` used `Arrays.stream().collect(groupingBy())` to group emoji spans. This is called during text rendering for statuses with custom emojis, a frequent occurrence in timelines.
+**Action:** Replaced the stream-based grouping with a manual loop and `HashMap`, eliminating Stream object allocation in this hot path.

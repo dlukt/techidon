@@ -163,7 +163,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.DrawableRes;
@@ -425,7 +424,16 @@ public class UiUtils {
 		CustomEmojiSpan[] spans = text.getSpans(0, text.length(), CustomEmojiSpan.class);
 		if (spans.length == 0)
 			return;
-		Map<Emoji, List<CustomEmojiSpan>> spansByEmoji = Arrays.stream(spans).collect(Collectors.groupingBy(s -> s.emoji));
+		Map<Emoji, List<CustomEmojiSpan>> spansByEmoji = new HashMap<>();
+		for (CustomEmojiSpan span : spans) {
+			List<CustomEmojiSpan> list = spansByEmoji.get(span.emoji);
+			if (list == null) {
+				list = new ArrayList<>();
+				spansByEmoji.put(span.emoji, list);
+			}
+			list.add(span);
+		}
+
 		for (Map.Entry<Emoji, List<CustomEmojiSpan>> emoji : spansByEmoji.entrySet()) {
 			ViewImageLoader.load(new ViewImageLoader.Target() {
 				@Override
@@ -1182,9 +1190,12 @@ public class UiUtils {
 		if (maybeFediHandle.toLowerCase().startsWith("mailto:")) {
 			maybeFediHandle = maybeFediHandle.substring("mailto:".length());
 		}
-		List<String> parts = Arrays.stream(maybeFediHandle.split("@"))
-				.filter(part -> !part.isEmpty())
-				.collect(Collectors.toList());
+		List<String> parts = new ArrayList<>();
+		for (String part : maybeFediHandle.split("@")) {
+			if (!part.isEmpty()) {
+				parts.add(part);
+			}
+		}
 		if (parts.size() == 0 || !parts.get(0).matches("^[^/\\s]+$")) {
 			return Optional.empty();
 		} else if (parts.size() == 2) {
