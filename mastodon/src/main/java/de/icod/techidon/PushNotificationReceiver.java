@@ -117,7 +117,8 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 								})
 								.exec(accountID);
 					}catch(Exception x){
-						Log.w(TAG, x);
+						if(BuildConfig.DEBUG)
+							Log.w(TAG, x);
 					}
 				});
 			}else{

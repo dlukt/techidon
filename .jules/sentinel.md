@@ -17,3 +17,8 @@
 **Vulnerability:** `UnifiedPushNotificationReceiver` was logging sensitive endpoint URLs and instance names in release builds via `Log.d`.
 **Learning:** BroadcastReceivers handling third-party data (like push endpoints) must be treated as sensitive. `Log.d` is not always automatically stripped and can leak PII or tokens.
 **Prevention:** Explicitly guard all sensitive `Log` calls with `if (BuildConfig.DEBUG)`.
+
+## 2024-05-24 - Secure Logging in Release Builds
+**Vulnerability:** `MastodonAPIController` and `PushNotificationReceiver` were logging API error details (potentially containing PII) and exception stack traces (potentially containing keys/secrets) to system logs in release builds via `Log.w`.
+**Learning:** `Log.w` (Warning) is generally preserved in release builds unless explicitly stripped by ProGuard/R8, which is not guaranteed. Sensitive data in error responses or exception messages can leak this way.
+**Prevention:** Always wrap sensitive `Log` calls, including `Log.w` and `Log.e`, in `if (BuildConfig.DEBUG)`. Use redaction helpers even in debug logs if the data is highly sensitive (like tokens).
