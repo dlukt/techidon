@@ -133,6 +133,7 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 				showResults(item.showResults);
 				item.isAnimating= false;
 			}
+			updateContentDescription();
 		}
 
 		@Override
@@ -152,6 +153,16 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 
 		private void onButtonClick(View v){
 			item.parentFragment.onPollOptionClick(this);
+		}
+
+		private void updateContentDescription(){
+			StringBuilder sb=new StringBuilder();
+			sb.append(text.getText());
+			if(item.showResults){
+				sb.append(", ");
+				sb.append(String.format(Locale.getDefault(), "%d%%", Math.round(item.votesFraction*100f)));
+			}
+			itemView.setContentDescription(sb);
 		}
 
 		public void showResults(boolean shown) {
@@ -184,6 +195,7 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 				itemView.setSelected(item.poll.selectedOptions!=null && item.poll.selectedOptions.contains(item.option));
 				percent.setVisibility(View.GONE);
 			}
+			updateContentDescription();
 			animator.start();
 		}
 	}
