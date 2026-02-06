@@ -34,6 +34,7 @@ import me.grishka.appkit.utils.MergeRecyclerAdapter;
 public class SettingsMainFragment extends BaseSettingsFragment<Void>{
 	private AccountSession account;
 	private boolean loggedOut;
+	private boolean busRegistered;
 	private HideableSingleViewRecyclerAdapter bannerAdapter;
 	private Button updateButton1, updateButton2;
 	private TextView updateText;
@@ -78,13 +79,6 @@ public class SettingsMainFragment extends BaseSettingsFragment<Void>{
 		AccountSession session=AccountSessionManager.get(accountID);
 		session.reloadPreferences(null);
 		session.updateAccountInfo();
-		E.register(this);
-	}
-
-	@Override
-	public void onDestroy(){
-		super.onDestroy();
-		E.unregister(this);
 	}
 
 	@Override
@@ -122,9 +116,29 @@ public class SettingsMainFragment extends BaseSettingsFragment<Void>{
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
+		if(!busRegistered){
+			E.register(this);
+			busRegistered=true;
+		}
 		if(GithubSelfUpdater.needSelfUpdating()){
 			updateUpdateBanner();
 		}
+	}
+
+	@Override
+	public void onDestroyView(){
+		if(list!=null){
+			list.removeCallbacks(updateDownloadProgressUpdater);
+		}
+		if(busRegistered){
+			E.unregister(this);
+			busRegistered=false;
+		}
+		bannerAdapter=null;
+		updateButton1=null;
+		updateButton2=null;
+		updateText=null;
+		super.onDestroyView();
 	}
 
 	private Bundle makeFragmentArgs(){
@@ -184,6 +198,9 @@ public class SettingsMainFragment extends BaseSettingsFragment<Void>{
 	}
 
 	private void updateUpdateBanner(){
+		if(bannerAdapter==null || updateText==null || updateButton1==null || updateButton2==null){
+			return;
+		}
 		GithubSelfUpdater.UpdateState state=GithubSelfUpdater.getInstance().getState();
 		if(state==GithubSelfUpdater.UpdateState.NO_UPDATE || state==GithubSelfUpdater.UpdateState.CHECKING){
 			bannerAdapter.setVisible(false);

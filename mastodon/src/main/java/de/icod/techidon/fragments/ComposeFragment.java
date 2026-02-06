@@ -6,7 +6,6 @@ import static de.icod.techidon.GlobalUserPreferences.PrefixRepliesMode.TO_OTHERS
 import static de.icod.techidon.api.requests.statuses.CreateStatus.DRAFTS_AFTER_INSTANT;
 import static de.icod.techidon.api.requests.statuses.CreateStatus.getDraftInstant;
 
-import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -160,7 +159,6 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	private static final Pattern GLITCH_LOCAL_ONLY_PATTERN = Pattern.compile("[\\s\\S]*" + GLITCH_LOCAL_ONLY_SUFFIX + "[\uFE00-\uFE0F]*");
 
 	private static final String TAG="ComposeFragment";
-	public static final int CAMERA_PERMISSION_CODE = 626938;
 	public static final int CAMERA_PIC_REQUEST_CODE = 6242069;
 	private static final String STATE_PHOTO_URI="state_photo_uri";
 
@@ -602,18 +600,6 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			outState.putParcelable(STATE_PHOTO_URI, photoUri);
 	}
 
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-		if (requestCode == CAMERA_PERMISSION_CODE && (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-			Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-			startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST_CODE);
-		} else {
-			Toast.makeText(getContext(), R.string.permission_required, Toast.LENGTH_SHORT);
-		}
-	}
 
 	@Override
 	public void onResume(){
@@ -1561,19 +1547,17 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	}
 
 	private void openCamera() throws IOException {
-		if (getContext().checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-			File photoFile = File.createTempFile("img", ".jpg");
-			photoUri = UiUtils.getFileProviderUri(getContext(), photoFile);
+		File photoFile = File.createTempFile("img", ".jpg");
+		photoUri = UiUtils.getFileProviderUri(getContext(), photoFile);
 
-			Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-			cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-			if(getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)){
-				startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST_CODE);
-			} else {
-				Toast.makeText(getContext(), R.string.mo_camera_not_available, Toast.LENGTH_SHORT);
-			}
+		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+		cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+		if(getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY) && cameraIntent.resolveActivity(getContext().getPackageManager()) != null){
+			startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST_CODE);
 		} else {
-			getActivity().requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+			Toast.makeText(getContext(), R.string.mo_camera_not_available, Toast.LENGTH_SHORT).show();
 		}
 	}
 

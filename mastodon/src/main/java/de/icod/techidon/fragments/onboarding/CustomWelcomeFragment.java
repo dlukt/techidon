@@ -70,17 +70,7 @@ public class CustomWelcomeFragment extends InstanceCatalogFragment {
 		super.onUpdateToolbar();
 
 		if (!canGoBack()) {
-			ImageView toolbarLogo=new ImageView(getActivity());
-			toolbarLogo.setScaleType(ImageView.ScaleType.CENTER);
-			toolbarLogo.setImageResource(R.drawable.logo);
-			toolbarLogo.setImageTintList(ColorStateList.valueOf(UiUtils.getThemeColor(getActivity(), android.R.attr.textColorPrimary)));
-
-			FrameLayout logoWrap=new FrameLayout(getActivity());
-			FrameLayout.LayoutParams logoParams=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
-			logoParams.setMargins(0, V.dp(2), 0, 0);
-			logoWrap.addView(toolbarLogo, logoParams);
-
-			getToolbar().addView(logoWrap, new Toolbar.LayoutParams(Gravity.CENTER));
+			setTitle(R.string.mo_app_name);
 		} else {
 			setTitle(R.string.add_account);
 		}

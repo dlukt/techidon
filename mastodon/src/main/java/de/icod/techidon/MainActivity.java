@@ -1,8 +1,5 @@
 package de.icod.techidon;
 
-import static de.icod.techidon.fragments.ComposeFragment.CAMERA_PERMISSION_CODE;
-import static de.icod.techidon.fragments.ComposeFragment.CAMERA_PIC_REQUEST_CODE;
-
 import android.Manifest;
 import android.app.Activity;
 import androidx.fragment.app.Fragment;
@@ -29,7 +26,6 @@ import de.icod.techidon.api.ObjectValidationException;
 import de.icod.techidon.api.requests.search.GetSearchResults;
 import de.icod.techidon.api.session.AccountSession;
 import de.icod.techidon.api.session.AccountSessionManager;
-import de.icod.techidon.events.TakePictureRequestEvent;
 import de.icod.techidon.fragments.ComposeFragment;
 import de.icod.techidon.fragments.HomeFragment;
 import de.icod.techidon.fragments.ProfileFragment;
@@ -226,24 +222,6 @@ public class MainActivity extends FragmentStackActivity implements ProvidesAssis
 			Fragment fragment=new HomeFragment();
 			fragment.setArguments(args);
 			showFragmentClearingBackStack(fragment);
-		}
-	}
-
-//	@Override
-//	public void onActivityResult(int requestCode, int resultCode, Intent data){
-//		if(requestCode==CAMERA_PIC_REQUEST_CODE && resultCode== Activity.RESULT_OK){
-//			E.post(new TakePictureRequestEvent());
-//		}
-//	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-		if (requestCode == CAMERA_PERMISSION_CODE && (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-			E.post(new TakePictureRequestEvent());
-		} else {
-			Toast.makeText(this, R.string.permission_required, Toast.LENGTH_SHORT);
 		}
 	}
 
