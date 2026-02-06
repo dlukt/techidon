@@ -15,7 +15,9 @@ import android.widget.TextView;
 import de.icod.techidon.R;
 import de.icod.techidon.api.requests.search.GetSearchResults;
 import de.icod.techidon.api.session.AccountSessionManager;
+import de.icod.techidon.model.Account;
 import de.icod.techidon.model.Emoji;
+import de.icod.techidon.model.EmojiCategory;
 import de.icod.techidon.model.Hashtag;
 import de.icod.techidon.model.SearchResults;
 import de.icod.techidon.model.viewmodel.AccountViewModel;
@@ -28,8 +30,6 @@ import de.icod.techidon.ui.views.FilterChipView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -206,18 +206,35 @@ public class ComposeAutocompleteViewController{
 		}else if(mode==Mode.EMOJIS){
 			String _text=text.substring(1); // remove ':'
 			List<WrappedEmoji> oldList=emojis;
-			List<Emoji> allEmojis = AccountSessionManager.getInstance()
-					.getCustomEmojis(AccountSessionManager.getInstance().getAccount(accountID).domain)
-					.stream()
-					.flatMap(ec->ec.emojis.stream())
-					.filter(e->e.visibleInPicker)
-					.collect(Collectors.toList());
-			List<Emoji> startsWithSearch = allEmojis.stream().filter(e -> e.shortcode.toLowerCase().startsWith(_text.toLowerCase())).collect(Collectors.toList());
-			emojis=Stream.concat(startsWithSearch.stream(), allEmojis.stream()
-					.filter(e -> !startsWithSearch.contains(e))
-					.filter(e -> e.shortcode.toLowerCase().contains(_text.toLowerCase())))
-					.map(WrappedEmoji::new)
-					.collect(Collectors.toList());
+
+			String lowerText = _text.toLowerCase();
+			List<WrappedEmoji> startsWith = new ArrayList<>();
+			List<WrappedEmoji> contains = new ArrayList<>();
+
+			List<EmojiCategory> categories = AccountSessionManager.getInstance()
+					.getCustomEmojis(AccountSessionManager.getInstance().getAccount(accountID).domain);
+
+			// Optimization: Use loops instead of Streams to avoid allocation overhead during typing (hot path).
+			// We perform a single pass to partition matches into "starts with" and "contains".
+			if(categories!=null){
+				for(EmojiCategory category : categories){
+					if(category.emojis == null) continue;
+					for(Emoji e : category.emojis){
+						if(!e.visibleInPicker) continue;
+
+						String shortcode = e.shortcode.toLowerCase();
+						if(shortcode.startsWith(lowerText)){
+							startsWith.add(new WrappedEmoji(e));
+						}else if(shortcode.contains(lowerText)){
+							contains.add(new WrappedEmoji(e));
+						}
+					}
+				}
+			}
+
+			startsWith.addAll(contains);
+			emojis = startsWith;
+
 			emptyButtonAdapter.setVisible(emojis.isEmpty());
 			UiUtils.updateList(oldList, emojis, list, emojisAdapter, (e1, e2)->e1.emoji.shortcode.equals(e2.emoji.shortcode));
 			list.invalidateItemDecorations();
@@ -253,7 +270,11 @@ public class ComposeAutocompleteViewController{
 						if(mode!=Mode.USERS)
 							return;
 						List<AccountViewModel> oldList=users;
-						users=result.accounts.stream().map(a->new AccountViewModel(a, accountID)).collect(Collectors.toList());
+						// Optimization: Use loop instead of Stream for mapping to avoid overhead
+						users = new ArrayList<>(result.accounts.size());
+						for (Account a : result.accounts) {
+							users.add(new AccountViewModel(a, accountID));
+						}
 						if(isLoading){
 							isLoading=false;
 							if(users.size()>=LOADING_FAKE_USER_COUNT){

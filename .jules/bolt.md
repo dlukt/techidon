@@ -29,3 +29,7 @@
 ## 2024-05-27 - [Stream Allocation in PreviewlessMediaGridStatusDisplayItem]
 **Learning:** `PreviewlessMediaGridStatusDisplayItem.onBind` (hot path) was using `Arrays.stream()` to find translated attachments, causing unnecessary object allocations. This was missed when `MediaGridStatusDisplayItem` was optimized.
 **Action:** Replaced stream with a simple loop, following the pattern from `MediaGridStatusDisplayItem`.
+
+## 2025-10-27 - [Stream Allocation in ComposeAutocompleteViewController]
+**Learning:** `ComposeAutocompleteViewController.setText` (emoji mode) and `doSearchUsers` were using Java Streams for filtering and mapping during typing. This caused frequent object allocations on the UI thread.
+**Action:** Replaced Stream usage with single-pass loops and direct `ArrayList` usage to improve typing responsiveness and reduce GC pressure.
