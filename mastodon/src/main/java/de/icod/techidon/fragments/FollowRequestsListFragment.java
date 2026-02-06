@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
@@ -52,6 +53,8 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class FollowRequestsListFragment extends MastodonRecyclerFragment<FollowRequestsListFragment.AccountWrapper> implements ScrollableToTop, ProvidesAssistContent.ProvidesWebUri {
+	private static final String STATE_NEXT_MAX_ID="state_next_max_id";
+
 	private String accountID;
 	private Map<String, Relationship> relationships=Collections.emptyMap();
 	private GetAccountRelationships relationshipsRequest;
@@ -65,11 +68,26 @@ public class FollowRequestsListFragment extends MastodonRecyclerFragment<FollowR
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		accountID=getArguments().getString("account");
+		if(savedInstanceState!=null){
+			nextMaxID=savedInstanceState.getString(STATE_NEXT_MAX_ID);
+			if(loaded){
+				if(!data.isEmpty() && relationships.isEmpty()){
+					loadRelationships();
+				}
+				return;
+			}
+		}
 		loadData();
 	}
 
 	@Override
-	public void onAttach(Activity activity) {
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_NEXT_MAX_ID, nextMaxID);
+	}
+
+	@Override
+	public void onAttach(Context activity) {
 		super.onAttach(activity);
 		setTitle(R.string.sk_follow_requests);
 	}

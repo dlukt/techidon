@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import static java.util.stream.Collectors.toList;
 
 import android.app.Activity;
@@ -53,12 +54,22 @@ public class AnnouncementsFragment extends BaseStatusListFragment<Announcement> 
 	private List<String> unreadIDs = null;
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null && !loaded && dataLoading){
+			dataLoading=false;
+		}
+		if(!loaded && !dataLoading){
+			loadData();
+		}
+	}
+
+	@Override
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setTitle(R.string.sk_announcements);
 		session = AccountSessionManager.getInstance().getAccount(accountID);
 		instance = AccountSessionManager.getInstance().getInstanceInfo(session.domain);
-		loadData();
 	}
 
 	@Override

@@ -24,6 +24,8 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class FollowedHashtagsFragment extends MastodonRecyclerFragment<Hashtag> implements ScrollableToTop, ProvidesAssistContent.ProvidesWebUri {
+    private static final String STATE_NEXT_MAX_ID="state_next_max_id";
+
     private String nextMaxID;
     private String accountID;
 
@@ -37,6 +39,15 @@ public class FollowedHashtagsFragment extends MastodonRecyclerFragment<Hashtag> 
         Bundle args=getArguments();
         accountID=args.getString("account");
         setTitle(R.string.sk_hashtags_you_follow);
+        if(savedInstanceState!=null){
+            nextMaxID=savedInstanceState.getString(STATE_NEXT_MAX_ID);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_NEXT_MAX_ID, nextMaxID);
     }
 
     @Override

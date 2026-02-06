@@ -46,6 +46,11 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class ListsFragment extends MastodonRecyclerFragment<FollowList> implements ScrollableToTop, ProvidesAssistContent.ProvidesWebUri {
+	private static final String STATE_USER_IN_LIST_IDS="state_user_in_list_ids";
+	private static final String STATE_USER_IN_LIST_VALUES="state_user_in_list_values";
+	private static final String STATE_USER_IN_LIST_BEFORE_IDS="state_user_in_list_before_ids";
+	private static final String STATE_USER_IN_LIST_BEFORE_VALUES="state_user_in_list_before_values";
+
 	private String accountID;
 	private String profileAccountId;
 	private final HashMap<String, Boolean> userInListBefore = new HashMap<>();
@@ -61,8 +66,12 @@ public class ListsFragment extends MastodonRecyclerFragment<FollowList> implemen
 		super.onCreate(savedInstanceState);
 		Bundle args = getArguments();
 		accountID = args.getString("account");
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 		E.register(this);
+		if(savedInstanceState!=null){
+			restoreMembershipMap(savedInstanceState, STATE_USER_IN_LIST_IDS, STATE_USER_IN_LIST_VALUES, userInList);
+			restoreMembershipMap(savedInstanceState, STATE_USER_IN_LIST_BEFORE_IDS, STATE_USER_IN_LIST_BEFORE_VALUES, userInListBefore);
+		}
 
 		if(args.containsKey("profileAccount")){
 			profileAccountId=args.getString("profileAccount");
@@ -87,12 +96,19 @@ public class ListsFragment extends MastodonRecyclerFragment<FollowList> implemen
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		storeMembershipMap(outState, STATE_USER_IN_LIST_IDS, STATE_USER_IN_LIST_VALUES, userInList);
+		storeMembershipMap(outState, STATE_USER_IN_LIST_BEFORE_IDS, STATE_USER_IN_LIST_BEFORE_VALUES, userInListBefore);
+	}
+
+	@Override
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_list, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onAppMenuItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.create) {
 			ListEditor editor = new ListEditor(getContext());
 			new M3AlertDialogBuilder(getActivity())
@@ -213,6 +229,29 @@ public class ListsFragment extends MastodonRecyclerFragment<FollowList> implemen
 	@Override
 	public Uri getWebUri(Uri.Builder base) {
 		return base.path("/lists").build();
+	}
+
+	private void storeMembershipMap(Bundle outState, String idsKey, String valuesKey, HashMap<String, Boolean> map){
+		ArrayList<String> ids=new ArrayList<>(map.size());
+		boolean[] values=new boolean[map.size()];
+		int i=0;
+		for(java.util.Map.Entry<String, Boolean> entry : map.entrySet()){
+			ids.add(entry.getKey());
+			values[i++]=Boolean.TRUE.equals(entry.getValue());
+		}
+		outState.putStringArrayList(idsKey, ids);
+		outState.putBooleanArray(valuesKey, values);
+	}
+
+	private void restoreMembershipMap(Bundle savedInstanceState, String idsKey, String valuesKey, HashMap<String, Boolean> map){
+		ArrayList<String> ids=savedInstanceState.getStringArrayList(idsKey);
+		boolean[] values=savedInstanceState.getBooleanArray(valuesKey);
+		if(ids==null || values==null || ids.size()!=values.length)
+			return;
+		map.clear();
+		for(int i=0;i<ids.size();i++){
+			map.put(ids.get(i), values[i]);
+		}
 	}
 
 	private class ListsAdapter extends RecyclerView.Adapter<ListViewHolder>{

@@ -47,7 +47,12 @@ public class ManageListsFragment extends BaseSettingsFragment<FollowList> implem
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.manage_lists);
-		loadData();
+		if(savedInstanceState!=null){
+			resetDataOnRestore(savedInstanceState);
+		}
+		if(savedInstanceState!=null || !loaded){
+			loadData();
+		}
 		setRefreshEnabled(true);
 		E.register(this);
 	}

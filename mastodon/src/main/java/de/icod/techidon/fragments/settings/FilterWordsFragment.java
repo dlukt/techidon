@@ -39,11 +39,18 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class FilterWordsFragment extends BaseSettingsFragment<FilterKeyword> implements OnBackPressedListener{
+	private static final String STATE_WORDS="state_words";
+	private static final String STATE_DELETED_IDS="state_deleted_ids";
+	private static final String STATE_SELECTED_KEYS="state_selected_keys";
+	private static final String STATE_SELECTION_MODE="state_selection_mode";
+
 	private ImageButton fab;
 	private ActionMode actionMode;
 	private ArrayList<ListItem<FilterKeyword>> selectedItems=new ArrayList<>();
 	private ArrayList<String> deletedItemIDs=new ArrayList<>();
 	private MenuItem deleteItem;
+	private boolean restoreSelectionMode;
+	private ArrayList<String> restoredSelectionKeys=new ArrayList<>();
 
 	public FilterWordsFragment(){
 		setListLayoutId(R.layout.recycler_fragment_with_fab);
@@ -53,14 +60,35 @@ public class FilterWordsFragment extends BaseSettingsFragment<FilterKeyword> imp
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.settings_filter_muted_words);
-		onDataLoaded(getArguments().getParcelableArrayList("words").stream().map(p->{
+		ArrayList<? extends Parcelable> sourceWords=getArguments().getParcelableArrayList("words");
+		if(savedInstanceState!=null){
+			ArrayList<String> restoredDeleted=savedInstanceState.getStringArrayList(STATE_DELETED_IDS);
+			if(restoredDeleted!=null){
+				deletedItemIDs.clear();
+				deletedItemIDs.addAll(restoredDeleted);
+			}
+			ArrayList<String> restoredSelected=savedInstanceState.getStringArrayList(STATE_SELECTED_KEYS);
+			if(restoredSelected!=null){
+				restoredSelectionKeys.clear();
+				restoredSelectionKeys.addAll(restoredSelected);
+			}
+			restoreSelectionMode=savedInstanceState.getBoolean(STATE_SELECTION_MODE, false);
+			resetDataOnRestore(savedInstanceState);
+			ArrayList<Parcelable> restoredWords=savedInstanceState.getParcelableArrayList(STATE_WORDS);
+			if(restoredWords!=null){
+				sourceWords=restoredWords;
+			}
+		}
+		ArrayList<String> deletedIDs=new ArrayList<>(deletedItemIDs);
+		ArrayList<? extends Parcelable> words=sourceWords!=null ? sourceWords : new ArrayList<>();
+		onDataLoaded(words.stream().map(p->{
 			FilterKeyword word=Parcels.unwrap(p);
 			ListItem<FilterKeyword> item=new ListItem<>(word.keyword, null, null, word);
 			item.isEnabled=true;
 			item.setOnClick(this::onWordClick);
 			return item;
-		}).collect(Collectors.toList()));
-		setHasOptionsMenu(true);
+		}).filter(item->!deletedIDs.contains(item.parentObject.id)).collect(Collectors.toList()));
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
@@ -97,6 +125,27 @@ public class FilterWordsFragment extends BaseSettingsFragment<FilterKeyword> imp
 		fab.setImageResource(R.drawable.ic_fluent_add_24_regular);
 		fab.setContentDescription(getString(R.string.add_muted_word));
 		fab.setOnClickListener(v->onFabClick());
+		if(restoreSelectionMode){
+			enterSelectionMode(false);
+			applyRestoredSelection();
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		ArrayList<Parcelable> savedWords=(ArrayList<Parcelable>) data.stream()
+				.map(item->item.parentObject)
+				.map(Parcels::wrap)
+				.collect(Collectors.toCollection(ArrayList::new));
+		ArrayList<String> selectedKeys=new ArrayList<>(selectedItems.size());
+		for(ListItem<FilterKeyword> item : selectedItems){
+			selectedKeys.add(makeSelectionKey(item.parentObject));
+		}
+		outState.putParcelableArrayList(STATE_WORDS, savedWords);
+		outState.putStringArrayList(STATE_SELECTED_KEYS, selectedKeys);
+		outState.putStringArrayList(STATE_DELETED_IDS, deletedItemIDs);
+		outState.putBoolean(STATE_SELECTION_MODE, actionMode!=null);
 	}
 
 	@Override
@@ -110,12 +159,12 @@ public class FilterWordsFragment extends BaseSettingsFragment<FilterKeyword> imp
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.selectable_list, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		enterSelectionMode(item.getItemId()==R.id.select_all);
 		return true;
 	}
@@ -291,5 +340,35 @@ public class FilterWordsFragment extends BaseSettingsFragment<FilterKeyword> imp
 	private void updateActionModeTitle(){
 		actionMode.setTitle(getResources().getQuantityString(R.plurals.x_items_selected, selectedItems.size(), selectedItems.size()));
 		deleteItem.setEnabled(!selectedItems.isEmpty());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void applyRestoredSelection(){
+		if(restoredSelectionKeys.isEmpty())
+			return;
+		selectedItems.clear();
+		for(int i=0;i<data.size();i++){
+			ListItem<FilterKeyword> item=data.get(i);
+			if(!(item instanceof CheckableListItem<?> checkable))
+				continue;
+			Object parent=checkable.parentObject;
+			if(!(parent instanceof FilterKeyword))
+				continue;
+			FilterKeyword keyword=(FilterKeyword) parent;
+			boolean selected=restoredSelectionKeys.contains(makeSelectionKey(keyword));
+			//noinspection unchecked
+			CheckableListItem<FilterKeyword> typedItem=(CheckableListItem<FilterKeyword>) checkable;
+			typedItem.checked=selected;
+			if(selected)
+				selectedItems.add(typedItem);
+		}
+		itemsAdapter.notifyItemRangeChanged(0, data.size());
+		updateActionModeTitle();
+	}
+
+	private String makeSelectionKey(FilterKeyword keyword){
+		if(keyword.id!=null)
+			return "id:"+keyword.id;
+		return "kw:"+keyword.keyword;
 	}
 }

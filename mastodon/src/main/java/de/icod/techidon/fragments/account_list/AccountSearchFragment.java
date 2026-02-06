@@ -25,6 +25,8 @@ import me.grishka.appkit.api.SimpleCallback;
 @SuppressWarnings("deprecation")
 
 public class AccountSearchFragment extends BaseAccountListFragment{
+	private static final String STATE_QUERY="state_query";
+
 	protected String currentQuery;
 	private boolean resultDelivered;
 	private SearchViewHelper searchViewHelper;
@@ -34,6 +36,9 @@ public class AccountSearchFragment extends BaseAccountListFragment{
 		super.onCreate(savedInstanceState);
 		setRefreshEnabled(false);
 		setEmptyText("");
+		if(savedInstanceState!=null){
+			currentQuery=savedInstanceState.getString(STATE_QUERY);
+		}
 	}
 
 	@Override
@@ -47,6 +52,18 @@ public class AccountSearchFragment extends BaseAccountListFragment{
 		int color=UiUtils.alphaBlendThemeColors(getActivity(), R.attr.colorM3Surface, R.attr.colorM3Primary, 0.11f);
 		setStatusBarColor(color);
 		setNavigationBarColor(color);
+		if(!TextUtils.isEmpty(currentQuery)){
+			searchViewHelper.setQuery(currentQuery);
+			if(data.isEmpty() && (!dataLoading || currentRequest==null)){
+				loadData();
+			}
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_QUERY, currentQuery);
 	}
 
 	@Override

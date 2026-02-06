@@ -67,9 +67,13 @@ public class DiscoverAccountsFragment extends MastodonRecyclerFragment<DiscoverA
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(!loaded && dataLoading && currentRequest==null){
+			dataLoading=false;
+		}
 		accountID=getArguments().getString("account");
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
+		if(!data.isEmpty() && relationships.isEmpty()){
+			loadRelationships();
+		}
 	}
 
 	@Override

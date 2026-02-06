@@ -54,6 +54,13 @@ import me.grishka.appkit.utils.SingleViewRecyclerAdapter;
 public class EditFilterFragment extends BaseSettingsFragment<Void> implements OnBackPressedListener{
 	private static final int WORDS_RESULT=370;
 	private static final int CONTEXT_RESULT=651;
+	private static final String STATE_KEYWORDS="state_keywords";
+	private static final String STATE_CONTEXT="state_context";
+	private static final String STATE_ENDS_AT="state_ends_at";
+	private static final String STATE_ENDS_AT_SET="state_ends_at_set";
+	private static final String STATE_DELETED_WORD_IDS="state_deleted_word_ids";
+	private static final String STATE_DIRTY="state_dirty";
+	private static final String STATE_SHOW_CW="state_show_cw";
 
 	private Filter filter;
 	private ListItem<Void> durationItem, wordsItem, contextItem;
@@ -70,31 +77,81 @@ public class EditFilterFragment extends BaseSettingsFragment<Void> implements On
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null && !data.isEmpty()){
+			data.clear();
+			preloadedData.clear();
+		}
 		filter=Parcels.unwrap(getArguments().getParcelable("filter"));
 		ArrayList<Parcelable> words=getArguments().getParcelableArrayList("words");
-		if (words != null) {
-				words.stream().map(p->(FilterKeyword)Parcels.unwrap(p)).forEach(keywords::add);
+		boolean restoredKeywords=savedInstanceState!=null && savedInstanceState.containsKey(STATE_KEYWORDS);
+		boolean restoredContext=savedInstanceState!=null && savedInstanceState.containsKey(STATE_CONTEXT);
+		boolean restoredEndsAt=savedInstanceState!=null && (savedInstanceState.containsKey(STATE_ENDS_AT_SET) || savedInstanceState.containsKey(STATE_ENDS_AT));
+		boolean restoredDeletedWordIds=savedInstanceState!=null && savedInstanceState.containsKey(STATE_DELETED_WORD_IDS);
+		boolean restoredDirty=savedInstanceState!=null && savedInstanceState.containsKey(STATE_DIRTY);
+		boolean showCwChecked=(filter==null || filter.filterAction==FilterAction.WARN);
+
+		if(savedInstanceState!=null){
+			if(restoredKeywords){
+				keywords.clear();
+				ArrayList<Parcelable> savedKeywords=savedInstanceState.getParcelableArrayList(STATE_KEYWORDS);
+				if(savedKeywords!=null){
+					savedKeywords.stream().map(p->(FilterKeyword)Parcels.unwrap(p)).forEach(keywords::add);
+				}
+			}
+			if(restoredContext){
+				context=(EnumSet<FilterContext>) savedInstanceState.getSerializable(STATE_CONTEXT);
+			}
+			if(savedInstanceState.containsKey(STATE_ENDS_AT_SET)){
+				if(savedInstanceState.getBoolean(STATE_ENDS_AT_SET)){
+					endsAt=(Instant) savedInstanceState.getSerializable(STATE_ENDS_AT);
+				}else{
+					endsAt=null;
+				}
+			}else if(savedInstanceState.containsKey(STATE_ENDS_AT)){
+				endsAt=(Instant) savedInstanceState.getSerializable(STATE_ENDS_AT);
+			}
+			if(restoredDeletedWordIds){
+				deletedWordIDs.clear();
+				ArrayList<String> savedDeletedWordIds=savedInstanceState.getStringArrayList(STATE_DELETED_WORD_IDS);
+				if(savedDeletedWordIds!=null)
+					deletedWordIDs.addAll(savedDeletedWordIds);
+			}
+			if(restoredDirty){
+				dirty=savedInstanceState.getBoolean(STATE_DIRTY);
+			}
+			if(savedInstanceState.containsKey(STATE_SHOW_CW)){
+				showCwChecked=savedInstanceState.getBoolean(STATE_SHOW_CW);
+			}
+		}
+
+		if(!restoredKeywords){
+			if (words != null) {
+					words.stream().map(p->(FilterKeyword)Parcels.unwrap(p)).forEach(keywords::add);
+			}
 		}
 		setTitle(filter==null ? R.string.settings_add_filter : R.string.settings_edit_filter);
 		onDataLoaded(List.of(
 				durationItem=new ListItem<>(R.string.settings_filter_duration, 0, this::onDurationClick),
 				wordsItem=new ListItem<>(R.string.settings_filter_muted_words, 0, this::onWordsClick),
 				contextItem=new ListItem<>(R.string.settings_filter_context, 0, this::onContextClick),
-				cwItem=new CheckableListItem<>(R.string.settings_filter_show_cw, R.string.settings_filter_show_cw_explanation, CheckableListItem.Style.SWITCH, filter==null || filter.filterAction==FilterAction.WARN, this::toggleCheckableItem)
+				cwItem=new CheckableListItem<>(R.string.settings_filter_show_cw, R.string.settings_filter_show_cw_explanation, CheckableListItem.Style.SWITCH, showCwChecked, this::toggleCheckableItem)
 		));
 
 		if(filter!=null){
-			endsAt=filter.expiresAt;
-			keywords.addAll(filter.keywords);
-			context=filter.context;
-			data.add(new ListItem<>(R.string.settings_delete_filter, 0, this::onDeleteClick, R.attr.colorM3Error, false));
+			if(!restoredEndsAt)
+				endsAt=filter.expiresAt;
+			if(!restoredKeywords)
+				keywords.addAll(filter.keywords);
+			if(!restoredContext)
+				context=filter.context;
+			if(data.stream().noneMatch(item->item.titleRes==R.string.settings_delete_filter))
+				data.add(new ListItem<>(R.string.settings_delete_filter, 0, this::onDeleteClick, R.attr.colorM3Error, false));
 		}
 
 		updateDurationItem();
 		updateWordsItem();
 		updateContextItem();
-		setHasOptionsMenu(true);
-		setRetainInstance(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
@@ -111,7 +168,7 @@ public class EditFilterFragment extends BaseSettingsFragment<Void> implements On
 
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
 		adapter.addAdapter(new SingleViewRecyclerAdapter(titleEditLayout));
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return adapter;
 	}
 
@@ -240,12 +297,12 @@ public class EditFilterFragment extends BaseSettingsFragment<Void> implements On
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.settings_edit_filter, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		if(item.getItemId()==R.id.save){
 			saveFilter();
 		}
@@ -295,6 +352,22 @@ public class EditFilterFragment extends BaseSettingsFragment<Void> implements On
 				})
 				.wrapProgress(getActivity(), R.string.deleting, false)
 				.exec(accountID);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		ArrayList<Parcelable> savedKeywords=keywords.stream()
+				.map(Parcels::wrap)
+				.collect(Collectors.toCollection(ArrayList::new));
+		outState.putParcelableArrayList(STATE_KEYWORDS, savedKeywords);
+		outState.putSerializable(STATE_CONTEXT, context);
+		outState.putBoolean(STATE_ENDS_AT_SET, endsAt!=null);
+		if(endsAt!=null)
+			outState.putSerializable(STATE_ENDS_AT, endsAt);
+		outState.putStringArrayList(STATE_DELETED_WORD_IDS, new ArrayList<>(deletedWordIDs));
+		outState.putBoolean(STATE_DIRTY, dirty);
+		outState.putBoolean(STATE_SHOW_CW, cwItem!=null ? cwItem.checked : (filter==null || filter.filterAction==FilterAction.WARN));
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.app.assist.AssistContent;
 import android.content.res.Configuration;
@@ -70,6 +71,7 @@ import de.icod.techidon.utils.TypedObjectPool;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -119,12 +121,13 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(!loaded && dataLoading && currentRequest==null){
+			dataLoading=false;
+		}
 		if(GlobalUserPreferences.toolbarMarquee){
 			setTitleMarqueeEnabled(false);
 			setSubtitleMarqueeEnabled(false);
 		}
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
 	}
 
 	@Override
@@ -133,7 +136,7 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		accountID=getArguments().getString("account");
 	}
@@ -436,6 +439,24 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
+		if(displayItems.isEmpty() && !data.isEmpty()){
+			for(T s:data){
+				addAccountToKnown(s);
+			}
+			for(T s:data){
+				displayItems.addAll(buildDisplayItems(s));
+			}
+			if(adapter!=null)
+				adapter.notifyDataSetChanged();
+
+			HashSet<String> accountsToLoad = new HashSet<>();
+			for(T s:data){
+				String id=s.getAccountID();
+				if(id!=null && !relationships.containsKey(id))
+					accountsToLoad.add(id);
+			}
+			loadRelationships(accountsToLoad);
+		}
 		fab=view.findViewById(R.id.fab);
 
 		list.addOnScrollListener(new RecyclerView.OnScrollListener(){

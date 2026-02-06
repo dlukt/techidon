@@ -1,6 +1,6 @@
 package de.icod.techidon.fragments;
 
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;

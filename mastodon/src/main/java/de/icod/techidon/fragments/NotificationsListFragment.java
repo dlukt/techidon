@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -56,6 +57,8 @@ import me.grishka.appkit.utils.MergeRecyclerAdapter;
 @SuppressWarnings("deprecation")
 
 public class NotificationsListFragment extends BaseStatusListFragment<Notification>{
+	private static final String STATE_MAX_ID="state_max_id";
+
 	private boolean onlyMentions;
 	private String maxID;
 	private boolean reloadingFromCache;
@@ -73,7 +76,16 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 		super.onCreate(savedInstanceState);
 		E.register(this);
 		onlyMentions=getArguments().getBoolean("onlyMentions", false);
-		setHasOptionsMenu(true);
+		if(savedInstanceState!=null){
+			maxID=savedInstanceState.getString(STATE_MAX_ID);
+		}
+		setHasOptionsMenuCompat(true);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_MAX_ID, maxID);
 	}
 
 	@Override
@@ -83,7 +95,7 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setTitle(R.string.notifications);
 	}
@@ -390,13 +402,13 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.notifications, menu);
 		markAllReadItem=menu.findItem(R.id.mark_all_read);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		if(item.getItemId()==R.id.mark_all_read){
 			markAsRead();
 			resetUnreadBackground();
@@ -447,7 +459,7 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 		if (bannerHelper == null) return super.getAdapter();
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
 		bannerHelper.maybeAddBanner(list, adapter);
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return adapter;
 	}
 

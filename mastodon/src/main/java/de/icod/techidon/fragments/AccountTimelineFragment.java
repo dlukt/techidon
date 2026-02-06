@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
@@ -46,7 +47,7 @@ public class AccountTimelineFragment extends StatusListFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		user=Parcels.unwrap(getArguments().getParcelable("profileAccount"));
 		filter=GetAccountStatuses.Filter.valueOf(getArguments().getString("filter"));
 		super.onAttach(activity);

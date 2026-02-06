@@ -77,6 +77,7 @@ public class SettingsAboutAppFragment extends BaseSettingsFragment<Void> impleme
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle(getString(R.string.about_app, getString(R.string.mo_app_name)));
 		session=AccountSessionManager.get(accountID);
 
@@ -119,7 +120,7 @@ public class SettingsAboutAppFragment extends BaseSettingsFragment<Void> impleme
 	@Override
 	protected RecyclerView.Adapter<?> getAdapter(){
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 
 		TextView versionInfo=new TextView(getActivity());
 		versionInfo.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, V.dp(32)));

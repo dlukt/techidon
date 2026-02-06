@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.onboarding;
 
+import android.content.Context;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -44,6 +45,12 @@ import me.grishka.appkit.views.FragmentRootLinearLayout;
 @SuppressWarnings("deprecation")
 
 public class OnboardingProfileSetupFragment extends ToolbarFragment{
+	private static final String STATE_AVATAR_URI="state_avatar_uri";
+	private static final String STATE_COVER_URI="state_cover_uri";
+	private static final String STATE_DISCOVERABLE="state_discoverable";
+	private static final String STATE_NAME="state_name";
+	private static final String STATE_BIO="state_bio";
+
 	private Button btn;
 	private View buttonBar;
 	private String accountID;
@@ -61,11 +68,10 @@ public class OnboardingProfileSetupFragment extends ToolbarFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setNavigationBarColor(UiUtils.getThemeColor(activity, R.attr.colorM3Surface));
 		accountID=getArguments().getString("account");
@@ -92,19 +98,35 @@ public class OnboardingProfileSetupFragment extends ToolbarFragment{
 		Account account=AccountSessionManager.getInstance().getAccount(accountID).self;
 		if(savedInstanceState==null){
 			nameEdit.setText(account.displayName);
+		}else{
+			String restoredName=savedInstanceState.getString(STATE_NAME);
+			nameEdit.setText(restoredName!=null ? restoredName : account.displayName);
+			String restoredBio=savedInstanceState.getString(STATE_BIO);
+			if(restoredBio!=null)
+				bioEdit.setText(restoredBio);
+			avatarUri=savedInstanceState.getParcelable(STATE_AVATAR_URI);
+			coverUri=savedInstanceState.getParcelable(STATE_COVER_URI);
 		}
 
 		avaImage.setOnClickListener(v->startActivityForResult(UiUtils.getMediaPickerIntent(new String[]{"image/*"}, 1), AVATAR_RESULT));
 		coverImage.setOnClickListener(v->startActivityForResult(UiUtils.getMediaPickerIntent(new String[]{"image/*"}, 1), COVER_RESULT));
 
 		scrollContent=view.findViewById(R.id.scrollable_content);
-		discoverableItem=new CheckableListItem<>(R.string.make_profile_discoverable, 0, CheckableListItem.Style.SWITCH_SEPARATED, true, R.drawable.ic_campaign_24px, item->showDiscoverabilityAlert());
+		boolean discoverableChecked=savedInstanceState==null || savedInstanceState.getBoolean(STATE_DISCOVERABLE, true);
+		discoverableItem=new CheckableListItem<>(R.string.make_profile_discoverable, 0, CheckableListItem.Style.SWITCH_SEPARATED, discoverableChecked, R.drawable.ic_campaign_24px, item->showDiscoverabilityAlert());
 		GenericListItemsAdapter<Void> fakeAdapter=new GenericListItemsAdapter<>(List.of(discoverableItem));
 		ListItemViewHolder<?> holder=fakeAdapter.onCreateViewHolder(scrollContent, fakeAdapter.getItemViewType(0));
 		fakeAdapter.bindViewHolder(holder, 0);
 		holder.itemView.setBackground(UiUtils.getThemeDrawable(getActivity(), android.R.attr.selectableItemBackground));
 		holder.itemView.setOnClickListener(v->holder.onClick());
 		scrollContent.addView(holder.itemView);
+
+		if(avatarUri!=null){
+			ViewImageLoader.load(avaImage, null, new UrlImageLoaderRequest(avatarUri, V.dp(100), V.dp(100)));
+		}
+		if(coverUri!=null){
+			ViewImageLoader.load(coverImage, null, new UrlImageLoaderRequest(coverUri, V.dp(1000), V.dp(1000)));
+		}
 
 		return view;
 	}
@@ -147,6 +169,16 @@ public class OnboardingProfileSetupFragment extends ToolbarFragment{
 	@Override
 	public void onApplyWindowInsets(WindowInsets insets){
 		super.onApplyWindowInsets(UiUtils.applyBottomInsetToFixedView(buttonBar, insets));
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putParcelable(STATE_AVATAR_URI, avatarUri);
+		outState.putParcelable(STATE_COVER_URI, coverUri);
+		outState.putBoolean(STATE_DISCOVERABLE, discoverableItem!=null && discoverableItem.checked);
+		outState.putString(STATE_NAME, nameEdit!=null ? nameEdit.getText().toString() : null);
+		outState.putString(STATE_BIO, bioEdit!=null ? bioEdit.getText().toString() : null);
 	}
 
 	@Override

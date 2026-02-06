@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import static de.icod.techidon.GlobalUserPreferences.PrefixRepliesMode.ALWAYS;
 import static de.icod.techidon.GlobalUserPreferences.PrefixRepliesMode.TO_OTHERS;
 import static de.icod.techidon.api.requests.statuses.CreateStatus.DRAFTS_AFTER_INSTANT;
@@ -161,6 +162,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	private static final String TAG="ComposeFragment";
 	public static final int CAMERA_PERMISSION_CODE = 626938;
 	public static final int CAMERA_PIC_REQUEST_CODE = 6242069;
+	private static final String STATE_PHOTO_URI="state_photo_uri";
 
 	private static final Pattern MENTION_PATTERN=Pattern.compile("(^|[^\\/\\w])@(([a-z0-9_]+)@[a-z0-9\\.\\-]+[a-z0-9]+)", Pattern.CASE_INSENSITIVE);
 
@@ -248,8 +250,6 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		E.register(this);
-		setRetainInstance(true);
-
 		accountID=getArguments().getString("account");
 		AccountSession session=AccountSessionManager.get(accountID);
 
@@ -277,9 +277,29 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			AccountSessionManager.getInstance().updateInstanceInfo(instanceDomain);
 		}
 
-		Bundle bundle = savedInstanceState != null ? savedInstanceState : getArguments();
-		if (bundle.containsKey("scheduledStatus")) scheduledStatus=Parcels.unwrap(bundle.getParcelable("scheduledStatus"));
-		if (bundle.containsKey("scheduledAt")) scheduledAt=(Instant) bundle.getSerializable("scheduledAt");
+		Bundle args=getArguments();
+		if(args.containsKey("scheduledStatus"))
+			scheduledStatus=Parcels.unwrap(args.getParcelable("scheduledStatus"));
+		if(args.containsKey("scheduledAt"))
+			scheduledAt=(Instant) args.getSerializable("scheduledAt");
+
+		if(savedInstanceState!=null){
+			if(savedInstanceState.containsKey("scheduledStatus"))
+				scheduledStatus=Parcels.unwrap(savedInstanceState.getParcelable("scheduledStatus"));
+			if(savedInstanceState.containsKey("scheduledAtSet")){
+				if(savedInstanceState.getBoolean("scheduledAtSet")){
+					scheduledAt=(Instant) savedInstanceState.getSerializable("scheduledAt");
+				}else{
+					scheduledAt=null;
+				}
+			}else if(savedInstanceState.containsKey("scheduledAt")){
+				scheduledAt=(Instant) savedInstanceState.getSerializable("scheduledAt");
+			}
+			if(savedInstanceState.containsKey("initialText"))
+				initialText=savedInstanceState.getString("initialText");
+			if(savedInstanceState.containsKey(STATE_PHOTO_URI))
+				photoUri=savedInstanceState.getParcelable(STATE_PHOTO_URI);
+		}
 
 		if(instance.maxTootChars>0)
 			charLimit=instance.maxTootChars;
@@ -301,9 +321,9 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 		wm=activity.getSystemService(WindowManager.class);
 
 		overLimitBG=new BackgroundColorSpan(UiUtils.getThemeColor(activity, R.attr.colorM3ErrorContainer));
@@ -565,12 +585,21 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 		mediaViewController.onSaveInstanceState(outState);
 		outState.putBoolean("hasSpoiler", hasSpoiler);
 		outState.putSerializable("visibility", statusVisibility);
+		outState.putBoolean("localOnly", localOnly);
+		outState.putBoolean("sensitive", sensitive);
+		outState.putSerializable("contentType", contentType);
+		outState.putBoolean("scheduledAtSet", scheduledAt!=null);
+		if(scheduledAt!=null)
+			outState.putSerializable("scheduledAt", scheduledAt);
+		outState.putString("initialText", initialText);
 		outState.putParcelable("postLang", Parcels.wrap(postLang));
 		if(currentAutocompleteSpan!=null){
 			Editable e=mainEditText.getText();
 			outState.putInt("autocompleteStart", e.getSpanStart(currentAutocompleteSpan));
 			outState.putInt("autocompleteEnd", e.getSpanEnd(currentAutocompleteSpan));
 		}
+		if(photoUri!=null)
+			outState.putParcelable(STATE_PHOTO_URI, photoUri);
 	}
 
 
@@ -880,7 +909,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(editingStatus==null ? R.menu.compose : R.menu.compose_edit, menu);
 		actionItem = menu.findItem(R.id.publish);
 		LinearLayout wrap=new LinearLayout(getActivity());
@@ -999,7 +1028,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		return true;
 	}
 
@@ -1509,7 +1538,13 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 		}
 
 		if(requestCode==CAMERA_PIC_REQUEST_CODE && resultCode==Activity.RESULT_OK){
-			onAddMediaAttachmentFromEditText(photoUri, null);
+			if(photoUri!=null){
+				onAddMediaAttachmentFromEditText(photoUri, null);
+			}else if(data!=null && data.getData()!=null){
+				onAddMediaAttachmentFromEditText(data.getData(), null);
+			}else{
+				Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 

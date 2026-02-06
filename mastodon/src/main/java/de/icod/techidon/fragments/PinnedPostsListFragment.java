@@ -29,6 +29,8 @@ public class PinnedPostsListFragment extends StatusListFragment{
 		super.onCreate(savedInstanceState);
 		account=Parcels.unwrap(getArguments().getParcelable("profileAccount"));
 		setTitle(R.string.posts);
+		if(savedInstanceState!=null && loaded)
+			return;
 		loadData();
 	}
 

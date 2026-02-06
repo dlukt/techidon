@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.report;
 
+import android.content.Context;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -50,6 +51,8 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class ReportReasonChoiceFragment extends StatusListFragment{
+	private static final String STATE_SELECTED_IDS="state_selected_ids";
+
 	private MergeRecyclerAdapter mergeAdapter;
 	private Button btn;
 	private View buttonBar;
@@ -64,10 +67,16 @@ public class ReportReasonChoiceFragment extends StatusListFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 		setListLayoutId(R.layout.fragment_content_report_posts);
 		setLayout(R.layout.fragment_report_posts);
 		E.register(this);
+		if(savedInstanceState!=null){
+			ArrayList<String> restored=savedInstanceState.getStringArrayList(STATE_SELECTED_IDS);
+			if(restored!=null){
+				selectedIDs.clear();
+				selectedIDs.addAll(restored);
+			}
+		}
 	}
 
 	@Override
@@ -77,19 +86,29 @@ public class ReportReasonChoiceFragment extends StatusListFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putStringArrayList(STATE_SELECTED_IDS, selectedIDs);
+	}
+
+	@Override
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setNavigationBarColor(UiUtils.getThemeColor(activity, R.attr.colorM3Surface));
 		accountID=getArguments().getString("account");
 		reportAccount=Parcels.unwrap(getArguments().getParcelable("reportAccount"));
 		reportStatus=Parcels.unwrap(getArguments().getParcelable("status"));
 		if(reportStatus!=null){
-			Status hiddenStatus=reportStatus.clone();
-			if(hiddenStatus.spoilerText==null) hiddenStatus.spoilerText=getString(R.string.post_hidden);
-			onDataLoaded(Collections.singletonList(hiddenStatus));
+			if(!loaded || data.isEmpty()){
+				Status hiddenStatus=reportStatus.clone();
+				if(hiddenStatus.spoilerText==null) hiddenStatus.spoilerText=getString(R.string.post_hidden);
+				onDataLoaded(Collections.singletonList(hiddenStatus));
+			}
 			setTitle(R.string.report_title_post);
 		}else{
-			onDataLoaded(Collections.emptyList());
+			if(!loaded || data.isEmpty()){
+				onDataLoaded(Collections.emptyList());
+			}
 			setTitle(getString(R.string.report_title, reportAccount.acct));
 		}
 		relationship=Parcels.unwrap(getArguments().getParcelable("relationship"));
@@ -152,7 +171,7 @@ public class ReportReasonChoiceFragment extends StatusListFragment{
 		subtitle.setText(getString(R.string.report_choose_reason_subtitle));
 
 		adapter.addAdapter(new SingleViewRecyclerAdapter(headerView));
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		adapter.addAdapter(new ChoiceItemsAdapter(getActivity(), isMultipleChoice, items, list, selectedIDs, btn::setEnabled));
 
 		return mergeAdapter=adapter;

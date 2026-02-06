@@ -4,7 +4,7 @@ import static de.icod.techidon.api.session.AccountLocalPreferences.ShowEmojiReac
 import static de.icod.techidon.api.session.AccountLocalPreferences.ShowEmojiReactions.ONLY_OPENED;
 
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;

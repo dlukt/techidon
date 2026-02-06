@@ -5,7 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.graphics.Outline;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -74,6 +74,7 @@ import me.grishka.appkit.views.UsableRecyclerView;
 public class SearchQueryFragment extends MastodonRecyclerFragment<SearchResultViewModel> implements CustomTransitionsFragment, OnBackPressedListener{
 	private static final Pattern HASHTAG_REGEX=Pattern.compile("^(\\w*[a-zA-Z·]\\w*)$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern USERNAME_REGEX=Pattern.compile("^@?([a-z0-9_-]+)(@[^\\s]+)?$", Pattern.CASE_INSENSITIVE);
+	private static final String STATE_QUERY="state_query";
 
 	private MergeRecyclerAdapter mergeAdapter=new MergeRecyclerAdapter();
 	private HideableSingleViewRecyclerAdapter recentsHeader;
@@ -103,10 +104,21 @@ public class SearchQueryFragment extends MastodonRecyclerFragment<SearchResultVi
 		goToAccountItem=new ListItem<>("", null, R.drawable.ic_fluent_person_24_regular, this::onGoToAccountClick);
 		goToStatusSearchItem=new ListItem<>("", null, R.drawable.ic_fluent_search_24_regular, this::onGoToStatusSearchClick);
 		goToAccountSearchItem=new ListItem<>("", null, R.drawable.ic_fluent_people_24_regular, this::onGoToAccountSearchClick);
-		currentQuery=getArguments().getString("query");
+		if(savedInstanceState!=null){
+			currentQuery=savedInstanceState.getString(STATE_QUERY);
+		}
+		if(currentQuery==null){
+			currentQuery=getArguments().getString("query");
+		}
 
 		dataLoaded();
 		doLoadData(0, 0);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_QUERY, currentQuery);
 	}
 
 	@Override

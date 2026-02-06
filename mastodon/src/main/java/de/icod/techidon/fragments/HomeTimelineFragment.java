@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
@@ -35,6 +36,9 @@ import me.grishka.appkit.api.SimpleCallback;
 @SuppressWarnings("deprecation")
 
 public class HomeTimelineFragment extends StatusListFragment {
+	private static final String STATE_MAX_ID="state_max_id";
+	private static final String STATE_LAST_SAVED_MARKER_ID="state_last_saved_marker_id";
+
 	private HomeTabFragment parent;
 	private String maxID;
 	private String lastSavedMarkerID;
@@ -45,10 +49,24 @@ public class HomeTimelineFragment extends StatusListFragment {
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		if (getParentFragment() instanceof HomeTabFragment home) parent = home;
-		loadData();
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			maxID=savedInstanceState.getString(STATE_MAX_ID);
+			lastSavedMarkerID=savedInstanceState.getString(STATE_LAST_SAVED_MARKER_ID);
+			if(!loaded && dataLoading){
+				dataLoading=false;
+			}
+		}
+		if(!getArguments().getBoolean("noAutoLoad") && !loaded && !dataLoading){
+			loadData();
+		}
 	}
 
 	@Override
@@ -116,6 +134,13 @@ public class HomeTimelineFragment extends StatusListFragment {
 						.exec(accountID);
 			}
 		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_MAX_ID, maxID);
+		outState.putString(STATE_LAST_SAVED_MARKER_ID, lastSavedMarkerID);
 	}
 
 	public void onStatusCreated(Status status){

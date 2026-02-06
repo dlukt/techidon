@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -47,6 +48,8 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class DiscoverNewsFragment extends BaseRecyclerFragment<CardViewModel> implements ScrollableToTop, IsOnTop, ProvidesAssistContent.ProvidesWebUri{
+	private static final String STATE_TOP_CARDS="state_top_cards";
+
 	private String accountID;
 	private DiscoverInfoBannerHelper bannerHelper;
 	private MergeRecyclerAdapter mergeAdapter;
@@ -61,10 +64,21 @@ public class DiscoverNewsFragment extends BaseRecyclerFragment<CardViewModel> im
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(!loaded && dataLoading && currentRequest==null){
+			dataLoading=false;
+		}
 		accountID=getArguments().getString("account");
 		bannerHelper=new DiscoverInfoBannerHelper(DiscoverInfoBannerHelper.BannerType.TRENDING_LINKS, accountID);
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
+		if(savedInstanceState!=null){
+			ArrayList<Parcelable> savedTopCards=savedInstanceState.getParcelableArrayList(STATE_TOP_CARDS);
+			if(savedTopCards!=null){
+				top3.clear();
+				for(Parcelable savedCard : savedTopCards){
+					Card card=Parcels.unwrap(savedCard);
+					top3.add(new CardViewModel(card, 280, 140));
+				}
+			}
+		}
 	}
 
 	@Override
@@ -109,6 +123,16 @@ public class DiscoverNewsFragment extends BaseRecyclerFragment<CardViewModel> im
 		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(cardsList));
 		mergeAdapter.addAdapter(new LinksAdapter(imgLoader, data));
 		return mergeAdapter;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		ArrayList<Parcelable> savedTopCards=new ArrayList<>(top3.size());
+		for(CardViewModel vm : top3){
+			savedTopCards.add(Parcels.wrap(vm.card));
+		}
+		outState.putParcelableArrayList(STATE_TOP_CARDS, savedTopCards);
 	}
 
 	@Override

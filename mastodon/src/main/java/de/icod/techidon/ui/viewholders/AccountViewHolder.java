@@ -2,7 +2,7 @@ package de.icod.techidon.ui.viewholders;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;

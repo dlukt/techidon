@@ -5,7 +5,7 @@ import static de.icod.techidon.fragments.ComposeFragment.CAMERA_PIC_REQUEST_CODE
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.app.assist.AssistContent;
 import android.content.Context;
 import android.content.Intent;
@@ -205,7 +205,7 @@ public class MainActivity extends FragmentStackActivity implements ProvidesAssis
  	 */
 	@Override
 	public void onBackPressed() {
-		Fragment currentFragment = getFragmentManager().findFragmentById(
+		Fragment currentFragment = getSupportFragmentManager().findFragmentById(
 				(fragmentContainers.get(fragmentContainers.size() - 1)).getId()
 		);
 		Bundle currentArgs = currentFragment.getArguments();
@@ -251,7 +251,7 @@ public class MainActivity extends FragmentStackActivity implements ProvidesAssis
 		for (int i = fragmentContainers.size() - 1; i >= 0; i--) {
 			FrameLayout fl = fragmentContainers.get(i);
 			if (fl.getVisibility() == View.VISIBLE) {
-				return getFragmentManager().findFragmentById(fl.getId());
+				return getSupportFragmentManager().findFragmentById(fl.getId());
 			}
 		}
 		return null;

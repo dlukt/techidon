@@ -8,6 +8,7 @@ import android.view.WindowInsets;
 import android.widget.TextView;
 
 import de.icod.techidon.R;
+import de.icod.techidon.api.MastodonAPIRequest;
 import de.icod.techidon.api.requests.accounts.GetFollowSuggestions;
 import de.icod.techidon.api.requests.accounts.SetAccountFollowed;
 import de.icod.techidon.fragments.account_list.BaseAccountListFragment;
@@ -34,9 +35,19 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment{
+	private static final String STATE_PENDING_FOLLOWS="state_pending_follows";
+	private static final String STATE_FOLLOW_TOTAL="state_follow_total";
+	private static final String STATE_FOLLOW_IN_PROGRESS="state_follow_in_progress";
+
 	private String accountID;
 	private View buttonBar;
 	private int numRunningFollowRequests=0;
+	private ArrayList<String> pendingFollowAccountIds;
+	private final ArrayList<String> runningFollowAccountIds=new ArrayList<>();
+	private int followTotalCount;
+	private boolean followAllInProgress;
+	private ProgressDialog followProgress;
+	private final ArrayList<MastodonAPIRequest<?>> runningFollowRequests=new ArrayList<>();
 
 	public OnboardingFollowSuggestionsFragment(){
 		super(R.layout.fragment_onboarding_follow_suggestions, 40);
@@ -46,10 +57,18 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
+		if(savedInstanceState!=null){
+			pendingFollowAccountIds=savedInstanceState.getStringArrayList(STATE_PENDING_FOLLOWS);
+			followTotalCount=savedInstanceState.getInt(STATE_FOLLOW_TOTAL, 0);
+			followAllInProgress=savedInstanceState.getBoolean(STATE_FOLLOW_IN_PROGRESS, false);
+			if(!loaded && dataLoading){
+				dataLoading=false;
+			}
+		}
 		setTitle(R.string.onboarding_recommendations_title);
 		accountID=getArguments().getString("account");
-		loadData();
+		if(!loaded && !dataLoading)
+			loadData();
 	}
 
 	@Override
@@ -59,6 +78,10 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 
 		view.findViewById(R.id.btn_next).setOnClickListener(UiUtils.rateLimitedClickListener(this::onFollowAllClick));
 //		view.findViewById(R.id.btn_skip).setOnClickListener(UiUtils.rateLimitedClickListener(v->proceed()));
+		if(followAllInProgress && pendingFollowAccountIds!=null && !pendingFollowAccountIds.isEmpty()){
+			showFollowProgress();
+			startFollowRequests();
+		}
 	}
 
 	@Override
@@ -85,6 +108,37 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 	}
 
 	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		if(followAllInProgress && pendingFollowAccountIds!=null){
+			ArrayList<String> pendingToSave=new ArrayList<>(pendingFollowAccountIds);
+			for(String id : runningFollowAccountIds){
+				if(!pendingToSave.contains(id))
+					pendingToSave.add(id);
+			}
+			outState.putStringArrayList(STATE_PENDING_FOLLOWS, pendingToSave);
+			outState.putInt(STATE_FOLLOW_TOTAL, followTotalCount);
+			outState.putBoolean(STATE_FOLLOW_IN_PROGRESS, true);
+		}
+	}
+
+	@Override
+	public void onDestroy(){
+		followAllInProgress=false;
+		pendingFollowAccountIds=null;
+		for(MastodonAPIRequest<?> req : runningFollowRequests){
+			req.cancel();
+		}
+		runningFollowRequests.clear();
+		if(followProgress!=null){
+			followProgress.dismiss();
+			followProgress=null;
+		}
+		numRunningFollowRequests=0;
+		super.onDestroy();
+	}
+
+	@Override
 	protected RecyclerView.Adapter<?> getAdapter(){
 //		Unused in Techidon
 //		TextView introText=new TextView(getActivity());
@@ -94,7 +148,7 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 //		introText.setText(R.string.onboarding_recommendations_intro);
 		MergeRecyclerAdapter mergeAdapter=new MergeRecyclerAdapter();
 //		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(introText));
-		mergeAdapter.addAdapter(super.getAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return mergeAdapter;
 	}
 
@@ -105,6 +159,8 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 			proceed();
 			return;
 		}
+		if(followAllInProgress)
+			return;
 		ArrayList<String> accountIdsToFollow=new ArrayList<>();
 		for(AccountViewModel acc:data){
 			Relationship rel=relationships.get(acc.account.id);
@@ -113,34 +169,42 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 			if(rel.canFollow())
 				accountIdsToFollow.add(acc.account.id);
 		}
+		if(accountIdsToFollow.isEmpty())
+			return;
+		pendingFollowAccountIds=accountIdsToFollow;
+		followTotalCount=accountIdsToFollow.size();
+		followAllInProgress=true;
+		showFollowProgress();
+		startFollowRequests();
+	}
 
-		final ProgressDialog progress=new ProgressDialog(getActivity());
-		progress.setIndeterminate(false);
-		progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		progress.setMax(accountIdsToFollow.size());
-		progress.setCancelable(false);
-		progress.setMessage(getString(R.string.sending_follows));
-		progress.show();
-
-		for(int i=0;i<Math.min(accountIdsToFollow.size(), 5);i++){ // Send up to 5 requests in parallel
-			followNextAccount(accountIdsToFollow, progress);
+	private void startFollowRequests(){
+		if(pendingFollowAccountIds==null)
+			return;
+		int toStart=Math.min(pendingFollowAccountIds.size(), 5);
+		for(int i=0;i<toStart;i++){
+			followNextAccount();
 		}
 	}
 
-	private void followNextAccount(ArrayList<String> accountIdsToFollow, ProgressDialog progress){
-		if(accountIdsToFollow.isEmpty()){
+	private void followNextAccount(){
+		if(pendingFollowAccountIds==null || pendingFollowAccountIds.isEmpty()){
 			if(numRunningFollowRequests==0){
-				progress.dismiss();
-				proceed();
+				finishFollowAll();
 			}
 			return;
 		}
 		numRunningFollowRequests++;
-		String id=accountIdsToFollow.remove(0);
-		new SetAccountFollowed(id, true, true)
+		String id=pendingFollowAccountIds.remove(0);
+		runningFollowAccountIds.add(id);
+		SetAccountFollowed req=new SetAccountFollowed(id, true, true);
+		runningFollowRequests.add(req);
+		req
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(Relationship result){
+						runningFollowRequests.remove(req);
+						runningFollowAccountIds.remove(id);
 						relationships.put(id, result);
 						for(int i=0;i<list.getChildCount();i++){
 							if(list.getChildViewHolder(list.getChildAt(i)) instanceof AccountViewHolder svh && svh.getItem().account.id.equals(id)){
@@ -149,18 +213,51 @@ public class OnboardingFollowSuggestionsFragment extends BaseAccountListFragment
 							}
 						}
 						numRunningFollowRequests--;
-						progress.setProgress(progress.getMax()-accountIdsToFollow.size()-numRunningFollowRequests);
-						followNextAccount(accountIdsToFollow, progress);
+						updateFollowProgress();
+						followNextAccount();
 					}
 
 					@Override
 					public void onError(ErrorResponse error){
+						runningFollowRequests.remove(req);
+						runningFollowAccountIds.remove(id);
 						numRunningFollowRequests--;
-						progress.setProgress(progress.getMax()-accountIdsToFollow.size()-numRunningFollowRequests);
-						followNextAccount(accountIdsToFollow, progress);
+						updateFollowProgress();
+						followNextAccount();
 					}
 				})
 				.exec(accountID);
+	}
+
+	private void showFollowProgress(){
+		if(getActivity()==null || followProgress!=null)
+			return;
+		followProgress=new ProgressDialog(getActivity());
+		followProgress.setIndeterminate(false);
+		followProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		followProgress.setMax(followTotalCount);
+		followProgress.setCancelable(false);
+		followProgress.setMessage(getString(R.string.sending_follows));
+		followProgress.show();
+		updateFollowProgress();
+	}
+
+	private void updateFollowProgress(){
+		if(followProgress==null || pendingFollowAccountIds==null)
+			return;
+		int completed=followProgress.getMax()-pendingFollowAccountIds.size()-numRunningFollowRequests;
+		followProgress.setProgress(Math.max(0, completed));
+	}
+
+	private void finishFollowAll(){
+		followAllInProgress=false;
+		pendingFollowAccountIds=null;
+		numRunningFollowRequests=0;
+		if(followProgress!=null){
+			followProgress.dismiss();
+			followProgress=null;
+		}
+		proceed();
 	}
 
 	private void proceed(){

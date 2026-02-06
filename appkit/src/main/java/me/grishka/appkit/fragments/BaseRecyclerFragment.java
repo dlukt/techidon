@@ -57,7 +57,7 @@ public abstract class BaseRecyclerFragment<T> extends LoaderFragment implements 
 
 	private RetainedState retainedState;
 
-	private static class RetainedState extends ViewModel{
+	public static class RetainedState extends ViewModel{
 		Preloader<?> preloader;
 		int itemsPerPage;
 		int listLayoutId;
@@ -104,6 +104,10 @@ public abstract class BaseRecyclerFragment<T> extends LoaderFragment implements 
 			loaded=retainedState.loaded;
 			dataLoading=retainedState.dataLoading;
 			refreshing=retainedState.refreshing;
+			if(!loaded && dataLoading && currentRequest==null){
+				dataLoading=false;
+				retainedState.dataLoading=false;
+			}
 		}
 		preloader.setCallback(this);
 		data=preloader.getData();

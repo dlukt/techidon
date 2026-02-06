@@ -43,6 +43,7 @@ import me.grishka.appkit.utils.V;
 
 public class ComposeImageDescriptionFragment extends MastodonToolbarFragment implements OnBackPressedListener{
 	private static final String TAG="ComposeImageDescription";
+	private static final String STATE_DESCRIPTION_TEXT="state_description_text";
 
 	private String accountID, attachmentID;
 	private EditText edit;
@@ -53,11 +54,11 @@ public class ComposeImageDescriptionFragment extends MastodonToolbarFragment imp
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		accountID=getArguments().getString("account");
 		attachmentID=getArguments().getString("attachment");
@@ -127,12 +128,34 @@ public class ComposeImageDescriptionFragment extends MastodonToolbarFragment imp
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onViewStateRestored(Bundle savedInstanceState){
+		super.onViewStateRestored(savedInstanceState);
+		if(savedInstanceState==null)
+			return;
+		if(edit!=null && savedInstanceState.containsKey(STATE_DESCRIPTION_TEXT)){
+			String text=savedInstanceState.getString(STATE_DESCRIPTION_TEXT);
+			if(text!=null){
+				edit.setText(text);
+				edit.setSelection(edit.getText().length());
+			}
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		if(edit!=null){
+			outState.putString(STATE_DESCRIPTION_TEXT, edit.getText().toString());
+		}
+	}
+
+	@Override
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.compose_image_description, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		if(item.getItemId()==R.id.help){
 			new M3AlertDialogBuilder(themeWrapper)
 					.setTitle(R.string.what_is_alt_text)

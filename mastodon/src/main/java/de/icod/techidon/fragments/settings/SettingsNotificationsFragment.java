@@ -72,6 +72,7 @@ public class SettingsNotificationsFragment extends BaseSettingsFragment<Void>{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle(R.string.settings_notifications);
 		lp=AccountSessionManager.get(accountID).getLocalPreferences();
 
@@ -174,7 +175,7 @@ public class SettingsNotificationsFragment extends BaseSettingsFragment<Void>{
 
 		mergeAdapter=new MergeRecyclerAdapter();
 		mergeAdapter.addAdapter(bannerAdapter);
-		mergeAdapter.addAdapter(super.getAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return mergeAdapter;
 	}
 

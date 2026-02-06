@@ -64,6 +64,12 @@ import me.grishka.appkit.views.FragmentRootLinearLayout;
 
 public class SignupFragment extends ToolbarFragment{
 	private static final String TAG="SignupFragment";
+	private static final String STATE_SUBMIT_AFTER_TOKEN="state_submit_after_token";
+	private static final String STATE_API_APPLICATION="state_api_application";
+	private static final String STATE_API_TOKEN_ACCESS="state_api_token_access";
+	private static final String STATE_API_TOKEN_TYPE="state_api_token_type";
+	private static final String STATE_API_TOKEN_SCOPE="state_api_token_scope";
+	private static final String STATE_API_TOKEN_CREATED_AT="state_api_token_created_at";
 
 	private Instance instance;
 
@@ -74,10 +80,15 @@ public class SignupFragment extends ToolbarFragment{
 	private View buttonBar;
 	private TextWatcher buttonStateUpdater=new SimpleTextWatcher(e->updateButtonState());
 	private APIRequest currentBackgroundRequest;
+	private APIRequest currentSignupRequest;
 	private Application apiApplication;
 	private Token apiToken;
 	private boolean submitAfterGettingToken;
 	private ProgressDialog progressDialog;
+	private Token pendingSignupToken;
+	private String pendingSignupUsername;
+	private String pendingSignupEmail;
+	private String pendingSignupDisplayName;
 	private HashSet<EditText> errorFields=new HashSet<>();
 	private ElevationOnScrollListener onScrollListener;
 	private Set<String> serverSupportedTimezones, serverSupportedLocales;
@@ -87,7 +98,25 @@ public class SignupFragment extends ToolbarFragment{
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
 		instance=Parcels.unwrap(getArguments().getParcelable("instance"));
-		createAppAndGetToken();
+		if(savedInstanceState!=null){
+			submitAfterGettingToken=savedInstanceState.getBoolean(STATE_SUBMIT_AFTER_TOKEN, false);
+			if(savedInstanceState.containsKey(STATE_API_APPLICATION)){
+				apiApplication=Parcels.unwrap(savedInstanceState.getParcelable(STATE_API_APPLICATION));
+			}
+			if(savedInstanceState.containsKey(STATE_API_TOKEN_ACCESS)){
+				Token restored=new Token();
+				restored.accessToken=savedInstanceState.getString(STATE_API_TOKEN_ACCESS);
+				restored.tokenType=savedInstanceState.getString(STATE_API_TOKEN_TYPE);
+				restored.scope=savedInstanceState.getString(STATE_API_TOKEN_SCOPE);
+				restored.createdAt=savedInstanceState.getLong(STATE_API_TOKEN_CREATED_AT, 0);
+				apiToken=restored;
+			}
+		}
+		if(apiApplication==null){
+			createAppAndGetToken();
+		}else if(apiToken==null){
+			getToken();
+		}
 		setTitle(R.string.signup_title);
 		serverSupportedTimezones=Arrays.stream(getResources().getStringArray(R.array.server_supported_timezones)).collect(Collectors.toSet());
 		serverSupportedLocales=Arrays.stream(getResources().getStringArray(R.array.server_supported_locales)).collect(Collectors.toSet());
@@ -154,6 +183,19 @@ public class SignupFragment extends ToolbarFragment{
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
 		view.findViewById(R.id.scroller).setOnScrollChangeListener(onScrollListener=new ElevationOnScrollListener((FragmentRootLinearLayout) view, buttonBar, getToolbar()));
+		if(submitAfterGettingToken || currentSignupRequest!=null){
+			showProgressDialog();
+		}
+		completePendingSignupIfNeeded();
+	}
+
+	@Override
+	public void onViewStateRestored(Bundle savedInstanceState){
+		super.onViewStateRestored(savedInstanceState);
+		if(submitAfterGettingToken && apiApplication!=null && apiToken!=null){
+			submitAfterGettingToken=false;
+			submit();
+		}
 	}
 
 	@Override
@@ -190,6 +232,7 @@ public class SignupFragment extends ToolbarFragment{
 	private void actuallySubmit(){
 		String username=this.username.getText().toString().trim();
 		String email=this.email.getText().toString().trim();
+		String displayName=this.displayName.getText().toString();
 		for(EditText edit:errorFields){
 			edit.setError(null);
 		}
@@ -223,23 +266,32 @@ public class SignupFragment extends ToolbarFragment{
 
 		String inviteCode=getArguments().getString("inviteCode");
 
-		new RegisterAccount(username, email, password.getText().toString(), locale, reason.getText().toString(), timezone, inviteCode)
+		currentSignupRequest=new RegisterAccount(username, email, password.getText().toString(), locale, reason.getText().toString(), timezone, inviteCode)
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(Token result){
-						progressDialog.dismiss();
-						Account fakeAccount=new Account();
-						fakeAccount.acct=fakeAccount.username=username;
-						fakeAccount.id="tmp"+System.currentTimeMillis();
-						fakeAccount.displayName=displayName.getText().toString();
-						AccountSessionManager.getInstance().addAccount(instance, result, fakeAccount, apiApplication, new AccountActivationInfo(email, System.currentTimeMillis()));
-						Bundle args=new Bundle();
-						args.putString("account", AccountSessionManager.getInstance().getLastActiveAccountID());
-						Nav.goClearingStack(getActivity(), AccountActivationFragment.class, args);
+						if(currentSignupRequest==null)
+							return;
+						currentSignupRequest=null;
+						dismissProgressDialog();
+						if(getActivity()==null){
+							pendingSignupToken=result;
+							pendingSignupUsername=username;
+							pendingSignupEmail=email;
+							pendingSignupDisplayName=displayName;
+							return;
+						}
+						finishSignup(result, username, email, displayName);
 					}
 
 					@Override
 					public void onError(ErrorResponse error){
+						if(currentSignupRequest==null)
+							return;
+						currentSignupRequest=null;
+						dismissProgressDialog();
+						if(getActivity()==null || getView()==null)
+							return;
 						if(error instanceof MastodonDetailedErrorResponse derr){
 							Map<String, List<MastodonDetailedErrorResponse.FieldError>> fieldErrors=derr.detailedErrors;
 							boolean first=true;
@@ -277,7 +329,6 @@ public class SignupFragment extends ToolbarFragment{
 						}else{
 							error.showToast(getActivity());
 						}
-						progressDialog.dismiss();
 					}
 				})
 				.exec(instance.uri, apiToken);
@@ -364,8 +415,9 @@ public class SignupFragment extends ToolbarFragment{
 						currentBackgroundRequest=null;
 						if(submitAfterGettingToken){
 							submitAfterGettingToken=false;
-							progressDialog.dismiss();
-							error.showToast(getActivity());
+							dismissProgressDialog();
+							if(getActivity()!=null)
+								error.showToast(getActivity());
 						}
 					}
 				})
@@ -390,8 +442,9 @@ public class SignupFragment extends ToolbarFragment{
 						currentBackgroundRequest=null;
 						if(submitAfterGettingToken){
 							submitAfterGettingToken=false;
-							progressDialog.dismiss();
-							error.showToast(getActivity());
+							dismissProgressDialog();
+							if(getActivity()!=null)
+								error.showToast(getActivity());
 						}
 					}
 				})
@@ -403,9 +456,90 @@ public class SignupFragment extends ToolbarFragment{
 		super.onApplyWindowInsets(UiUtils.applyBottomInsetToFixedView(buttonBar, insets));
 	}
 
+	@Override
+	public void onDestroyView(){
+		dismissProgressDialog();
+		super.onDestroyView();
+	}
+
+	@Override
+	public void onDestroy(){
+		cancelBackgroundRequest();
+		cancelSignupRequest();
+		dismissProgressDialog();
+		super.onDestroy();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_SUBMIT_AFTER_TOKEN, submitAfterGettingToken);
+		if(apiApplication!=null)
+			outState.putParcelable(STATE_API_APPLICATION, Parcels.wrap(apiApplication));
+		if(apiToken!=null){
+			outState.putString(STATE_API_TOKEN_ACCESS, apiToken.accessToken);
+			outState.putString(STATE_API_TOKEN_TYPE, apiToken.tokenType);
+			outState.putString(STATE_API_TOKEN_SCOPE, apiToken.scope);
+			outState.putLong(STATE_API_TOKEN_CREATED_AT, apiToken.createdAt);
+		}
+	}
+
 	private void onGoBackLinkClick(LinkSpan span){
 		setResult(false, null);
 		Nav.finish(this);
+	}
+
+	private void cancelBackgroundRequest(){
+		if(currentBackgroundRequest!=null){
+			currentBackgroundRequest.cancel();
+			currentBackgroundRequest=null;
+		}
+	}
+
+	private void cancelSignupRequest(){
+		if(currentSignupRequest!=null){
+			currentSignupRequest.cancel();
+			currentSignupRequest=null;
+		}
+	}
+
+	private void dismissProgressDialog(){
+		if(progressDialog!=null){
+			progressDialog.dismiss();
+			progressDialog=null;
+		}
+	}
+
+	private void completePendingSignupIfNeeded(){
+		if(pendingSignupToken==null)
+			return;
+		Token token=pendingSignupToken;
+		String username=pendingSignupUsername;
+		String email=pendingSignupEmail;
+		String displayName=pendingSignupDisplayName;
+		pendingSignupToken=null;
+		pendingSignupUsername=null;
+		pendingSignupEmail=null;
+		pendingSignupDisplayName=null;
+		finishSignup(token, username, email, displayName);
+	}
+
+	private void finishSignup(Token token, String username, String email, String displayName){
+		if(getActivity()==null){
+			pendingSignupToken=token;
+			pendingSignupUsername=username;
+			pendingSignupEmail=email;
+			pendingSignupDisplayName=displayName;
+			return;
+		}
+		Account fakeAccount=new Account();
+		fakeAccount.acct=fakeAccount.username=username;
+		fakeAccount.id="tmp"+System.currentTimeMillis();
+		fakeAccount.displayName=displayName;
+		AccountSessionManager.getInstance().addAccount(instance, token, fakeAccount, apiApplication, new AccountActivationInfo(email, System.currentTimeMillis()));
+		Bundle args=new Bundle();
+		args.putString("account", AccountSessionManager.getInstance().getLastActiveAccountID());
+		Nav.goClearingStack(getActivity(), AccountActivationFragment.class, args);
 	}
 
 	private class ErrorClearingListener implements TextWatcher{

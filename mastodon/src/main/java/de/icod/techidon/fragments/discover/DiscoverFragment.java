@@ -1,7 +1,7 @@
 package de.icod.techidon.fragments.discover;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import android.app.assist.AssistContent;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +45,9 @@ import me.grishka.appkit.utils.V;
 
 public class DiscoverFragment extends AppKitFragment implements ScrollableToTop, OnBackPressedListener, IsOnTop, ProvidesAssistContent{
 	private static final int QUERY_RESULT=937;
+	private static final String STATE_SEARCH_ACTIVE="state_search_active";
+	private static final String STATE_CURRENT_QUERY="state_current_query";
+	private static final String STATE_CURRENT_FILTER="state_current_filter";
 
 	private TabLayout tabLayout;
 	private ViewPager2 pager;
@@ -64,6 +67,7 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 
 	private String accountID;
 	private String currentQuery;
+	private SearchResult.Type currentFilter;
 
 	private boolean disableDiscover;
 	private boolean isIceshrimp;
@@ -71,10 +75,14 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
-
-		accountID=getArguments().getString("account");
+accountID=getArguments().getString("account");
+		if(savedInstanceState!=null){
+			searchActive=savedInstanceState.getBoolean(STATE_SEARCH_ACTIVE, false);
+			currentQuery=savedInstanceState.getString(STATE_CURRENT_QUERY);
+			int filterOrdinal=savedInstanceState.getInt(STATE_CURRENT_FILTER, -1);
+			if(filterOrdinal>=0 && filterOrdinal<SearchResult.Type.values().length)
+				currentFilter=SearchResult.Type.values()[filterOrdinal];
+		}
 	}
 
 	@Nullable
@@ -120,32 +128,56 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 			}
 		});
 
-		if(hashtagsFragment==null){
+		Fragment restoredPosts=getChildFragmentManager().findFragmentById(R.id.discover_posts);
+		if(restoredPosts instanceof DiscoverPostsFragment)
+			postsFragment=(DiscoverPostsFragment) restoredPosts;
+		Fragment restoredHashtags=getChildFragmentManager().findFragmentById(R.id.discover_hashtags);
+		if(restoredHashtags instanceof TrendingHashtagsFragment)
+			hashtagsFragment=(TrendingHashtagsFragment) restoredHashtags;
+		Fragment restoredNews=getChildFragmentManager().findFragmentById(R.id.discover_news);
+		if(restoredNews instanceof DiscoverNewsFragment)
+			newsFragment=(DiscoverNewsFragment) restoredNews;
+		Fragment restoredAccounts=getChildFragmentManager().findFragmentById(R.id.discover_users);
+		if(restoredAccounts instanceof DiscoverAccountsFragment)
+			accountsFragment=(DiscoverAccountsFragment) restoredAccounts;
+
+		boolean needsFragments=postsFragment==null || hashtagsFragment==null || accountsFragment==null || (!isIceshrimp && newsFragment==null);
+		if(needsFragments){
 			Bundle args=new Bundle();
 			args.putString("account", accountID);
 			args.putBoolean("__is_tab", true);
 
-			postsFragment=new DiscoverPostsFragment();
-			postsFragment.setArguments(args);
+			if(postsFragment==null){
+				postsFragment=new DiscoverPostsFragment();
+				postsFragment.setArguments(args);
+			}
 
-			hashtagsFragment=new TrendingHashtagsFragment();
-			hashtagsFragment.setArguments(args);
+			if(hashtagsFragment==null){
+				hashtagsFragment=new TrendingHashtagsFragment();
+				hashtagsFragment.setArguments(args);
+			}
 
-			newsFragment=new DiscoverNewsFragment();
-			newsFragment.setArguments(args);
+			if(newsFragment==null){
+				newsFragment=new DiscoverNewsFragment();
+				newsFragment.setArguments(args);
+			}
 
-			accountsFragment=new DiscoverAccountsFragment();
-			accountsFragment.setArguments(args);
+			if(accountsFragment==null){
+				accountsFragment=new DiscoverAccountsFragment();
+				accountsFragment.setArguments(args);
+			}
 
 			FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-			transaction
-				.add(R.id.discover_posts, postsFragment)
-				.add(R.id.discover_hashtags, hashtagsFragment);
+			if(!postsFragment.isAdded())
+				transaction.add(R.id.discover_posts, postsFragment);
+			if(!hashtagsFragment.isAdded())
+				transaction.add(R.id.discover_hashtags, hashtagsFragment);
 			if(!isIceshrimp) // skip unsupported news discovery on Iceshrimp
-				transaction.add(R.id.discover_news, newsFragment);
-			transaction
-				.add(R.id.discover_users, accountsFragment)
-				.commit();
+				if(!newsFragment.isAdded())
+					transaction.add(R.id.discover_news, newsFragment);
+			if(!accountsFragment.isAdded())
+				transaction.add(R.id.discover_users, accountsFragment);
+			transaction.commit();
 		}
 
 		tabLayoutMediator=new TabLayoutMediator(tabLayout, pager, new TabLayoutMediator.TabConfigurationStrategy(){
@@ -175,12 +207,17 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 		});
 
 		searchView=view.findViewById(R.id.search_fragment);
+		Fragment existingSearch=getChildFragmentManager().findFragmentById(R.id.search_fragment);
+		if(existingSearch instanceof SearchFragment)
+			searchFragment=(SearchFragment) existingSearch;
+		boolean searchFragmentCreated=false;
 		if(searchFragment==null){
 			searchFragment=new SearchFragment();
 			Bundle args=new Bundle();
 			args.putString("account", accountID);
 			searchFragment.setArguments(args);
 			getChildFragmentManager().beginTransaction().add(R.id.search_fragment, searchFragment).commit();
+			searchFragmentCreated=true;
 		}
 
 		searchBack=view.findViewById(R.id.search_back);
@@ -195,6 +232,12 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 			pager.setVisibility(View.GONE);
 			tabLayout.setVisibility(View.GONE);
 			searchView.setVisibility(View.VISIBLE);
+		}
+		if(searchActive && currentQuery!=null){
+			searchText.setText(currentQuery);
+			if(searchFragmentCreated){
+				searchFragment.setQuery(currentQuery, currentFilter);
+			}
 		}
 
 		View searchWrap=view.findViewById(R.id.search_wrap);
@@ -262,6 +305,7 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 		searchBack.setEnabled(false);
 		searchBack.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 		currentQuery=null;
+		currentFilter=null;
 		searchFragment.clear();
 
 		if(disableDiscover) return;
@@ -301,6 +345,7 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 			}else{
 				type=null;
 			}
+			currentFilter=type;
 			searchFragment.setQuery(currentQuery, type);
 			searchText.setText(currentQuery);
 		}
@@ -311,6 +356,14 @@ public class DiscoverFragment extends AppKitFragment implements ScrollableToTop,
 		callFragmentToProvideAssistContent(searchActive
 				? searchFragment
 				: getFragmentForPage(pager.getCurrentItem()), assistContent);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_SEARCH_ACTIVE, searchActive);
+		outState.putString(STATE_CURRENT_QUERY, currentQuery);
+		outState.putInt(STATE_CURRENT_FILTER, currentFilter!=null ? currentFilter.ordinal() : -1);
 	}
 
 	private class DiscoverPagerAdapter extends RecyclerView.Adapter<SimpleViewHolder>{

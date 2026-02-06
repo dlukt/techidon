@@ -34,6 +34,7 @@ import de.icod.techidon.ui.viewholders.AccountViewHolder;
 import de.icod.techidon.ui.views.CurlyArrowEmptyView;
 import org.parceler.Parcels;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +53,9 @@ import me.grishka.appkit.views.FragmentRootLinearLayout;
 @SuppressWarnings("deprecation")
 
 public class CreateListAddMembersFragment extends BaseAccountListFragment implements OnBackPressedListener, AddNewListMembersFragment.Listener{
+	private static final String STATE_ACCOUNT_IDS_IN_LIST="state_account_ids_in_list";
+	private static final String STATE_SEARCH_OPEN="state_search_open";
+
 	private FollowList followList;
 	private Button nextButton;
 	private View buttonBar;
@@ -62,6 +66,7 @@ public class CreateListAddMembersFragment extends BaseAccountListFragment implem
 	private WindowInsets lastInsets;
 	private boolean dismissingSearchFragment;
 	private HashSet<String> accountIDsInList=new HashSet<>();
+	private boolean searchOpen;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -70,13 +75,32 @@ public class CreateListAddMembersFragment extends BaseAccountListFragment implem
 		setSubtitle(getString(R.string.step_x_of_y, 2, 2));
 		setLayout(R.layout.fragment_login);
 		setEmptyText(R.string.list_no_members);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 
 		followList=Parcels.unwrap(getArguments().getParcelable("list"));
-		if(savedInstanceState!=null || getArguments().getBoolean("needLoadMembers", false)){
-			loadData();
+		if(savedInstanceState!=null){
+			ArrayList<String> restoredIDs=savedInstanceState.getStringArrayList(STATE_ACCOUNT_IDS_IN_LIST);
+			if(restoredIDs!=null){
+				accountIDsInList.clear();
+				accountIDsInList.addAll(restoredIDs);
+			}
+			searchOpen=savedInstanceState.getBoolean(STATE_SEARCH_OPEN, false);
+		}
+		boolean needLoadMembers=getArguments().getBoolean("needLoadMembers", false);
+		if(savedInstanceState!=null){
+			if(!loaded){
+				if(needLoadMembers){
+					loadData();
+				}else{
+					onDataLoaded(List.of());
+				}
+			}
 		}else{
-			onDataLoaded(List.of());
+			if(needLoadMembers){
+				loadData();
+			}else{
+				onDataLoaded(List.of());
+			}
 		}
 	}
 
@@ -101,6 +125,11 @@ public class CreateListAddMembersFragment extends BaseAccountListFragment implem
 		wrapper.addView(view);
 		rootView=(FragmentRootLinearLayout) view;
 		fragmentContentWrap=wrapper;
+		if(searchOpen){
+			searchFragmentContainer=new FrameLayout(getActivity());
+			searchFragmentContainer.setId(R.id.search_fragment);
+			fragmentContentWrap.addView(searchFragmentContainer);
+		}
 		return wrapper;
 	}
 
@@ -112,6 +141,28 @@ public class CreateListAddMembersFragment extends BaseAccountListFragment implem
 		buttonBar=view.findViewById(R.id.button_bar);
 
 		super.onViewCreated(view, savedInstanceState);
+		if(searchOpen){
+			searchFragment=(AddNewListMembersFragment) getChildFragmentManager().findFragmentById(R.id.search_fragment);
+			if(searchFragment!=null && searchFragmentContainer!=null){
+				searchFragmentContainer.setTranslationX(0f);
+				searchFragmentContainer.setAlpha(1f);
+				rootView.setVisibility(View.GONE);
+				if(lastInsets!=null)
+					searchFragment.onApplyWindowInsets(lastInsets);
+			}
+		}
+		if(accountIDsInList.isEmpty() && !data.isEmpty()){
+			for(AccountViewModel account : data){
+				accountIDsInList.add(account.account.id);
+			}
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putStringArrayList(STATE_ACCOUNT_IDS_IN_LIST, new ArrayList<>(accountIDsInList));
+		outState.putBoolean(STATE_SEARCH_OPEN, searchOpen);
 	}
 
 	@Override
@@ -129,20 +180,21 @@ public class CreateListAddMembersFragment extends BaseAccountListFragment implem
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		MenuItem item=menu.add(R.string.add_list_member);
 		item.setIcon(R.drawable.ic_fluent_add_24_regular);
 		item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		if(searchFragmentContainer!=null)
 			return true;
 
 		searchFragmentContainer=new FrameLayout(getActivity());
 		searchFragmentContainer.setId(R.id.search_fragment);
 		fragmentContentWrap.addView(searchFragmentContainer);
+		searchOpen=true;
 
 		Bundle args=new Bundle();
 		args.putString("account", accountID);
@@ -187,6 +239,7 @@ public class CreateListAddMembersFragment extends BaseAccountListFragment implem
 		if(searchFragment==null || dismissingSearchFragment)
 			return;
 		dismissingSearchFragment=true;
+		searchOpen=false;
 		rootView.setVisibility(View.VISIBLE);
 		searchFragmentContainer.animate().translationX(V.dp(100)).alpha(0).setDuration(200).withLayer().setInterpolator(CubicBezierInterpolator.DEFAULT).withEndAction(()->{
 			getChildFragmentManager().beginTransaction().remove(searchFragment).commit();

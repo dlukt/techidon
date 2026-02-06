@@ -71,6 +71,9 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class ThreadFragment extends StatusListFragment implements ProvidesAssistContent {
+	private static final String STATE_CONTEXT_RENDERED="state_context_rendered";
+	private static final String STATE_TRANSITION_FINISHED="state_transition_finished";
+
 	protected Status mainStatus, updatedStatus, replyTo;
 	private final HashMap<String, NeighborAncestryInfo> ancestryMap = new HashMap<>();
 	private StatusContext result;
@@ -88,17 +91,42 @@ public class ThreadFragment extends StatusListFragment implements ProvidesAssist
 		mainStatus=Parcels.unwrap(getArguments().getParcelable("status"));
 		replyTo=Parcels.unwrap(getArguments().getParcelable("inReplyTo"));
 		Account inReplyToAccount=Parcels.unwrap(getArguments().getParcelable("inReplyToAccount"));
-		refreshing=contextInitiallyRendered=getArguments().getBoolean("refresh", false);
+		refreshing=getArguments().getBoolean("refresh", false);
+		contextInitiallyRendered=refreshing;
 		if(inReplyToAccount!=null)
 			knownAccounts.put(inReplyToAccount.id, inReplyToAccount);
-		data.add(mainStatus);
-		onAppendItems(Collections.singletonList(mainStatus));
+		if(savedInstanceState!=null){
+			contextInitiallyRendered=savedInstanceState.getBoolean(STATE_CONTEXT_RENDERED, contextInitiallyRendered);
+			transitionFinished=savedInstanceState.getBoolean(STATE_TRANSITION_FINISHED, true);
+		}else{
+			transitionFinished = getArguments().getBoolean("noTransition", false);
+		}
+		if(!data.isEmpty()){
+			for(Status status : data){
+				if(status.id.equals(mainStatus.id)){
+					mainStatus=status;
+					break;
+				}
+			}
+		}else{
+			data.add(mainStatus);
+			onAppendItems(Collections.singletonList(mainStatus));
+		}
 		preview=mainStatus.preview;
 		if(preview) setRefreshEnabled(false);
+		if(savedInstanceState!=null && ancestryMap.isEmpty() && !data.isEmpty()){
+			restoreAncestryFromData();
+		}
 		setTitle(preview ? getString(R.string.sk_post_preview) : HtmlParser.parseCustomEmoji(getString(R.string.post_from_user, mainStatus.account.getDisplayName()), mainStatus.account.emojis));
-		transitionFinished = getArguments().getBoolean("noTransition", false);
 
 		E.register(this);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_CONTEXT_RENDERED, contextInitiallyRendered);
+		outState.putBoolean(STATE_TRANSITION_FINISHED, transitionFinished);
 	}
 
 	@Override
@@ -451,6 +479,26 @@ public class ThreadFragment extends StatusListFragment implements ProvidesAssist
 				maybeApplyMainStatus();
 			}
 		});
+	}
+
+	private void restoreAncestryFromData(){
+		int mainIndex=-1;
+		for(int i=0;i<data.size();i++){
+			if(data.get(i).id.equals(mainStatus.id)){
+				mainIndex=i;
+				break;
+			}
+		}
+		if(mainIndex==-1)
+			return;
+		StatusContext ctx=new StatusContext();
+		ctx.ancestors=new ArrayList<>(data.subList(0, mainIndex));
+		ctx.descendants=new ArrayList<>(data.subList(mainIndex+1, data.size()));
+		ancestryMap.clear();
+		for(NeighborAncestryInfo info : mapNeighborhoodAncestry(mainStatus, ctx)){
+			ancestryMap.put(info.status.id, info);
+		}
+		contextInitiallyRendered=true;
 	}
 
 	protected void onStatusCreated(Status status){

@@ -35,6 +35,7 @@ public class SettingsInstanceFragment extends BaseSettingsFragment<Void> impleme
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle(R.string.sk_settings_instance);
 		AccountSession s=AccountSessionManager.get(accountID);
 		lp=s.getLocalPreferences();

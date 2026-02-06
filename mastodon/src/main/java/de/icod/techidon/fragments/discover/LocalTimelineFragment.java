@@ -49,7 +49,7 @@ public class LocalTimelineFragment extends StatusListFragment{
 	protected RecyclerView.Adapter<?> getAdapter(){
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
 		bannerHelper.maybeAddBanner(list, adapter);
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return adapter;
 	}
 

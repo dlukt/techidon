@@ -1,7 +1,9 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Bundle;
 
 import de.icod.techidon.R;
 import de.icod.techidon.api.requests.statuses.GetFavoritedStatuses;
@@ -14,13 +16,31 @@ import me.grishka.appkit.api.SimpleCallback;
 @SuppressWarnings("deprecation")
 
 public class FavoritedStatusListFragment extends StatusListFragment{
+	private static final String STATE_NEXT_MAX_ID="state_next_max_id";
+
 	private String nextMaxID;
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			nextMaxID=savedInstanceState.getString(STATE_NEXT_MAX_ID);
+		}
+		if(!loaded && !dataLoading){
+			loadData();
+		}
+	}
+
+	@Override
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setTitle(R.string.your_favorites);
-		loadData();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_NEXT_MAX_ID, nextMaxID);
 	}
 
 	@Override

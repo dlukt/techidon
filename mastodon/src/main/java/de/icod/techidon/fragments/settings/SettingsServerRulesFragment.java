@@ -28,8 +28,10 @@ public class SettingsServerRulesFragment extends MastodonRecyclerFragment<Instan
 		accountID=getArguments().getString("account");
 		domain=getArguments().getString("domain");
 		Instance instance=Parcels.unwrap(getArguments().getParcelable("instance"));
-		onDataLoaded(instance.rules);
 		setRefreshEnabled(false);
+		if(savedInstanceState!=null && !data.isEmpty())
+			return;
+		onDataLoaded(instance.rules);
 	}
 
 	@Override

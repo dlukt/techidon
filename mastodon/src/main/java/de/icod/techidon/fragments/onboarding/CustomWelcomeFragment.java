@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
@@ -39,6 +40,9 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class CustomWelcomeFragment extends InstanceCatalogFragment {
+	private static final String STATE_SEARCH_QUERY="state_search_query";
+	private static final String STATE_SEARCH_QUERY_RAW="state_search_query_raw";
+
 	private View headerView;
 
 	public CustomWelcomeFragment() {
@@ -54,6 +58,10 @@ public class CustomWelcomeFragment extends InstanceCatalogFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			currentSearchQuery=savedInstanceState.getString(STATE_SEARCH_QUERY, "");
+			currentSearchQueryButWithCasePreserved=savedInstanceState.getString(STATE_SEARCH_QUERY_RAW, "");
+		}
 		dataLoaded();
 	}
 
@@ -125,6 +133,9 @@ public class CustomWelcomeFragment extends InstanceCatalogFragment {
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		if(!TextUtils.isEmpty(currentSearchQueryButWithCasePreserved) && searchEdit.getText().length()==0){
+			searchEdit.setText(currentSearchQueryButWithCasePreserved);
+		}
 		view.setBackgroundColor(UiUtils.getThemeColor(getActivity(), R.attr.colorM3Surface));
 		list.setItemAnimator(new BetterItemAnimator());
 		((UsableRecyclerView) list).setSelector(null);
@@ -161,17 +172,24 @@ public class CustomWelcomeFragment extends InstanceCatalogFragment {
 				searchEdit.postDelayed(searchDebouncer, 300);
 			}
 
-			@Override
-			public void afterTextChanged(Editable s){}
-		});
+		@Override
+		public void afterTextChanged(Editable s){}
+	});
 
 		mergeAdapter=new MergeRecyclerAdapter();
 		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(headerView));
-		mergeAdapter.addAdapter(adapter=new InstancesAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(adapter=new InstancesAdapter()));
 		View spacer = new Space(getActivity());
 		spacer.setMinimumHeight(V.dp(8));
 		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(spacer));
 		return mergeAdapter;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_SEARCH_QUERY, currentSearchQuery);
+		outState.putString(STATE_SEARCH_QUERY_RAW, currentSearchQueryButWithCasePreserved);
 	}
 
 	private class InstancesAdapter extends UsableRecyclerView.Adapter<InstanceViewHolder> {

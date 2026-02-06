@@ -1,6 +1,6 @@
 package de.icod.techidon.ui;
 
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.View;

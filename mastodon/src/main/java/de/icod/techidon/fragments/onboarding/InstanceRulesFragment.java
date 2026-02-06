@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.onboarding;
 
+import android.content.Context;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.assist.AssistContent;
@@ -56,11 +57,10 @@ public class InstanceRulesFragment extends ToolbarFragment implements ProvidesAs
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setNavigationBarColor(UiUtils.getThemeColor(activity, R.attr.colorM3Surface));
 		instance=Parcels.unwrap(getArguments().getParcelable("instance"));

@@ -1,7 +1,9 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 
@@ -21,22 +23,31 @@ import me.grishka.appkit.api.SimpleCallback;
 @SuppressWarnings("deprecation")
 
 public class CustomLocalTimelineFragment extends PinnableStatusListFragment implements ProvidesAssistContent.ProvidesWebUri{
+    private static final String STATE_MAX_ID="state_max_id";
     //    private String name;
     private String domain;
 
     private String maxID;
+    @Override
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState!=null){
+            maxID=savedInstanceState.getString(STATE_MAX_ID);
+        }
+    }
+
     @Override
     protected boolean wantsComposeButton() {
         return false;
     }
 
     @Override
-    public void onAttach(Activity activity){
+    public void onAttach(Context activity){
         super.onAttach(activity);
         domain=getArguments().getString("domain");
         updateTitle(domain);
 
-        setHasOptionsMenu(true);
+        setHasOptionsMenuCompat(true);
     }
 
     private void updateTitle(String domain) {
@@ -74,9 +85,9 @@ public class CustomLocalTimelineFragment extends PinnableStatusListFragment impl
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateAppMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.custom_local_timelines, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+        super.onCreateAppMenu(menu, inflater);
         UiUtils.enableOptionsMenuIcons(getContext(), menu, R.id.pin);
     }
 
@@ -96,5 +107,11 @@ public class CustomLocalTimelineFragment extends PinnableStatusListFragment impl
     @Override
     protected TimelineDefinition makeTimelineDefinition() {
         return TimelineDefinition.ofCustomLocalTimeline(domain);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_MAX_ID, maxID);
     }
 }

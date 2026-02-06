@@ -8,8 +8,8 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import android.app.assist.AssistContent;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -131,9 +131,9 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	}
 
 	@Override
-	public void onAttach(Activity activity) {
+	public void onAttach(Context activity) {
 		super.onAttach(activity);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
@@ -150,30 +150,35 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 		pager = new ViewPager2(getContext());
 		toolbarFrame = (FrameLayout) LayoutInflater.from(getContext()).inflate(R.layout.home_toolbar, getToolbar(), false);
 
-		if (fragments[0] == null) {
-			Bundle args = new Bundle();
-			args.putString("account", accountID);
-			args.putBoolean("__is_tab", true);
-			args.putBoolean("__disable_fab", true);
-			args.putBoolean("onlyPosts", true);
+		Bundle args = new Bundle();
+		args.putString("account", accountID);
+		args.putBoolean("__is_tab", true);
+		args.putBoolean("__disable_fab", true);
+		args.putBoolean("onlyPosts", true);
 
-			for (int i=0; i < timelinesList.size(); i++) {
-				TimelineDefinition tl = timelinesList.get(i);
-				fragments[i] = tl.getFragment();
-				timelines[i] = tl;
-			}
+		FragmentTransaction transaction = null;
+		for (int i = 0; i < count; i++) {
+			timelines[i] = timelinesList.get(i);
+			FrameLayout tabView = new FrameLayout(getActivity());
+			tabView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+			tabView.setVisibility(View.GONE);
+			tabView.setId(i + 1);
+			view.addView(tabView);
+			tabViews[i] = tabView;
 
-			FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-			for (int i = 0; i < count; i++) {
-				fragments[i].setArguments(timelines[i].populateArguments(new Bundle(args)));
-				FrameLayout tabView = new FrameLayout(getActivity());
-				tabView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-				tabView.setVisibility(View.GONE);
-				tabView.setId(i + 1);
-				transaction.add(i + 1, fragments[i]);
-				view.addView(tabView);
-				tabViews[i] = tabView;
+			Fragment restored = getChildFragmentManager().findFragmentById(i + 1);
+			if (restored != null) {
+				fragments[i] = restored;
+				continue;
 			}
+			fragments[i] = timelines[i].getFragment();
+			fragments[i].setArguments(timelines[i].populateArguments(new Bundle(args)));
+			if (transaction == null) {
+				transaction = getChildFragmentManager().beginTransaction();
+			}
+			transaction.add(i + 1, fragments[i]);
+		}
+		if (transaction != null) {
 			transaction.commit();
 		}
 
@@ -181,7 +186,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 
 		overflowActionView = UiUtils.makeOverflowActionView(getContext());
 		overflowPopup = new PopupMenu(getContext(), overflowActionView);
-		overflowPopup.setOnMenuItemClickListener(this::onOptionsItemSelected);
+		overflowPopup.setOnMenuItemClickListener(this::onAppMenuItemSelected);
 		overflowActionView.setOnClickListener(l -> overflowPopup.show());
 		overflowActionView.setOnTouchListener(overflowPopup.getDragToOpenListener());
 
@@ -415,7 +420,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.home, menu);
 
 		menu.findItem(R.id.overflow).setActionView(overflowActionView);
@@ -510,7 +515,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		Bundle args=new Bundle();
 		args.putString("account", accountID);
 		int id = item.getItemId();

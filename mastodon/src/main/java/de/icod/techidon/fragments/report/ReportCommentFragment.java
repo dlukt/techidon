@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.report;
 
+import android.content.Context;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -36,6 +37,9 @@ import me.grishka.appkit.api.ErrorResponse;
 @SuppressWarnings("deprecation")
 
 public class ReportCommentFragment extends MastodonToolbarFragment{
+	private static final String STATE_COMMENT_TEXT="state_comment_text";
+	private static final String STATE_FORWARD_CHECKED="state_forward_checked";
+
 	private String accountID;
 	private Account reportAccount;
 	private Button btn;
@@ -47,7 +51,6 @@ public class ReportCommentFragment extends MastodonToolbarFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 		E.register(this);
 	}
 
@@ -58,7 +61,7 @@ public class ReportCommentFragment extends MastodonToolbarFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		accountID=getArguments().getString("account");
 		reportAccount=Parcels.unwrap(getArguments().getParcelable("reportAccount"));
@@ -102,6 +105,34 @@ public class ReportCommentFragment extends MastodonToolbarFragment{
 
 		ProgressBar topProgress=view.findViewById(R.id.top_progress);
 		topProgress.setProgress(getArguments().containsKey("ruleIDs") ? 75 : 66);
+	}
+
+	@Override
+	public void onViewStateRestored(Bundle savedInstanceState){
+		super.onViewStateRestored(savedInstanceState);
+		if(savedInstanceState==null)
+			return;
+		if(commentEdit!=null && savedInstanceState.containsKey(STATE_COMMENT_TEXT) && commentEdit.getText().length()==0){
+			String text=savedInstanceState.getString(STATE_COMMENT_TEXT);
+			if(text!=null){
+				commentEdit.setText(text);
+				commentEdit.setSelection(commentEdit.getText().length());
+			}
+		}
+		if(forwardSwitch!=null && savedInstanceState.containsKey(STATE_FORWARD_CHECKED)){
+			forwardSwitch.setChecked(savedInstanceState.getBoolean(STATE_FORWARD_CHECKED));
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		if(commentEdit!=null){
+			outState.putString(STATE_COMMENT_TEXT, commentEdit.getText().toString());
+		}
+		if(forwardSwitch!=null){
+			outState.putBoolean(STATE_FORWARD_CHECKED, forwardSwitch.isChecked());
+		}
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,16 +25,16 @@ public class EditListFragment extends BaseEditListFragment{
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.edit_list);
 		loadMembers();
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		menu.add(R.string.delete_list);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		new M3AlertDialogBuilder(getActivity())
 				.setTitle(R.string.delete_list)
 				.setMessage(getString(R.string.delete_list_confirm, followList.title))
@@ -45,6 +46,11 @@ public class EditListFragment extends BaseEditListFragment{
 
 	@Override
 	public void onDestroy(){
+		Activity activity=getActivity();
+		if(activity!=null && activity.isChangingConfigurations()){
+			super.onDestroy();
+			return;
+		}
 		super.onDestroy();
 		String newTitle=titleEdit.getText().toString();
 		FollowList.RepliesPolicy newRepliesPolicy=getSelectedRepliesPolicy();

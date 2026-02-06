@@ -31,7 +31,12 @@ public class SettingsFiltersFragment extends BaseSettingsFragment<Filter>{
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.settings_filters);
-		loadData();
+		if(savedInstanceState!=null){
+			resetDataOnRestore(savedInstanceState);
+		}
+		if(savedInstanceState!=null || !loaded){
+			loadData();
+		}
 		E.register(this);
 	}
 
@@ -56,7 +61,7 @@ public class SettingsFiltersFragment extends BaseSettingsFragment<Filter>{
 	@Override
 	protected RecyclerView.Adapter<?> getAdapter(){
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		adapter.addAdapter(new GenericListItemsAdapter<>(Collections.singletonList(
 				new ListItem<Void>(R.string.settings_add_filter, 0, R.drawable.ic_fluent_add_24_regular, this::onAddFilterClick)
 		)));

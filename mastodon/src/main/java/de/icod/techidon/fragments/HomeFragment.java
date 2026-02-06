@@ -1,7 +1,7 @@
 package de.icod.techidon.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.app.NotificationManager;
 import android.app.assist.AssistContent;
 import android.graphics.drawable.RippleDrawable;
@@ -80,26 +80,8 @@ public class HomeFragment extends AppKitFragment implements OnBackPressedListene
 		super.onCreate(savedInstanceState);
 		accountID=getArguments().getString("account");
 		setTitle(R.string.mo_app_name);
-
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
-
 		if(savedInstanceState==null){
-			Bundle args=new Bundle();
-			args.putString("account", accountID);
-			homeTabFragment=new HomeTabFragment();
-			homeTabFragment.setArguments(args);
-			args=new Bundle(args);
-			args.putBoolean("noAutoLoad", true);
-			discoverFragment=new DiscoverFragment();
-			discoverFragment.setArguments(args);
-			notificationsFragment=new NotificationsFragment();
-			notificationsFragment.setArguments(args);
-			args=new Bundle(args);
-			args.putParcelable("profileAccount", Parcels.wrap(AccountSessionManager.getInstance().getAccount(accountID).self));
-			args.putBoolean("noAutoLoad", true);
-			profileFragment=new ProfileFragment();
-			profileFragment.setArguments(args);
+			ensureChildFragmentsCreated();
 		}
 
 		E.register(this);
@@ -194,20 +176,17 @@ public class HomeFragment extends AppKitFragment implements OnBackPressedListene
 	public void onViewStateRestored(Bundle savedInstanceState){
 		super.onViewStateRestored(savedInstanceState);
 		if(savedInstanceState==null) return;
-		homeTabFragment=(HomeTabFragment) getChildFragmentManager().getFragment(savedInstanceState, "homeTabFragment");
-		discoverFragment=(DiscoverFragment) getChildFragmentManager().getFragment(savedInstanceState, "searchFragment");
-		notificationsFragment=(NotificationsFragment) getChildFragmentManager().getFragment(savedInstanceState, "notificationsFragment");
-		profileFragment=(ProfileFragment) getChildFragmentManager().getFragment(savedInstanceState, "profileFragment");
-		currentTab=savedInstanceState.getInt("selectedTab");
+		homeTabFragment=getRestoredChildFragment(savedInstanceState, "homeTabFragment", HomeTabFragment.class);
+		discoverFragment=getRestoredChildFragment(savedInstanceState, "searchFragment", DiscoverFragment.class);
+		notificationsFragment=getRestoredChildFragment(savedInstanceState, "notificationsFragment", NotificationsFragment.class);
+		profileFragment=getRestoredChildFragment(savedInstanceState, "profileFragment", ProfileFragment.class);
+		ensureChildFragmentsCreated();
+		currentTab=savedInstanceState.getInt("selectedTab", R.id.tab_home);
 		tabBar.selectTab(currentTab);
 		Fragment current=fragmentForTab(currentTab);
-		getChildFragmentManager().beginTransaction()
-				.hide(homeTabFragment)
-				.hide(discoverFragment)
-				.hide(notificationsFragment)
-				.hide(profileFragment)
-				.show(current)
-				.commit();
+		androidx.fragment.app.FragmentTransaction transaction=getChildFragmentManager().beginTransaction();
+		applyTabVisibility(transaction, current);
+		transaction.commit();
 		maybeTriggerLoading(current);
 	}
 
@@ -237,10 +216,73 @@ public class HomeFragment extends AppKitFragment implements OnBackPressedListene
 			super.onApplyWindowInsets(insets.replaceSystemWindowInsets(insets.getSystemWindowInsetLeft(), 0, insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom()));
 		}
 		WindowInsets topOnlyInsets=insets.replaceSystemWindowInsets(0, insets.getSystemWindowInsetTop(), 0, 0);
-		homeTabFragment.onApplyWindowInsets(topOnlyInsets);
-		discoverFragment.onApplyWindowInsets(topOnlyInsets);
-		notificationsFragment.onApplyWindowInsets(topOnlyInsets);
-		profileFragment.onApplyWindowInsets(topOnlyInsets);
+		if(homeTabFragment!=null)
+			homeTabFragment.onApplyWindowInsets(topOnlyInsets);
+		if(discoverFragment!=null)
+			discoverFragment.onApplyWindowInsets(topOnlyInsets);
+		if(notificationsFragment!=null)
+			notificationsFragment.onApplyWindowInsets(topOnlyInsets);
+		if(profileFragment!=null)
+			profileFragment.onApplyWindowInsets(topOnlyInsets);
+	}
+
+	private Bundle makeBaseArgs(boolean noAutoLoad){
+		Bundle args=new Bundle();
+		args.putString("account", accountID);
+		if(noAutoLoad)
+			args.putBoolean("noAutoLoad", true);
+		return args;
+	}
+
+	private void ensureChildFragmentsCreated(){
+		if(homeTabFragment==null){
+			homeTabFragment=new HomeTabFragment();
+			homeTabFragment.setArguments(makeBaseArgs(false));
+		}
+		if(discoverFragment==null){
+			discoverFragment=new DiscoverFragment();
+			discoverFragment.setArguments(makeBaseArgs(true));
+		}
+		if(notificationsFragment==null){
+			notificationsFragment=new NotificationsFragment();
+			notificationsFragment.setArguments(makeBaseArgs(true));
+		}
+		if(profileFragment==null){
+			Bundle args=makeBaseArgs(true);
+			args.putParcelable("profileAccount", Parcels.wrap(AccountSessionManager.getInstance().getAccount(accountID).self));
+			profileFragment=new ProfileFragment();
+			profileFragment.setArguments(args);
+		}
+	}
+
+	private <T extends Fragment> T getRestoredChildFragment(Bundle state, String key, Class<T> fragmentClass){
+		Fragment restored=null;
+		if(state.containsKey(key)){
+			try{
+				restored=getChildFragmentManager().getFragment(state, key);
+			}catch(Exception ignored){}
+		}
+		if(fragmentClass.isInstance(restored))
+			return fragmentClass.cast(restored);
+		for(Fragment fragment:getChildFragmentManager().getFragments()){
+			if(fragmentClass.isInstance(fragment))
+				return fragmentClass.cast(fragment);
+		}
+		return null;
+	}
+
+	private void applyTabVisibility(androidx.fragment.app.FragmentTransaction transaction, Fragment current){
+		Fragment[] fragments={homeTabFragment, discoverFragment, notificationsFragment, profileFragment};
+		for(Fragment fragment:fragments){
+			if(fragment==null)
+				continue;
+			if(!fragment.isAdded())
+				transaction.add(me.grishka.appkit.R.id.fragment_wrap, fragment);
+			if(fragment==current)
+				transaction.show(fragment);
+			else
+				transaction.hide(fragment);
+		}
 	}
 
 	private Fragment fragmentForTab(@IdRes int tab){

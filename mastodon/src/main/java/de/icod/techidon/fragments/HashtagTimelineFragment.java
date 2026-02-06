@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.content.res.TypedArray;
 import android.net.Uri;
@@ -84,7 +85,7 @@ public class HashtagTimelineFragment extends PinnableStatusListFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		following=getArguments().getBoolean("following", false);
 		localOnly=getArguments().getBoolean("localOnly", false);
@@ -98,7 +99,7 @@ public class HashtagTimelineFragment extends PinnableStatusListFragment{
 			hashtagName=getArguments().getString("hashtagName");
 		}
 		setTitle('#'+hashtagName);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	private void updateMuteState(boolean newMute) {
@@ -286,7 +287,7 @@ public class HashtagTimelineFragment extends PinnableStatusListFragment{
 		if(!(getParentFragment() instanceof HomeTabFragment)){
 			mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(header));
 		}
-		mergeAdapter.addAdapter(super.getAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return mergeAdapter;
 	}
 
@@ -329,17 +330,17 @@ public class HashtagTimelineFragment extends PinnableStatusListFragment{
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.hashtag_timeline, menu);
-		super.onCreateOptionsMenu(menu, inflater);
+		super.onCreateAppMenu(menu, inflater);
 		optionsMenu=menu;
 		optionsMenuInflater=inflater;
 		createOptionsMenu();
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
-		if (super.onOptionsItemSelected(item)) return true;
+	public boolean onAppMenuItemSelected(MenuItem item){
+		if (super.onAppMenuItemSelected(item)) return true;
 		if (item.getItemId() == R.id.follow_hashtag && hashtag!=null) {
 			setFollowed(!hashtag.following);
 		} else if (item.getItemId() == R.id.mute_hashtag) {

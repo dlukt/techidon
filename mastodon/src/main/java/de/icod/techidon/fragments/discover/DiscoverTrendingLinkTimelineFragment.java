@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.discover;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
@@ -52,11 +53,11 @@ public class DiscoverTrendingLinkTimelineFragment extends StatusListFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		trendingLink=Parcels.unwrap(getArguments().getParcelable("trendingLink"));
 		setTitle(trendingLink.title);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 
@@ -155,7 +156,7 @@ public class DiscoverTrendingLinkTimelineFragment extends StatusListFragment{
 		if(!(getParentFragment() instanceof HomeTabFragment)){
 			mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(header));
 		}
-		mergeAdapter.addAdapter(super.getAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return mergeAdapter;
 	}
 
@@ -172,17 +173,17 @@ public class DiscoverTrendingLinkTimelineFragment extends StatusListFragment{
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.trending_links_timeline, menu);
-		super.onCreateOptionsMenu(menu, inflater);
+		super.onCreateAppMenu(menu, inflater);
 		optionsMenu=menu;
 		optionsMenuInflater=inflater;
 		createOptionsMenu();
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
-		if (super.onOptionsItemSelected(item)) return true;
+	public boolean onAppMenuItemSelected(MenuItem item){
+		if (super.onAppMenuItemSelected(item)) return true;
 		if (item.getItemId() == R.id.open_link && trendingLink!=null) {
 			openLink();
 		}

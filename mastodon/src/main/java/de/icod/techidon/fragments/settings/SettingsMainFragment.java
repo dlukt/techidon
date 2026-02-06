@@ -51,6 +51,7 @@ public class SettingsMainFragment extends BaseSettingsFragment<Void>{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		account=AccountSessionManager.get(accountID);
 		setTitle(R.string.settings);
 		setSubtitle(account.getFullUsername());
@@ -114,7 +115,7 @@ public class SettingsMainFragment extends BaseSettingsFragment<Void>{
 
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
 		adapter.addAdapter(bannerAdapter);
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return adapter;
 	}
 

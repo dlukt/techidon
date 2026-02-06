@@ -23,6 +23,8 @@ import me.grishka.appkit.api.SimpleCallback;
 @SuppressWarnings("deprecation")
 
 public class ManageFollowedHashtagsFragment extends BaseSettingsFragment<Hashtag> implements ListItemWithOptionsMenu.OptionsMenuListener<Hashtag>{
+	private static final String STATE_MAX_ID="state_max_id";
+
 	private String maxID;
 
 	public ManageFollowedHashtagsFragment(){
@@ -33,7 +35,19 @@ public class ManageFollowedHashtagsFragment extends BaseSettingsFragment<Hashtag
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.manage_hashtags);
-		loadData();
+		if(savedInstanceState!=null){
+			maxID=savedInstanceState.getString(STATE_MAX_ID);
+			resetDataOnRestore(savedInstanceState);
+		}
+		if(savedInstanceState!=null || !loaded){
+			loadData();
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_MAX_ID, maxID);
 	}
 
 	@Override

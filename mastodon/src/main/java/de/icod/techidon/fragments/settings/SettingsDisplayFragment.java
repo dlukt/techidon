@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.settings;
 
+import android.content.Context;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Bitmap;
@@ -56,6 +57,7 @@ public class SettingsDisplayFragment extends BaseSettingsFragment<Void>{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle(R.string.settings_display);
 		AccountSession s=AccountSessionManager.get(accountID);
 		lp=s.getLocalPreferences();
@@ -99,7 +101,7 @@ public class SettingsDisplayFragment extends BaseSettingsFragment<Void>{
 	protected void doLoadData(int offset, int count){}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		if(themeTransitionWindowView!=null){
 			// Activity has finished recreating. Remove the overlay.

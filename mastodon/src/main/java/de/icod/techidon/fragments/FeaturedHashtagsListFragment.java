@@ -32,8 +32,10 @@ public class FeaturedHashtagsListFragment extends BaseStatusListFragment<Hashtag
 		super.onCreate(savedInstanceState);
 		accountID=getArguments().getString("account");
 		account=Parcels.unwrap(getArguments().getParcelable("profileAccount"));
-		onDataLoaded(getArguments().getParcelableArrayList("hashtags").stream().map(p->(Hashtag)Parcels.unwrap(p)).collect(Collectors.toList()), false);
 		setTitle(R.string.hashtags);
+		if(savedInstanceState!=null && !data.isEmpty())
+			return;
+		onDataLoaded(getArguments().getParcelableArrayList("hashtags").stream().map(p->(Hashtag)Parcels.unwrap(p)).collect(Collectors.toList()), false);
 	}
 
 	@Override

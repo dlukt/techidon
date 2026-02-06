@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.onboarding;
 
+import android.content.Context;
 import android.app.Activity;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -55,6 +56,8 @@ import okhttp3.ResponseBody;
 @SuppressWarnings("deprecation")
 
 public class GoogleMadeMeAddThisFragment extends ToolbarFragment{
+	private static final String STATE_ITEMS="state_items";
+
 	private UsableRecyclerView list;
 	private MergeRecyclerAdapter adapter;
 	private Button btn;
@@ -70,18 +73,35 @@ public class GoogleMadeMeAddThisFragment extends ToolbarFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 		setTitle(R.string.privacy_policy_title);
+		if(savedInstanceState!=null){
+			ArrayList<Bundle> savedItems=savedInstanceState.getParcelableArrayList(STATE_ITEMS);
+			if(savedItems!=null){
+				items.clear();
+				for(Bundle bundle : savedItems){
+					items.add(new Item(
+							bundle.getString("title"),
+							bundle.getString("subtitle"),
+							bundle.getString("domain"),
+							bundle.getString("url"),
+							bundle.getString("faviconUrl")
+					));
+				}
+			}
+		}
+		if(items.isEmpty()){
+			items.add(new Item("Mastodon for Android Privacy Policy", getString(R.string.privacy_policy_explanation), "joinmastodon.org", "https://joinmastodon.org/android/privacy", "https://joinmastodon.org/favicon-32x32.png"));
+		}
+		if(!hasServerPolicyItem()){
+			loadServerPrivacyPolicy();
+		}
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setNavigationBarColor(UiUtils.getThemeColor(activity, R.attr.colorM3Surface));
 		instance=Parcels.unwrap(getArguments().getParcelable("instance"));
-
-		items.add(new Item("Mastodon for Android Privacy Policy", getString(R.string.privacy_policy_explanation), "joinmastodon.org", "https://joinmastodon.org/android/privacy", "https://joinmastodon.org/favicon-32x32.png"));
-		loadServerPrivacyPolicy();
 	}
 
 	@Override
@@ -91,6 +111,22 @@ public class GoogleMadeMeAddThisFragment extends ToolbarFragment{
 			currentRequest.cancel();
 			currentRequest=null;
 		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		ArrayList<Bundle> savedItems=new ArrayList<>(items.size());
+		for(Item item : items){
+			Bundle bundle=new Bundle();
+			bundle.putString("title", item.title);
+			bundle.putString("subtitle", item.subtitle);
+			bundle.putString("domain", item.domain);
+			bundle.putString("url", item.url);
+			bundle.putString("faviconUrl", item.faviconUrl);
+			savedItems.add(bundle);
+		}
+		outState.putParcelableArrayList(STATE_ITEMS, savedItems);
 	}
 
 	@Override
@@ -183,12 +219,23 @@ public class GoogleMadeMeAddThisFragment extends ToolbarFragment{
 					if(activity!=null){
 						activity.runOnUiThread(()->{
 							items.add(item);
-							itemsAdapter.notifyItemInserted(items.size()-1);
+							if(itemsAdapter!=null)
+								itemsAdapter.notifyItemInserted(items.size()-1);
 						});
 					}
 				}
 			}
 		});
+	}
+
+	private boolean hasServerPolicyItem(){
+		if(instance==null)
+			return false;
+		for(Item item : items){
+			if(instance.uri.equalsIgnoreCase(item.domain))
+				return true;
+		}
+		return false;
 	}
 
 	private class ItemsAdapter extends RecyclerView.Adapter<ItemViewHolder>{

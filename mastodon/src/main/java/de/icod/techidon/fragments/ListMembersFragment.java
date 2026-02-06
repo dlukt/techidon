@@ -48,6 +48,9 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings({"deprecation", "unchecked"})
 
 public class ListMembersFragment extends PaginatedAccountListFragment{
+	private static final String STATE_SELECTED_ACCOUNTS="selected_accounts";
+	private static final String STATE_IN_SELECTION_MODE="in_selection_mode";
+
 	private static final int ADD_MEMBER_RESULT=600;
 
 	private ImageButton fab;
@@ -56,6 +59,7 @@ public class ListMembersFragment extends PaginatedAccountListFragment{
 	private Set<String> selectedAccounts=new HashSet<>();
 	private ActionMode actionMode;
 	private MenuItem deleteItem;
+	private boolean restoreSelectionMode;
 
 	public ListMembersFragment(){
 		setListLayoutId(R.layout.recycler_fragment_with_fab);
@@ -66,8 +70,17 @@ public class ListMembersFragment extends PaginatedAccountListFragment{
 		super.onCreate(savedInstanceState);
 		followList=Parcels.unwrap(getArguments().getParcelable("list"));
 		setTitle(R.string.list_members);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 		E.register(this);
+		if(savedInstanceState!=null){
+			ArrayList<String> restored=savedInstanceState.getStringArrayList(STATE_SELECTED_ACCOUNTS);
+			if(restored!=null){
+				selectedAccounts.clear();
+				selectedAccounts.addAll(restored);
+			}
+			inSelectionMode=savedInstanceState.getBoolean(STATE_IN_SELECTION_MODE, false);
+			restoreSelectionMode=inSelectionMode;
+		}
 	}
 
 	@Override
@@ -123,12 +136,12 @@ public class ListMembersFragment extends PaginatedAccountListFragment{
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.selectable_list, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		int id=item.getItemId();
 		if(id==R.id.select){
 			enterSelectionMode();
@@ -148,6 +161,18 @@ public class ListMembersFragment extends PaginatedAccountListFragment{
 		fab.setImageResource(R.drawable.ic_fluent_add_24_regular);
 		fab.setContentDescription(getString(R.string.add_list_member));
 		fab.setOnClickListener(v->onFabClick());
+		if(restoreSelectionMode){
+			enterSelectionMode();
+			if(deleteItem!=null)
+				deleteItem.setEnabled(!selectedAccounts.isEmpty());
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putStringArrayList(STATE_SELECTED_ACCOUNTS, new ArrayList<>(selectedAccounts));
+		outState.putBoolean(STATE_IN_SELECTION_MODE, inSelectionMode);
 	}
 
 	@Override

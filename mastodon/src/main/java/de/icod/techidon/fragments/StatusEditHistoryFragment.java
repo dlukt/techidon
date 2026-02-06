@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,11 +41,13 @@ public class StatusEditHistoryFragment extends StatusListFragment{
 		super.onCreate(savedInstanceState);
 		id=getArguments().getString("id");
 		url=getArguments().getString("url");
+		if(savedInstanceState!=null && loaded)
+			return;
 		loadData();
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setTitle(R.string.edit_history);
 	}

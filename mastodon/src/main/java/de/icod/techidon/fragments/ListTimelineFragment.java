@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
@@ -50,7 +51,7 @@ public class ListTimelineFragment extends PinnableStatusListFragment {
     }
 
     @Override
-    public void onAttach(Activity activity){
+    public void onAttach(Context activity){
         super.onAttach(activity);
         Bundle args = getArguments();
         listID = args.getString("listID");
@@ -59,7 +60,7 @@ public class ListTimelineFragment extends PinnableStatusListFragment {
         repliesPolicy = FollowList.RepliesPolicy.values()[args.getInt("repliesPolicy", 0)];
 
         setTitle(listTitle);
-        setHasOptionsMenu(true);
+        setHasOptionsMenuCompat(true);
 
         new GetList(listID).setCallback(new Callback<>() {
             @Override
@@ -80,15 +81,15 @@ public class ListTimelineFragment extends PinnableStatusListFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateAppMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.list, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+        super.onCreateAppMenu(menu, inflater);
         UiUtils.enableOptionsMenuIcons(getContext(), menu, R.id.pin);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (super.onOptionsItemSelected(item)) return true;
+    public boolean onAppMenuItemSelected(MenuItem item) {
+        if (super.onAppMenuItemSelected(item)) return true;
         if (item.getItemId() == R.id.edit) {
             ListEditor editor = new ListEditor(getContext());
             editor.applyList(listTitle, exclusive, repliesPolicy);

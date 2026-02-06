@@ -40,6 +40,10 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public abstract class BaseEditListFragment extends BaseSettingsFragment<Void>{
+	private static final String STATE_TITLE="state_title";
+	private static final String STATE_REPLIES_POLICY="state_replies_policy";
+	private static final String STATE_EXCLUSIVE="state_exclusive";
+
 	protected FollowList followList;
 	protected AvatarPileListItem<Void> membersItem;
 	protected CheckableListItem<Void> exclusiveItem;
@@ -47,18 +51,31 @@ public abstract class BaseEditListFragment extends BaseSettingsFragment<Void>{
 	protected EditText titleEdit;
 	protected Spinner showRepliesSpinner;
 	private APIRequest<?> getMembersRequest;
+	private String pendingTitle;
+	private FollowList.RepliesPolicy pendingRepliesPolicy;
+	private Boolean pendingExclusive;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		followList=Parcels.unwrap(getArguments().getParcelable("list"));
+		restorePendingState(savedInstanceState);
+		if(savedInstanceState!=null && !data.isEmpty() && restoreItemsFromData()){
+			rebindRestoredItems();
+			applyPendingExclusive();
+			return;
+		}
 
 		membersItem=new AvatarPileListItem<>(getString(R.string.list_members), null, List.of(), 0, i->onMembersClick(), null, false);
 		List<ListItem<Void>> items=new ArrayList<>();
 		if(followList!=null){
 			items.add(membersItem);
 		}
-		exclusiveItem=new CheckableListItem<>(R.string.list_exclusive, R.string.list_exclusive_subtitle, CheckableListItem.Style.SWITCH, followList!=null && followList.exclusive, this::toggleCheckableItem);
+		boolean initialExclusive=followList!=null && followList.exclusive;
+		if(pendingExclusive!=null){
+			initialExclusive=pendingExclusive;
+		}
+		exclusiveItem=new CheckableListItem<>(R.string.list_exclusive, R.string.list_exclusive_subtitle, CheckableListItem.Style.SWITCH, initialExclusive, this::toggleCheckableItem);
 		items.add(exclusiveItem);
 		onDataLoaded(items);
 	}
@@ -82,8 +99,11 @@ public abstract class BaseEditListFragment extends BaseSettingsFragment<Void>{
 		titleEdit=titleEditLayout.findViewById(R.id.edit);
 		titleEdit.setHint(R.string.list_name);
 		titleEditLayout.updateHint();
-		if(followList!=null)
+		if(pendingTitle!=null){
+			titleEdit.setText(pendingTitle);
+		}else if(followList!=null){
 			titleEdit.setText(followList.title);
+		}
 		topView.addView(titleEditLayout);
 
 		FloatingHintEditTextLayout showRepliesLayout=(FloatingHintEditTextLayout) getActivity().getLayoutInflater().inflate(R.layout.floating_hint_spinner, topView, false);
@@ -96,7 +116,8 @@ public abstract class BaseEditListFragment extends BaseSettingsFragment<Void>{
 				getString(R.string.list_replies_anyone)
 		));
 		showRepliesSpinner.setAdapter(spinnerAdapter);
-		showRepliesSpinner.setSelection(switch(followList!=null ? followList.repliesPolicy : FollowList.RepliesPolicy.LIST){
+		FollowList.RepliesPolicy repliesPolicy=pendingRepliesPolicy!=null ? pendingRepliesPolicy : (followList!=null ? followList.repliesPolicy : FollowList.RepliesPolicy.LIST);
+		showRepliesSpinner.setSelection(switch(repliesPolicy){
 			case FOLLOWED -> 2;
 			case LIST -> 1;
 			case NONE -> 0;
@@ -106,7 +127,7 @@ public abstract class BaseEditListFragment extends BaseSettingsFragment<Void>{
 
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
 		adapter.addAdapter(new SingleViewRecyclerAdapter(topView));
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return adapter;
 	}
 
@@ -174,5 +195,64 @@ public abstract class BaseEditListFragment extends BaseSettingsFragment<Void>{
 			case 2 -> FollowList.RepliesPolicy.FOLLOWED;
 			default -> throw new IllegalStateException("Unexpected value: "+showRepliesSpinner.getSelectedItemPosition());
 		};
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		if(titleEdit!=null)
+			outState.putString(STATE_TITLE, titleEdit.getText().toString());
+		if(showRepliesSpinner!=null)
+			outState.putString(STATE_REPLIES_POLICY, getSelectedRepliesPolicy().name());
+		if(exclusiveItem!=null)
+			outState.putBoolean(STATE_EXCLUSIVE, exclusiveItem.checked);
+	}
+
+	private void restorePendingState(Bundle savedInstanceState){
+		if(savedInstanceState==null)
+			return;
+		pendingTitle=savedInstanceState.getString(STATE_TITLE);
+		String repliesName=savedInstanceState.getString(STATE_REPLIES_POLICY);
+		if(repliesName!=null){
+			try{
+				pendingRepliesPolicy=FollowList.RepliesPolicy.valueOf(repliesName);
+			}catch(IllegalArgumentException ignored){
+				pendingRepliesPolicy=null;
+			}
+		}
+		if(savedInstanceState.containsKey(STATE_EXCLUSIVE)){
+			pendingExclusive=savedInstanceState.getBoolean(STATE_EXCLUSIVE);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private boolean restoreItemsFromData(){
+		membersItem=null;
+		exclusiveItem=null;
+		for(ListItem<Void> item : data){
+			if(item instanceof AvatarPileListItem<?> avatarItem){
+				membersItem=(AvatarPileListItem<Void>) avatarItem;
+			}else if(item instanceof CheckableListItem<?> checkableItem){
+				exclusiveItem=(CheckableListItem<Void>) checkableItem;
+			}
+		}
+		return exclusiveItem!=null;
+	}
+
+	private void rebindRestoredItems(){
+		if(membersItem!=null){
+			membersItem.setOnClick((AvatarPileListItem<Void> item)->onMembersClick());
+			membersItem.isEnabled=true;
+		}
+		if(exclusiveItem!=null){
+			exclusiveItem.setOnClick((CheckableListItem<Void> item)->toggleCheckableItem(item));
+			exclusiveItem.isEnabled=true;
+		}
+	}
+
+	private void applyPendingExclusive(){
+		if(exclusiveItem!=null && pendingExclusive!=null){
+			exclusiveItem.checked=pendingExclusive;
+		}
 	}
 }

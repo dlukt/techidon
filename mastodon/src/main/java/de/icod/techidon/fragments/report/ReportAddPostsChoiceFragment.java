@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.report;
 
+import android.content.Context;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -45,20 +46,30 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class ReportAddPostsChoiceFragment extends StatusListFragment{
+	private static final String STATE_SELECTED_IDS="state_selected_ids";
+
 	private Button btn;
 	private View buttonBar;
 	private ArrayList<String> selectedIDs=new ArrayList<>();
 	private String accountID;
 	private Account reportAccount;
 	private Status reportStatus;
+	private boolean restoredSelection;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 		setListLayoutId(R.layout.fragment_content_report_posts);
 		setLayout(R.layout.fragment_report_posts);
 		E.register(this);
+		if(savedInstanceState!=null){
+			ArrayList<String> restored=savedInstanceState.getStringArrayList(STATE_SELECTED_IDS);
+			if(restored!=null){
+				selectedIDs.clear();
+				selectedIDs.addAll(restored);
+				restoredSelection=true;
+			}
+		}
 	}
 
 	@Override
@@ -68,18 +79,17 @@ public class ReportAddPostsChoiceFragment extends StatusListFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		accountID=getArguments().getString("account");
 		reportAccount=Parcels.unwrap(getArguments().getParcelable("reportAccount"));
 		reportStatus=Parcels.unwrap(getArguments().getParcelable("status"));
-		if(reportStatus!=null){
+		if(reportStatus!=null && !restoredSelection && selectedIDs.isEmpty()){
 			selectedIDs.add(reportStatus.id);
 			setTitle(R.string.report_title_post);
 		}else{
 			setTitle(getString(R.string.report_title, reportAccount.acct));
 		}
-		loadData();
 	}
 
 	@Override
@@ -111,6 +121,9 @@ public class ReportAddPostsChoiceFragment extends StatusListFragment{
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
+		if(!loaded && !dataLoading){
+			loadData();
+		}
 		btn=view.findViewById(R.id.btn_next);
 		btn.setOnClickListener(this::onButtonClick);
 		buttonBar=view.findViewById(R.id.button_bar);
@@ -158,7 +171,7 @@ public class ReportAddPostsChoiceFragment extends StatusListFragment{
 
 		MergeRecyclerAdapter adapter=new MergeRecyclerAdapter();
 		adapter.addAdapter(new SingleViewRecyclerAdapter(headerView));
-		adapter.addAdapter(super.getAdapter());
+		adapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return adapter;
 	}
 
@@ -185,6 +198,12 @@ public class ReportAddPostsChoiceFragment extends StatusListFragment{
 	@Override
 	public void onApplyWindowInsets(WindowInsets insets){
 		super.onApplyWindowInsets(UiUtils.applyBottomInsetToFixedView(buttonBar, insets));
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putStringArrayList(STATE_SELECTED_IDS, selectedIDs);
 	}
 
 	@Subscribe

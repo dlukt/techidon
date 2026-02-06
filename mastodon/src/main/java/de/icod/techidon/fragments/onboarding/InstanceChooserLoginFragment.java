@@ -7,6 +7,7 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,9 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class InstanceChooserLoginFragment extends InstanceCatalogFragment{
+	private static final String STATE_SEARCH_QUERY="state_search_query";
+	private static final String STATE_SEARCH_QUERY_RAW="state_search_query_raw";
+
 	private View headerView;
 	private boolean loadedAutocomplete;
 	private ImageButton clearBtn;
@@ -51,6 +55,10 @@ public class InstanceChooserLoginFragment extends InstanceCatalogFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			currentSearchQuery=savedInstanceState.getString(STATE_SEARCH_QUERY, "");
+			currentSearchQueryButWithCasePreserved=savedInstanceState.getString(STATE_SEARCH_QUERY_RAW, "");
+		}
 		dataLoaded();
 		setTitle(R.string.login_title);
 		if(!loadedAutocomplete){
@@ -98,6 +106,7 @@ public class InstanceChooserLoginFragment extends InstanceCatalogFragment{
 					public void onSuccess(List<CatalogInstance> result){
 						data.clear();
 						data.addAll(sortInstances(result));
+						updateFilteredList();
 					}
 
 					@Override
@@ -159,13 +168,23 @@ public class InstanceChooserLoginFragment extends InstanceCatalogFragment{
 
 		mergeAdapter=new MergeRecyclerAdapter();
 		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(headerView));
-		mergeAdapter.addAdapter(adapter=new InstancesAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(adapter=new InstancesAdapter()));
 		return mergeAdapter;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_SEARCH_QUERY, currentSearchQuery);
+		outState.putString(STATE_SEARCH_QUERY_RAW, currentSearchQueryButWithCasePreserved);
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
+		if(!TextUtils.isEmpty(currentSearchQueryButWithCasePreserved) && searchEdit.getText().length()==0){
+			searchEdit.setText(currentSearchQueryButWithCasePreserved);
+		}
 
 		list.addItemDecoration(new RecyclerView.ItemDecoration(){
 			@Override
@@ -244,7 +263,7 @@ public class InstanceChooserLoginFragment extends InstanceCatalogFragment{
 					boolean found=false;
 					for(int i=0;i<list.getChildCount();i++){
 						RecyclerView.ViewHolder holder=list.getChildViewHolder(list.getChildAt(i));
-						if(holder.getAbsoluteAdapterPosition()==mergeAdapter.getPositionForAdapter(adapter)+idx && holder instanceof InstanceViewHolder ivh){
+						if(holder.getAbsoluteAdapterPosition()==mergeAdapter.getPositionForAdapter(MergeRecyclerAdapter.asViewHolderAdapter(adapter))+idx && holder instanceof InstanceViewHolder ivh){
 							ivh.radioButton.setChecked(false);
 							found=true;
 							break;

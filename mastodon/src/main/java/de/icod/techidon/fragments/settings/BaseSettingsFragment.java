@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public abstract class BaseSettingsFragment<T> extends MastodonRecyclerFragment<ListItem<T>> implements HasAccountID, ProvidesAssistContent.ProvidesWebUri{
 	protected GenericListItemsAdapter<T> itemsAdapter;
 	protected String accountID;
+	private boolean suppressInitialDataRestore;
 
 	public BaseSettingsFragment(){
 		super(20);
@@ -41,14 +42,32 @@ public abstract class BaseSettingsFragment<T> extends MastodonRecyclerFragment<L
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 		accountID=getArguments().getString("account");
 		setRefreshEnabled(false);
+		suppressInitialDataRestore=savedInstanceState!=null;
 	}
 
 	@Override
 	protected RecyclerView.Adapter<?> getAdapter(){
 		return itemsAdapter=new GenericListItemsAdapter<T>(imgLoader, data);
+	}
+
+	@Override
+	protected void onDataLoaded(java.util.List<ListItem<T>> d){
+		if(suppressInitialDataRestore && !data.isEmpty()){
+			suppressInitialDataRestore=false;
+			return;
+		}
+		suppressInitialDataRestore=false;
+		super.onDataLoaded(d);
+	}
+
+	protected void resetDataOnRestore(Bundle savedInstanceState){
+		if(savedInstanceState==null)
+			return;
+		data.clear();
+		preloadedData.clear();
+		onClearItems();
 	}
 
 	@Override

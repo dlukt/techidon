@@ -73,6 +73,17 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class InstanceCatalogSignupFragment extends InstanceCatalogFragment implements OnBackPressedListener{
+	private static final String STATE_SEARCH_MODE="state_search_mode";
+	private static final String STATE_LANGUAGE="state_language";
+	private static final String STATE_SIGNUP_SPEED="state_signup_speed";
+	private static final String STATE_CATEGORY_CHOICE="state_category_choice";
+	private static final String STATE_REGION="state_region";
+	private static final String STATE_INVITE_CODE="state_invite_code";
+	private static final String STATE_INVITE_HOST="state_invite_host";
+	private static final String STATE_SEARCH_QUERY="state_search_query";
+	private static final String STATE_SEARCH_QUERY_RAW="state_search_query_raw";
+	private static final String STATE_CHOSEN_INSTANCE="state_chosen_instance";
+
 	private MastodonAPIRequest<?> getCategoriesRequest;
 	private String currentCategory="all";
 	private List<CatalogCategory> categories=new ArrayList<>();
@@ -95,6 +106,7 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 
 	private String inviteCode, inviteCodeHost;
 	private AlertDialog currentInviteLinkAlert;
+	private String restoredChosenInstanceDomain;
 
 	public InstanceCatalogSignupFragment(){
 		super(R.layout.fragment_onboarding_common, 10);
@@ -104,13 +116,39 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 	public void onAttach(Context context){
 		super.onAttach(context);
 		setRefreshEnabled(false);
-		setRetainInstance(true);
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		loadData();
+		if(savedInstanceState!=null){
+			searchQueryMode=savedInstanceState.getBoolean(STATE_SEARCH_MODE, false);
+				currentLanguage=savedInstanceState.getString(STATE_LANGUAGE);
+				int speedOrdinal=savedInstanceState.getInt(STATE_SIGNUP_SPEED, SignupSpeedFilter.ANY.ordinal());
+				if(speedOrdinal>=0 && speedOrdinal<SignupSpeedFilter.values().length)
+					currentSignupSpeedFilter=SignupSpeedFilter.values()[speedOrdinal];
+				if(savedInstanceState.containsKey(STATE_CATEGORY_CHOICE)){
+					String restoredCategory=savedInstanceState.getString(STATE_CATEGORY_CHOICE);
+					categoryChoice=restoredCategory!=null ? CategoryChoice.valueOf(restoredCategory) : null;
+				}
+			String restoredRegion=savedInstanceState.getString(STATE_REGION);
+			if(restoredRegion!=null){
+				chosenRegion=CatalogInstance.Region.valueOf(restoredRegion);
+			}
+			inviteCode=savedInstanceState.getString(STATE_INVITE_CODE);
+			inviteCodeHost=savedInstanceState.getString(STATE_INVITE_HOST);
+			currentSearchQuery=savedInstanceState.getString(STATE_SEARCH_QUERY);
+			currentSearchQueryButWithCasePreserved=savedInstanceState.getString(STATE_SEARCH_QUERY_RAW);
+			restoredChosenInstanceDomain=savedInstanceState.getString(STATE_CHOSEN_INSTANCE);
+			if(!loaded && dataLoading){
+				dataLoading=false;
+			}
+		}
+		if(!loaded && !dataLoading){
+			loadData();
+		}else{
+			loadCategories();
+		}
 	}
 
 	@Override
@@ -151,11 +189,18 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 					}
 				})
 				.execNoAuth("");
+		loadCategories();
+	}
+
+	private void loadCategories(){
+		if(getCategoriesRequest!=null)
+			return;
 		getCategoriesRequest=new GetCatalogCategories(null)
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(List<CatalogCategory> result){
 						getCategoriesRequest=null;
+						categories.clear();
 						CatalogCategory all=new CatalogCategory();
 						all.category="all";
 						categories.add(all);
@@ -167,6 +212,7 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 					public void onError(ErrorResponse error){
 						getCategoriesRequest=null;
 						error.showToast(getActivity());
+						categories.clear();
 						CatalogCategory all=new CatalogCategory();
 						all.category="all";
 						categories.add(all);
@@ -201,7 +247,7 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 
 		mergeAdapter=new MergeRecyclerAdapter();
 		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(headerView));
-		mergeAdapter.addAdapter(adapter=new InstancesAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(adapter=new InstancesAdapter()));
 		return mergeAdapter;
 	}
 
@@ -267,6 +313,12 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 		langFilter.setOnClickListener(v->langFilterMenu.show());
 		filtersWrap=view.findViewById(R.id.filters_container);
 		filtersScroll=view.findViewById(R.id.filters_scroll);
+		if(searchQueryMode){
+			setSearchQueryMode(true);
+		}
+		if(searchQueryMode && !TextUtils.isEmpty(currentSearchQueryButWithCasePreserved)){
+			searchEdit.setText(currentSearchQueryButWithCasePreserved);
+		}
 		filtersWrap.addView(langFilter, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
 		FilterChipView speedFilter=new FilterChipView(getActivity());
@@ -338,6 +390,10 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 
 		view.findViewById(R.id.btn_use_invite).setOnClickListener(this::onUseInviteClick);
 		nextButton.setEnabled(chosenInstance!=null);
+		if(loaded && !data.isEmpty()){
+			updateFilteredList();
+		}
+		restoreChosenInstanceIfNeeded();
 	}
 
 	private void onRegionFilterClick(View v){
@@ -614,6 +670,7 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 				return prevData.get(oldItemPosition)==filteredData.get(newItemPosition);
 			}
 		}).dispatchUpdatesTo(adapter);
+		restoreChosenInstanceIfNeeded();
 	}
 
 	@Override
@@ -629,6 +686,35 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_SEARCH_MODE, searchQueryMode);
+		outState.putString(STATE_LANGUAGE, currentLanguage);
+		outState.putInt(STATE_SIGNUP_SPEED, currentSignupSpeedFilter.ordinal());
+		outState.putString(STATE_CATEGORY_CHOICE, categoryChoice!=null ? categoryChoice.name() : null);
+		outState.putString(STATE_REGION, chosenRegion!=null ? chosenRegion.name() : null);
+		outState.putString(STATE_INVITE_CODE, inviteCode);
+		outState.putString(STATE_INVITE_HOST, inviteCodeHost);
+		outState.putString(STATE_SEARCH_QUERY, currentSearchQuery);
+		outState.putString(STATE_SEARCH_QUERY_RAW, currentSearchQueryButWithCasePreserved);
+		outState.putString(STATE_CHOSEN_INSTANCE, chosenInstance!=null ? chosenInstance.domain : restoredChosenInstanceDomain);
+	}
+
+	private void restoreChosenInstanceIfNeeded(){
+		if(nextButton==null || adapter==null || restoredChosenInstanceDomain==null || chosenInstance!=null)
+			return;
+		for(int i=0;i<filteredData.size();i++){
+			CatalogInstance instance=filteredData.get(i);
+			if(restoredChosenInstanceDomain.equals(instance.domain) || restoredChosenInstanceDomain.equals(instance.normalizedDomain)){
+				chosenInstance=instance;
+				nextButton.setEnabled(true);
+				adapter.notifyItemChanged(i);
+				break;
+			}
+		}
 	}
 
 	private void setSearchQueryMode(boolean enabled){
@@ -734,7 +820,7 @@ public class InstanceCatalogSignupFragment extends InstanceCatalogFragment imple
 					boolean found=false;
 					for(int i=0;i<list.getChildCount();i++){
 						RecyclerView.ViewHolder holder=list.getChildViewHolder(list.getChildAt(i));
-						if(holder.getAbsoluteAdapterPosition()==mergeAdapter.getPositionForAdapter(adapter)+idx && holder instanceof InstanceViewHolder ivh){
+						if(holder.getAbsoluteAdapterPosition()==mergeAdapter.getPositionForAdapter(MergeRecyclerAdapter.asViewHolderAdapter(adapter))+idx && holder instanceof InstanceViewHolder ivh){
 							ivh.radioButton.setChecked(false);
 							found=true;
 							break;

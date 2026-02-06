@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.discover;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Build;
@@ -42,6 +43,9 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class SearchFragment extends BaseStatusListFragment<SearchResult>{
+	private static final String STATE_QUERY="state_query";
+	private static final String STATE_FILTER="state_filter";
+
 	private String currentQuery;
 	private List<StatusDisplayItem> prevDisplayItems;
 	private EnumSet<SearchResult.Type> currentFilter=EnumSet.allOf(SearchResult.Type.class);
@@ -55,14 +59,34 @@ public class SearchFragment extends BaseStatusListFragment<SearchResult>{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
-		setEmptyText(R.string.sk_recent_searches_placeholder);
-		loadData();
+		if(savedInstanceState!=null){
+			currentQuery=savedInstanceState.getString(STATE_QUERY);
+			int[] filterOrdinals=savedInstanceState.getIntArray(STATE_FILTER);
+			if(filterOrdinals!=null && filterOrdinals.length>0){
+				currentFilter=EnumSet.noneOf(SearchResult.Type.class);
+				for(int ordinal : filterOrdinals){
+					if(ordinal>=0 && ordinal<SearchResult.Type.values().length)
+						currentFilter.add(SearchResult.Type.values()[ordinal]);
+				}
+				if(currentFilter.isEmpty())
+					currentFilter=EnumSet.allOf(SearchResult.Type.class);
+			}
+			if(currentQuery!=null && !data.isEmpty()){
+				unfilteredResults=new ArrayList<>(data);
+			}
+		}
+		if(currentQuery==null){
+			setEmptyText(R.string.sk_recent_searches_placeholder);
+		}else{
+			setEmptyText(R.string.no_search_results);
+		}
+		if(savedInstanceState==null || currentQuery==null || data.isEmpty()){
+			loadData();
+		}
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		imm=activity.getSystemService(InputMethodManager.class);
 	}
@@ -185,6 +209,14 @@ public class SearchFragment extends BaseStatusListFragment<SearchResult>{
 		UiUtils.updateList(prevDisplayItems, displayItems, list, adapter, (i1, i2)->i1.parentID.equals(i2.parentID) && i1.index==i2.index && i1.getType()==i2.getType());
 		imgLoader.forceUpdateImages();
 		prevDisplayItems=null;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_QUERY, currentQuery);
+		int[] filterOrdinals=currentFilter.stream().mapToInt(Enum::ordinal).toArray();
+		outState.putIntArray(STATE_FILTER, filterOrdinals);
 	}
 
 	public void setQuery(String q, SearchResult.Type filter){

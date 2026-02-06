@@ -41,7 +41,12 @@ public class AddAccountToListsFragment extends BaseSettingsFragment<FollowList>{
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.add_user_to_list_title);
 		account=Parcels.unwrap(getArguments().getParcelable("targetAccount"));
-		loadData();
+		if(savedInstanceState!=null){
+			resetDataOnRestore(savedInstanceState);
+		}
+		if(savedInstanceState!=null || !loaded){
+			loadData();
+		}
 	}
 
 	@Override
@@ -86,7 +91,7 @@ public class AddAccountToListsFragment extends BaseSettingsFragment<FollowList>{
 
 		MergeRecyclerAdapter mergeAdapter=new MergeRecyclerAdapter();
 		mergeAdapter.addAdapter(new SingleViewRecyclerAdapter(topText));
-		mergeAdapter.addAdapter(super.getAdapter());
+		mergeAdapter.addAdapter(MergeRecyclerAdapter.asViewHolderAdapter(super.getAdapter()));
 		return mergeAdapter;
 	}
 

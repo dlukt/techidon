@@ -102,6 +102,7 @@ public class ComposeMediaViewController{
 			}
 			attachmentsScroller.setVisibility(View.VISIBLE);
 			updateMediaAttachmentsLayout();
+			resumePendingUploads();
 		}else if(!attachments.isEmpty()){
 			attachmentsScroller.setVisibility(View.VISIBLE);
 			for(DraftMediaAttachment att:attachments){
@@ -649,6 +650,24 @@ public class ComposeMediaViewController{
 			}
 			outState.putParcelableArrayList("attachments", serializedAttachments);
 		}
+	}
+
+	private void resumePendingUploads(){
+		for(DraftMediaAttachment att:attachments){
+			if(att.state==AttachmentUploadState.UPLOADING){
+				att.state=AttachmentUploadState.QUEUED;
+				att.titleView.setText(fragment.getString(R.string.attachment_x_percent_uploaded, 0));
+				V.setVisibilityAnimated(att.progressBar, View.VISIBLE);
+			}else if(att.state==AttachmentUploadState.PROCESSING){
+				att.processingPollingRunnable=()->pollForMediaAttachmentProcessing(att);
+				att.titleView.setText(R.string.upload_processing);
+				V.setVisibilityAnimated(att.progressBar, View.VISIBLE);
+				if(fragment.getActivity()!=null)
+					UiUtils.runOnUiThread(att.processingPollingRunnable, 1000);
+			}
+		}
+		if(!areThereAnyUploadingAttachments())
+			uploadNextQueuedAttachment();
 	}
 
 	@Parcel

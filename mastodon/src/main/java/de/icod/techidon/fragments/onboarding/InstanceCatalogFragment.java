@@ -112,6 +112,12 @@ abstract class InstanceCatalogFragment extends MastodonRecyclerFragment<CatalogI
 		loadInstanceInfo(getCurrentSearchQuery(), false);
 	}
 
+	@Override
+	public void onDestroy(){
+		cancelLoadingInstanceInfo();
+		super.onDestroy();
+	}
+
 	protected List<CatalogInstance> sortInstances(List<CatalogInstance> result){
 		Map<Boolean, List<CatalogInstance>> byLang=result.stream().sorted(Comparator.comparingInt((CatalogInstance ci)->ci.lastWeekUsers).reversed()).collect(Collectors.groupingBy(ci->ci.approvalRequired));
 		ArrayList<CatalogInstance> sortedList=new ArrayList<>();

@@ -1,12 +1,13 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.app.assist.AssistContent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -23,6 +24,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -138,6 +140,13 @@ import me.grishka.appkit.views.UsableRecyclerView;
 public class ProfileFragment extends LoaderFragment implements OnBackPressedListener, ScrollableToTop, HasFab, ProvidesAssistContent.ProvidesWebUri {
 	private static final int AVATAR_RESULT=722;
 	private static final int COVER_RESULT=343;
+	private static final String STATE_EDIT_MODE="state_edit_mode";
+	private static final String STATE_EDIT_DIRTY="state_edit_dirty";
+	private static final String STATE_EDIT_NAME="state_edit_name";
+	private static final String STATE_EDIT_BIO="state_edit_bio";
+	private static final String STATE_EDIT_AVATAR="state_edit_avatar";
+	private static final String STATE_EDIT_COVER="state_edit_cover";
+	private static final String STATE_EDIT_FIELDS="state_edit_fields";
 
 	private ImageView avatar;
 	private CoverImageView cover;
@@ -173,6 +182,11 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 
 	private boolean isInEditMode, editDirty;
 	private Uri editNewAvatar, editNewCover;
+	private boolean restoreEditMode;
+	private boolean restoredEditDirty;
+	private String restoredEditName;
+	private String restoredEditBio;
+	private ArrayList<AccountField> restoredFields;
 	private String profileAccountID;
 	private boolean refreshing;
 	private ImageButton fab;
@@ -201,11 +215,23 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
-
 		accountID=getArguments().getString("account");
 		domain=AccountSessionManager.getInstance().getAccount(accountID).domain;
+		if(savedInstanceState!=null){
+			restoreEditMode=savedInstanceState.getBoolean(STATE_EDIT_MODE, false);
+			restoredEditDirty=savedInstanceState.getBoolean(STATE_EDIT_DIRTY, false);
+			editNewAvatar=savedInstanceState.getParcelable(STATE_EDIT_AVATAR);
+			editNewCover=savedInstanceState.getParcelable(STATE_EDIT_COVER);
+			restoredEditName=savedInstanceState.getString(STATE_EDIT_NAME);
+			restoredEditBio=savedInstanceState.getString(STATE_EDIT_BIO);
+			ArrayList<Parcelable> savedFields=savedInstanceState.getParcelableArrayList(STATE_EDIT_FIELDS);
+			if(savedFields!=null){
+				restoredFields=new ArrayList<>(savedFields.size());
+				for(Parcelable field : savedFields){
+					restoredFields.add(Parcels.unwrap(field));
+				}
+			}
+		}
 		if (getArguments().containsKey("remoteAccount")) {
 			remoteAccount = Parcels.unwrap(getArguments().getParcelable("remoteAccount"));
 			if(!getArguments().getBoolean("noAutoLoad", false))
@@ -214,6 +240,8 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 			account=Parcels.unwrap(getArguments().getParcelable("profileAccount"));
 			profileAccountID=account.id;
 			isOwnProfile=AccountSessionManager.getInstance().isSelf(accountID, account);
+			if(restoreEditMode && !isOwnProfile)
+				restoreEditMode=false;
 			loaded=true;
 			if(!isOwnProfile)
 				loadRelationship();
@@ -233,9 +261,9 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
@@ -382,10 +410,10 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 		fab.setOnLongClickListener(v->UiUtils.pickAccountForCompose(getActivity(), accountID, getPrefilledText()));
 
 		if(savedInstanceState!=null){
-			postsFragment=(AccountTimelineFragment) getChildFragmentManager().getFragment(savedInstanceState, "posts");
-			postsWithRepliesFragment=(AccountTimelineFragment) getChildFragmentManager().getFragment(savedInstanceState, "postsWithReplies");
-			mediaFragment=(AccountTimelineFragment) getChildFragmentManager().getFragment(savedInstanceState, "media");
-			pinnedPostsFragment=(PinnedPostsListFragment) getChildFragmentManager().getFragment(savedInstanceState, "pinnedPosts");
+			postsFragment=getRestoredChildFragment(savedInstanceState, "posts", AccountTimelineFragment.class);
+			postsWithRepliesFragment=getRestoredChildFragment(savedInstanceState, "postsWithReplies", AccountTimelineFragment.class);
+			mediaFragment=getRestoredChildFragment(savedInstanceState, "media", AccountTimelineFragment.class);
+			pinnedPostsFragment=getRestoredChildFragment(savedInstanceState, "pinnedPosts", PinnedPostsListFragment.class);
 		}
 
 		if(loaded){
@@ -487,6 +515,7 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 		isOwnProfile=AccountSessionManager.getInstance().isSelf(accountID, account);
 		bindHeaderView();
 		dataLoaded();
+		restoreEditModeIfNeeded();
 		if(!tabLayoutMediator.isAttached())
 			tabLayoutMediator.attach();
 		if(!isOwnProfile)
@@ -623,20 +652,32 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 				return true;
 			}
 		});
+		restoreEditModeIfNeeded();
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState){
 		super.onSaveInstanceState(outState);
-		if(postsFragment==null)
-			return;
-		if(postsFragment.isAdded())
+		outState.putBoolean(STATE_EDIT_MODE, isInEditMode);
+		outState.putBoolean(STATE_EDIT_DIRTY, editDirty);
+		outState.putParcelable(STATE_EDIT_AVATAR, editNewAvatar);
+		outState.putParcelable(STATE_EDIT_COVER, editNewCover);
+		if(isInEditMode && nameEdit!=null && bioEdit!=null){
+			outState.putString(STATE_EDIT_NAME, nameEdit.getText().toString());
+			outState.putString(STATE_EDIT_BIO, bioEdit.getText().toString());
+			ArrayList<Parcelable> savedFields=new ArrayList<>(fields.size());
+			for(AccountField field : fields){
+				savedFields.add(Parcels.wrap(field));
+			}
+			outState.putParcelableArrayList(STATE_EDIT_FIELDS, savedFields);
+		}
+		if(postsFragment!=null && postsFragment.isAdded())
 			getChildFragmentManager().putFragment(outState, "posts", postsFragment);
-		if(postsWithRepliesFragment.isAdded())
+		if(postsWithRepliesFragment!=null && postsWithRepliesFragment.isAdded())
 			getChildFragmentManager().putFragment(outState, "postsWithReplies", postsWithRepliesFragment);
-		if(mediaFragment.isAdded())
+		if(mediaFragment!=null && mediaFragment.isAdded())
 			getChildFragmentManager().putFragment(outState, "media", mediaFragment);
-		if(pinnedPostsFragment.isAdded())
+		if(pinnedPostsFragment!=null && pinnedPostsFragment.isAdded())
 			getChildFragmentManager().putFragment(outState, "pinnedPosts", pinnedPostsFragment);
 	}
 
@@ -670,11 +711,30 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 	}
 
 	private void applyChildWindowInsets(){
-		if(postsFragment!=null && postsFragment.isAdded() && childInsets!=null){
+		if(childInsets==null)
+			return;
+		if(postsFragment!=null && postsFragment.isAdded()){
 			postsFragment.onApplyWindowInsets(childInsets);
+		}
+		if(postsWithRepliesFragment!=null && postsWithRepliesFragment.isAdded()){
 			postsWithRepliesFragment.onApplyWindowInsets(childInsets);
+		}
+		if(pinnedPostsFragment!=null && pinnedPostsFragment.isAdded()){
 			pinnedPostsFragment.onApplyWindowInsets(childInsets);
+		}
+		if(mediaFragment!=null && mediaFragment.isAdded()){
 			mediaFragment.onApplyWindowInsets(childInsets);
+		}
+	}
+
+	private <T extends Fragment> T getRestoredChildFragment(Bundle state, String key, Class<T> fragmentClass){
+		if(!state.containsKey(key))
+			return null;
+		try{
+			Fragment restored=getChildFragmentManager().getFragment(state, key);
+			return fragmentClass.isInstance(restored) ? fragmentClass.cast(restored) : null;
+		}catch(Exception ignored){
+			return null;
 		}
 	}
 
@@ -804,7 +864,7 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		if(isOwnProfile && isInEditMode){
 			editSaveMenuItem=menu.add(0, R.id.save, 0, R.string.save_changes);
 			editSaveMenuItem.setIcon(R.drawable.ic_fluent_save_24_regular);
@@ -860,7 +920,7 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		int id=item.getItemId();
 		if(id==R.id.share){
 			UiUtils.openSystemShareSheet(getActivity(), account);
@@ -1183,6 +1243,30 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 		list.requestLayout();
 	}
 
+	private void restoreEditModeIfNeeded(){
+		if(!restoreEditMode || account==null || !isOwnProfile || contentView==null)
+			return;
+		if(!isInEditMode)
+			enterEditMode(account);
+		if(restoredEditName!=null)
+			nameEdit.setText(restoredEditName);
+		if(restoredEditBio!=null)
+			bioEdit.setText(restoredEditBio);
+		if(restoredFields!=null){
+			fields=restoredFields;
+			if(adapter!=null)
+				adapter.notifyDataSetChanged();
+		}
+		if(editNewAvatar!=null){
+			ViewImageLoader.loadWithoutAnimation(avatar, null, new UrlImageLoaderRequest(editNewAvatar, V.dp(100), V.dp(100)));
+		}
+		if(editNewCover!=null){
+			ViewImageLoader.loadWithoutAnimation(cover, null, new UrlImageLoaderRequest(editNewCover, V.dp(1000), V.dp(1000)));
+		}
+		editDirty=restoredEditDirty;
+		restoreEditMode=false;
+	}
+
 	private void enterEditMode(Account account){
 		if(isInEditMode)
 			throw new IllegalStateException();
@@ -1219,16 +1303,19 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 		countersLayout.setVisibility(View.GONE);
 
 		nameEditWrap.setVisibility(View.VISIBLE);
-		nameEdit.setText(account.displayName);
+		nameEdit.setText(account.displayName==null ? "" : account.displayName);
 
 		bioEditWrap.setVisibility(View.VISIBLE);
-		bioEdit.setText(account.source.note);
+		bioEdit.setText(account.source==null || account.source.note==null ? "" : account.source.note);
 
 		refreshLayout.setEnabled(false);
 		editDirty=false;
 		V.setVisibilityAnimated(fab, View.GONE);
 
-		fields = account.source.fields;
+		if(account.source!=null && account.source.fields!=null)
+			fields = account.source.fields;
+		else
+			fields = new ArrayList<>();
 		adapter.notifyDataSetChanged();
 	}
 

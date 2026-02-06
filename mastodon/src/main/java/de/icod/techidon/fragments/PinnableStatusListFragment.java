@@ -27,8 +27,8 @@ public abstract class PinnableStatusListFragment extends StatusListFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
+    public void onCreateAppMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateAppMenu(menu, inflater);
         updatePinButton(menu.findItem(R.id.pin));
     }
 
@@ -47,12 +47,12 @@ public abstract class PinnableStatusListFragment extends StatusListFragment {
     protected abstract TimelineDefinition makeTimelineDefinition();
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onAppMenuItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.pin) {
             togglePin(item);
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        return super.onAppMenuItemSelected(item);
     }
 
     protected void togglePin(MenuItem pin) {

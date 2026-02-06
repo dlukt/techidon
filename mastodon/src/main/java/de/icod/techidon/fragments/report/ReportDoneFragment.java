@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.report;
 
+import android.content.Context;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
@@ -39,6 +40,8 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class ReportDoneFragment extends MastodonToolbarFragment{
+	private static final String STATE_RELATIONSHIP="state_relationship";
+
 	private String accountID;
 	private Account reportAccount;
 	private Button btn;
@@ -55,17 +58,21 @@ public class ReportDoneFragment extends MastodonToolbarFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
+		if(savedInstanceState!=null && savedInstanceState.containsKey(STATE_RELATIONSHIP)){
+			relationship=Parcels.unwrap(savedInstanceState.getParcelable(STATE_RELATIONSHIP));
+		}
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setNavigationBarColor(UiUtils.getThemeColor(activity, R.attr.colorM3Surface));
 		accountID=getArguments().getString("account");
 		reportAccount=Parcels.unwrap(getArguments().getParcelable("reportAccount"));
 		reason=ReportReason.valueOf(getArguments().getString("reason"));
-		relationship=Parcels.unwrap(getArguments().getParcelable("relationship"));
+		if(relationship==null){
+			relationship=Parcels.unwrap(getArguments().getParcelable("relationship"));
+		}
 		if(getArguments().getBoolean("fromPost", false))
 			setTitle(R.string.report_title_post);
 		else
@@ -173,6 +180,13 @@ public class ReportDoneFragment extends MastodonToolbarFragment{
 		super.onApplyWindowInsets(UiUtils.applyBottomInsetToFixedView(buttonBar, insets));
 	}
 
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		if(relationship!=null)
+			outState.putParcelable(STATE_RELATIONSHIP, Parcels.wrap(relationship));
+	}
+
 	private void onButtonClick(View v){
 		Nav.finish(this);
 	}
@@ -182,6 +196,7 @@ public class ReportDoneFragment extends MastodonToolbarFragment{
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(Relationship result){
+						relationship=result;
 						E.post(new RemoveAccountPostsEvent(accountID, reportAccount.id, true));
 						unfollowTitle.setTextColor(UiUtils.getThemeColor(getActivity(), R.attr.colorM3OnSecondaryContainer));
 						unfollowTitle.setText(getString(R.string.unfollowed_user, '@'+reportAccount.acct));
@@ -202,6 +217,7 @@ public class ReportDoneFragment extends MastodonToolbarFragment{
 
 	private void onMuteClick(){
 		UiUtils.confirmToggleMuteUser(getActivity(), accountID, reportAccount, false, rel->{
+			relationship=rel;
 			muteTitle.setTextColor(UiUtils.getThemeColor(getActivity(), R.attr.colorM3OnSecondaryContainer));
 			muteTitle.setText(getString(R.string.muted_user, '@'+reportAccount.acct));
 			setIconToButton(R.drawable.ic_fluent_checkmark_24_regular, muteTitle);
@@ -213,6 +229,7 @@ public class ReportDoneFragment extends MastodonToolbarFragment{
 
 	private void onBlockClick(){
 		UiUtils.confirmToggleBlockUser(getActivity(), accountID, reportAccount, false, rel->{
+			relationship=rel;
 			blockTitle.setTextColor(UiUtils.getThemeColor(getActivity(), R.attr.colorM3OnSecondaryContainer));
 			blockTitle.setText(getString(R.string.blocked_user, '@'+reportAccount.acct));
 			setIconToButton(R.drawable.ic_fluent_checkmark_24_regular, blockTitle);

@@ -5,6 +5,7 @@ import static com.hootsuite.nachos.terminator.ChipTerminatorHandler.BEHAVIOR_CHI
 import static de.icod.techidon.ui.utils.UiUtils.makeBackItem;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -67,6 +68,8 @@ import me.grishka.appkit.views.UsableRecyclerView;
 @SuppressWarnings("deprecation")
 
 public class EditTimelinesFragment extends MastodonRecyclerFragment<TimelineDefinition> implements ScrollableToTop{
+	private static final String STATE_UPDATED="state_updated";
+
 	private String accountID;
 	private TimelinesAdapter adapter;
 	private final ItemTouchHelper itemTouchHelper;
@@ -87,9 +90,12 @@ public class EditTimelinesFragment extends MastodonRecyclerFragment<TimelineDefi
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 		setTitle(R.string.sk_timelines);
 		accountID=getArguments().getString("account");
+		if(savedInstanceState!=null){
+			updated=savedInstanceState.getBoolean(STATE_UPDATED, false);
+		}
 
 		new GetLists().setCallback(new Callback<>(){
 			@Override
@@ -133,13 +139,13 @@ public class EditTimelinesFragment extends MastodonRecyclerFragment<TimelineDefi
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		this.optionsMenu=menu;
 		updateOptionsMenu();
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		if(item.getItemId()==R.id.menu_back){
 			updateOptionsMenu();
 			optionsMenu.performIdentifierAction(R.id.menu_add_timeline, 0);
@@ -268,7 +274,15 @@ public class EditTimelinesFragment extends MastodonRecyclerFragment<TimelineDefi
 	@Override
 	public void onDestroy(){
 		super.onDestroy();
-		if(updated) UiUtils.restartApp();
+		Activity activity=getActivity();
+		if(updated && activity!=null && !activity.isChangingConfigurations())
+			UiUtils.restartApp();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_UPDATED, updated);
 	}
 
 	private boolean setTagListContent(NachoTextView editText, @Nullable List<String> tags){

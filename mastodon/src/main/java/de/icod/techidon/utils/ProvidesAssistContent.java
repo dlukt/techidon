@@ -1,6 +1,6 @@
 package de.icod.techidon.utils;
 
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.app.assist.AssistContent;
 import android.net.Uri;
 

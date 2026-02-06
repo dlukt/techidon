@@ -1,7 +1,8 @@
 package de.icod.techidon.fragments.settings;
 
+import android.content.Context;
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -66,10 +67,27 @@ public class SettingsServerFragment extends AppKitFragment{
 		args.putString("account", accountID);
 		args.putBoolean("__is_tab", true);
 		args.putParcelable("instance", Parcels.wrap(instance));
-		aboutFragment=new SettingsServerAboutFragment();
-		aboutFragment.setArguments(args);
-		rulesFragment=new SettingsServerRulesFragment();
-		rulesFragment.setArguments(args);
+		if(savedInstanceState!=null){
+			aboutFragment=getRestoredChildFragment(savedInstanceState, "aboutFragment", SettingsServerAboutFragment.class);
+			rulesFragment=getRestoredChildFragment(savedInstanceState, "rulesFragment", SettingsServerRulesFragment.class);
+		}
+		if(aboutFragment==null){
+			aboutFragment=new SettingsServerAboutFragment();
+			aboutFragment.setArguments(args);
+		}
+		if(rulesFragment==null){
+			rulesFragment=new SettingsServerRulesFragment();
+			rulesFragment.setArguments(args);
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		if(aboutFragment!=null && aboutFragment.isAdded())
+			getChildFragmentManager().putFragment(outState, "aboutFragment", aboutFragment);
+		if(rulesFragment!=null && rulesFragment.isAdded())
+			getChildFragmentManager().putFragment(outState, "rulesFragment", rulesFragment);
 	}
 
 	@Nullable
@@ -140,7 +158,7 @@ public class SettingsServerFragment extends AppKitFragment{
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		if (instance != null) {
 			inflater.inflate(R.menu.instance_info, menu);
 			UiUtils.enableOptionsMenuIcons(getActivity(), menu);
@@ -150,7 +168,7 @@ public class SettingsServerFragment extends AppKitFragment{
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onAppMenuItemSelected(MenuItem item){
 		int id=item.getItemId();
 		if(id==R.id.share){
 			Intent intent = new Intent(Intent.ACTION_SEND);
@@ -169,9 +187,9 @@ public class SettingsServerFragment extends AppKitFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 	}
 
 	@Override
@@ -188,10 +206,30 @@ public class SettingsServerFragment extends AppKitFragment{
 	}
 
 	private void applyChildWindowInsets(){
-		if(aboutFragment!=null && aboutFragment.isAdded() && childInsets!=null){
+		if(childInsets==null)
+			return;
+		if(aboutFragment!=null && aboutFragment.isAdded()){
 			aboutFragment.onApplyWindowInsets(childInsets);
+		}
+		if(rulesFragment!=null && rulesFragment.isAdded()){
 			rulesFragment.onApplyWindowInsets(childInsets);
 		}
+	}
+
+	private <T extends Fragment> T getRestoredChildFragment(Bundle state, String key, Class<T> fragmentClass){
+		Fragment restored=null;
+		if(state.containsKey(key)){
+			try{
+				restored=getChildFragmentManager().getFragment(state, key);
+			}catch(Exception ignored){}
+		}
+		if(fragmentClass.isInstance(restored))
+			return fragmentClass.cast(restored);
+		for(Fragment fragment:getChildFragmentManager().getFragments()){
+			if(fragmentClass.isInstance(fragment))
+				return fragmentClass.cast(fragment);
+		}
+		return null;
 	}
 
 	private class ServerPagerAdapter extends RecyclerView.Adapter<SimpleViewHolder>{

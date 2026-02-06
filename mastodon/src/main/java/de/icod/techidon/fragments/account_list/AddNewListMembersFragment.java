@@ -1,6 +1,7 @@
 package de.icod.techidon.fragments.account_list;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -24,8 +25,13 @@ import me.grishka.appkit.utils.V;
 @SuppressLint("ValidFragment") // This shouldn't be part of any saved states anyway
 @SuppressWarnings("deprecation")
 public class AddNewListMembersFragment extends AccountSearchFragment{
+	private static final String STATE_MAX_ID="state_max_id";
+
 	private Listener listener;
 	private String maxID;
+
+	public AddNewListMembersFragment(){
+	}
 
 	public AddNewListMembersFragment(Listener listener){
 		this.listener=listener;
@@ -34,7 +40,32 @@ public class AddNewListMembersFragment extends AccountSearchFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			maxID=savedInstanceState.getString(STATE_MAX_ID);
+		}
 		loadData();
+	}
+
+	@Override
+	public void onAttach(Context context){
+		super.onAttach(context);
+		if(listener==null){
+			if(getParentFragment() instanceof Listener parentListener){
+				listener=parentListener;
+			}
+		}
+	}
+
+	@Override
+	public void onDetach(){
+		super.onDetach();
+		listener=null;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_MAX_ID, maxID);
 	}
 
 	@Override
@@ -77,6 +108,8 @@ public class AddNewListMembersFragment extends AccountSearchFragment{
 		button.setMinimumWidth(0);
 		button.setMinWidth(0);
 		button.setOnClickListener(v->{
+			if(listener==null)
+				return;
 			holder.setActionProgressVisible(true);
 			holder.itemView.setHasTransientState(true);
 			Runnable onDone=()->{
@@ -97,7 +130,7 @@ public class AddNewListMembersFragment extends AccountSearchFragment{
 	protected void onBindViewHolder(AccountViewHolder holder){
 		Button button=holder.getButton();
 		int textRes, styleRes;
-		if(listener.isAccountInList(holder.getItem())){
+		if(listener!=null && listener.isAccountInList(holder.getItem())){
 			textRes=R.string.remove;
 			styleRes=R.style.Widget_Mastodon_M3_Button_Tonal_Error;
 		}else{

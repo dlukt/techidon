@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments;
 
+import android.content.Context;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Build;
@@ -35,6 +36,8 @@ import me.grishka.appkit.utils.V;
 @SuppressWarnings("deprecation")
 
 public class ScheduledStatusListFragment extends BaseStatusListFragment<ScheduledStatus> {
+	private static final String STATE_NEXT_MAX_ID="state_next_max_id";
+
 	private String nextMaxID;
 	private static final int SCHEDULED_STATUS_LIST_OPENED = 161;
 
@@ -47,6 +50,18 @@ public class ScheduledStatusListFragment extends BaseStatusListFragment<Schedule
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		E.register(this);
+		if(savedInstanceState!=null){
+			nextMaxID=savedInstanceState.getString(STATE_NEXT_MAX_ID);
+		}
+		if(!loaded && !dataLoading){
+			loadData();
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_NEXT_MAX_ID, nextMaxID);
 	}
 
 	@Override
@@ -57,10 +72,9 @@ public class ScheduledStatusListFragment extends BaseStatusListFragment<Schedule
 
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setTitle(R.string.sk_unsent_posts);
-		loadData();
 	}
 
 	@Override

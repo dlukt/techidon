@@ -1,7 +1,8 @@
 package de.icod.techidon.fragments;
 
 import android.app.Activity;
-import android.app.Fragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import android.app.assist.AssistContent;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -68,10 +69,7 @@ public class NotificationsFragment extends MastodonToolbarFragment implements Sc
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N)
-			setRetainInstance(true);
-
-		accountID=getArguments().getString("account");
+accountID=getArguments().getString("account");
 		E.register(this);
 	}
 
@@ -82,9 +80,9 @@ public class NotificationsFragment extends MastodonToolbarFragment implements Sc
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onAttach(Context activity){
 		super.onAttach(activity);
-		setHasOptionsMenu(true);
+		setHasOptionsMenuCompat(true);
 		setTitle(R.string.notifications);
 	}
 
@@ -95,7 +93,7 @@ public class NotificationsFragment extends MastodonToolbarFragment implements Sc
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateAppMenu(Menu menu, MenuInflater inflater){
 		inflater.inflate(R.menu.notifications, menu);
 		menu.findItem(R.id.clear_notifications).setVisible(GlobalUserPreferences.enableDeleteNotifications);
 		filterItem=menu.findItem(R.id.filter_notifications).setVisible(true);
@@ -105,7 +103,7 @@ public class NotificationsFragment extends MastodonToolbarFragment implements Sc
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onAppMenuItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.follow_requests) {
 			Bundle args=new Bundle();
 			args.putString("account", accountID);
@@ -252,23 +250,36 @@ public class NotificationsFragment extends MastodonToolbarFragment implements Sc
 			}
 		});
 
-		if(allNotificationsFragment==null){
+		Fragment restoredAll=getChildFragmentManager().findFragmentById(R.id.notifications_all);
+		if(restoredAll instanceof NotificationsListFragment)
+			allNotificationsFragment=(NotificationsListFragment) restoredAll;
+		Fragment restoredMentions=getChildFragmentManager().findFragmentById(R.id.notifications_mentions);
+		if(restoredMentions instanceof NotificationsListFragment)
+			mentionsFragment=(NotificationsListFragment) restoredMentions;
+
+		if(allNotificationsFragment==null || mentionsFragment==null){
 			Bundle args=new Bundle();
 			args.putString("account", accountID);
 			args.putBoolean("__is_tab", true);
 
-			allNotificationsFragment=new NotificationsListFragment();
-			allNotificationsFragment.setArguments(args);
+			if(allNotificationsFragment==null){
+				allNotificationsFragment=new NotificationsListFragment();
+				allNotificationsFragment.setArguments(args);
+			}
 
 			args=new Bundle(args);
 			args.putBoolean("onlyMentions", true);
-			mentionsFragment=new NotificationsListFragment();
-			mentionsFragment.setArguments(args);
+			if(mentionsFragment==null){
+				mentionsFragment=new NotificationsListFragment();
+				mentionsFragment.setArguments(args);
+			}
 
-			getChildFragmentManager().beginTransaction()
-					.add(R.id.notifications_all, allNotificationsFragment)
-					.add(R.id.notifications_mentions, mentionsFragment)
-					.commit();
+			FragmentTransaction transaction=getChildFragmentManager().beginTransaction();
+			if(!allNotificationsFragment.isAdded())
+				transaction.add(R.id.notifications_all, allNotificationsFragment);
+			if(!mentionsFragment.isAdded())
+				transaction.add(R.id.notifications_mentions, mentionsFragment);
+			transaction.commit();
 		}
 
 		tabLayoutMediator=new TabLayoutMediator(tabLayout, pager, new TabLayoutMediator.TabConfigurationStrategy(){

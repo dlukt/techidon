@@ -33,6 +33,7 @@ public class SettingsPrivacyFragment extends BaseSettingsFragment<Void>{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle(R.string.settings_privacy);
 		AccountSession session=AccountSessionManager.get(accountID);
 		Account self=session.self;

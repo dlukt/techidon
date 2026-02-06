@@ -24,11 +24,39 @@ import me.grishka.appkit.api.SimpleCallback;
 @SuppressWarnings("deprecation")
 
 public abstract class PaginatedAccountListFragment<T> extends BaseAccountListFragment{
+	private static final String STATE_NEXT_MAX_ID="state_next_max_id";
+	private static final String STATE_DONE_WITH_HOME_INSTANCE="state_done_with_home_instance";
+	private static final String STATE_LOCAL_OFFSET="state_local_offset";
+	private static final String STATE_STARTED_REMOTE_LOADING="state_started_remote_loading";
+	private static final String STATE_REMOTE_REQUEST_FAILED="state_remote_request_failed";
+
 	private String nextMaxID;
 	private MastodonAPIRequest<T> remoteInfoRequest;
 	protected boolean doneWithHomeInstance, remoteRequestFailed, startedRemoteLoading, remoteDisabled;
 	protected int localOffset;
 	protected T remoteInfo;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			nextMaxID=savedInstanceState.getString(STATE_NEXT_MAX_ID);
+			doneWithHomeInstance=savedInstanceState.getBoolean(STATE_DONE_WITH_HOME_INSTANCE, doneWithHomeInstance);
+			localOffset=savedInstanceState.getInt(STATE_LOCAL_OFFSET, localOffset);
+			startedRemoteLoading=savedInstanceState.getBoolean(STATE_STARTED_REMOTE_LOADING, startedRemoteLoading);
+			remoteRequestFailed=savedInstanceState.getBoolean(STATE_REMOTE_REQUEST_FAILED, remoteRequestFailed);
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putString(STATE_NEXT_MAX_ID, nextMaxID);
+		outState.putBoolean(STATE_DONE_WITH_HOME_INSTANCE, doneWithHomeInstance);
+		outState.putInt(STATE_LOCAL_OFFSET, localOffset);
+		outState.putBoolean(STATE_STARTED_REMOTE_LOADING, startedRemoteLoading);
+		outState.putBoolean(STATE_REMOTE_REQUEST_FAILED, remoteRequestFailed);
+	}
 
 	public abstract HeaderPaginationRequest<Account> onCreateRequest(String maxID, int count);
 

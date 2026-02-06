@@ -23,6 +23,7 @@ public class SettingsDebugFragment extends BaseSettingsFragment<Void>{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle("Debug settings");
 		ListItem<Void> selfUpdateItem, resetUpdateItem;
 		onDataLoaded(List.of(

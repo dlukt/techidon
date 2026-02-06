@@ -47,6 +47,7 @@ public class SettingsBehaviorFragment extends BaseSettingsFragment<Void> impleme
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		resetDataOnRestore(savedInstanceState);
 		setTitle(R.string.settings_behavior);
 
 		AccountSession s=AccountSessionManager.get(accountID);

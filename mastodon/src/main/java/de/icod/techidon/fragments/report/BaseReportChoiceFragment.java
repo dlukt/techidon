@@ -1,5 +1,6 @@
 package de.icod.techidon.fragments.report;
 
+import android.content.Context;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -44,8 +45,14 @@ public abstract class BaseReportChoiceFragment extends MastodonToolbarFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
 		E.register(this);
+		if(savedInstanceState!=null){
+			ArrayList<String> restored=savedInstanceState.getStringArrayList("selectedIDs");
+			if(restored!=null){
+				selectedIDs.clear();
+				selectedIDs.addAll(restored);
+			}
+		}
 	}
 
 	@Override
@@ -55,7 +62,13 @@ public abstract class BaseReportChoiceFragment extends MastodonToolbarFragment{
 	}
 
 	@Override
-	public void onAttach(Activity activity){
+	public void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		outState.putStringArrayList("selectedIDs", selectedIDs);
+	}
+
+	@Override
+	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setNavigationBarColor(UiUtils.getThemeColor(activity, R.attr.colorM3Surface));
 		accountID=getArguments().getString("account");
