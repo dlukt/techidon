@@ -54,4 +54,4 @@ Google maintains a list of organisations to report CSAE organised by country.
 If your country is not listed there it may be listed at INHOPE.
 
 ## Contact 
-If you have any questions about this CSAE policy please contact techidon.app@gmail.com.
+If you have any questions about this CSAE policy please contact icod.dalu@gmail.com.
