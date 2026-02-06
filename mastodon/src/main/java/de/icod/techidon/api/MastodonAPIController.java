@@ -203,7 +203,8 @@ public class MastodonAPIController{
 							}else{
 								try{
 									JsonObject error=JsonParser.parseReader(reader).getAsJsonObject();
-									Log.w(TAG, logTag(session)+response+" received error: "+error);
+									if(BuildConfig.DEBUG)
+										Log.w(TAG, logTag(session)+response+" received error: "+redactSensitiveData(error));
 									if(error.has("details")){
 										MastodonDetailedErrorResponse err=new MastodonDetailedErrorResponse(error.get("error").getAsString(), response.code(), null);
 										HashMap<String, List<MastodonDetailedErrorResponse.FieldError>> details=new HashMap<>();

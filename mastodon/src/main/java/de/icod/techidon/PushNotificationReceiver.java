@@ -94,11 +94,13 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 							}
 						}
 						if(account==null){
-							Log.w(TAG, "onReceive: account for id '"+pushAccountID+"' not found");
+							if(BuildConfig.DEBUG)
+								Log.w(TAG, "onReceive: account for id '"+pushAccountID+"' not found");
 							return;
 						}
 						if(account.getLocalPreferences().getNotificationsPauseEndTime()>System.currentTimeMillis()){
-							Log.i(TAG, "onReceive: dropping notification because user has paused notifications for this account");
+							if(BuildConfig.DEBUG)
+								Log.i(TAG, "onReceive: dropping notification because user has paused notifications for this account");
 							return;
 						}
 						String accountID=account.getID();
@@ -117,11 +119,13 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 								})
 								.exec(accountID);
 					}catch(Exception x){
-						Log.w(TAG, x);
+						if(BuildConfig.DEBUG)
+							Log.w(TAG, x);
 					}
 				});
 			}else{
-				Log.w(TAG, "onReceive: invalid push notification format");
+				if(BuildConfig.DEBUG)
+					Log.w(TAG, "onReceive: invalid push notification format");
 			}
 		}
 		if(intent.getBooleanExtra("fromNotificationAction", false)){
@@ -151,11 +155,15 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 						case UNBOOST -> new SetStatusReblogged(notification.status.id, false, preferences.postingDefaultVisibility).exec(accountID);
 						case REPLY -> handleReplyAction(context, accountID, intent, notification, notificationId, preferences);
 						case FOLLOW_BACK -> new SetAccountFollowed(notification.account.id, true, true, false).exec(accountID);
-						default -> Log.w(TAG, "onReceive: Failed to get NotificationAction");
+						default -> {
+							if(BuildConfig.DEBUG)
+								Log.w(TAG, "onReceive: Failed to get NotificationAction");
+						}
 					}
 				}
 			}else{
-				Log.e(TAG, "onReceive: Failed to load notification");
+				if(BuildConfig.DEBUG)
+					Log.e(TAG, "onReceive: Failed to load notification");
 			}
 		}
 	}
@@ -321,7 +329,8 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 	private void handleReplyAction(Context context, String accountID, Intent intent, de.icod.techidon.model.Notification notification, int notificationId, Preferences preferences) {
 		Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
 		if (remoteInput == null) {
-			Log.e(TAG, "handleReplyAction: Could not get reply input");
+			if(BuildConfig.DEBUG)
+				Log.e(TAG, "handleReplyAction: Could not get reply input");
 			return;
 		}
 		CharSequence input = remoteInput.getCharSequence(ACTION_KEY_TEXT_REPLY);
