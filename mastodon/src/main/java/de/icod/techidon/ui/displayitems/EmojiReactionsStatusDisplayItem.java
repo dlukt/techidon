@@ -540,8 +540,9 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 				EmojiReactionsStatusDisplayItem parent=item.first;
 				EmojiReaction reaction=item.second;
 				btn.setText(UiUtils.abbreviateNumber(reaction.count));
-				btn.setContentDescription(reaction.name);
-				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) btn.setTooltipText(reaction.name);
+				String description = itemView.getResources().getQuantityString(R.plurals.sk_users_reacted_with, reaction.count, reaction.count, reaction.name);
+				btn.setContentDescription(description);
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) btn.setTooltipText(description);
 				if(reaction.getUrl(parent.playGifs)==null){
 					Paint p=new Paint();
 					p.setTextSize(V.sp(18));
