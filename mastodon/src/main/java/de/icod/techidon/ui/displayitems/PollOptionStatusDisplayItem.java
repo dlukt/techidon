@@ -129,10 +129,21 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 			text.setTextColor(UiUtils.getThemeColor(itemView.getContext(), android.R.attr.textColorPrimary));
 			percent.setTextColor(UiUtils.getThemeColor(itemView.getContext(), R.attr.colorM3OnSecondaryContainer));
 
+			updateContentDescription();
+
 			if (item.isAnimating) {
 				showResults(item.showResults);
 				item.isAnimating= false;
 			}
+		}
+
+		private void updateContentDescription() {
+			StringBuilder description = new StringBuilder(text.getText());
+			if (item.showResults) {
+				description.append(", ");
+				description.append(String.format(Locale.getDefault(), "%d%%", Math.round(item.votesFraction * 100f)));
+			}
+			itemView.setContentDescription(description);
 		}
 
 		@Override
@@ -184,6 +195,7 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 				itemView.setSelected(item.poll.selectedOptions!=null && item.poll.selectedOptions.contains(item.option));
 				percent.setVisibility(View.GONE);
 			}
+			updateContentDescription();
 			animator.start();
 		}
 	}
