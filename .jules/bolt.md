@@ -33,3 +33,7 @@
 ## 2025-10-27 - [Stream Allocation in ComposeAutocompleteViewController]
 **Learning:** `ComposeAutocompleteViewController.setText` (emoji mode) and `doSearchUsers` were using Java Streams for filtering and mapping during typing. This caused frequent object allocations on the UI thread.
 **Action:** Replaced Stream usage with single-pass loops and direct `ArrayList` usage to improve typing responsiveness and reduce GC pressure.
+
+## 2025-10-27 - [Stream Allocation in UiUtils]
+**Learning:** `UiUtils.loadCustomEmojiInTextView` (hot path) and other utility methods used Java Streams, creating unnecessary allocations during rendering and interactions.
+**Action:** Replaced all Stream usages in `UiUtils` with standard loops and HashMaps to minimize GC pressure.
