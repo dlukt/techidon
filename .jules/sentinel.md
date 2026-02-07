@@ -17,3 +17,8 @@
 **Vulnerability:** `UnifiedPushNotificationReceiver` was logging sensitive endpoint URLs and instance names in release builds via `Log.d`.
 **Learning:** BroadcastReceivers handling third-party data (like push endpoints) must be treated as sensitive. `Log.d` is not always automatically stripped and can leak PII or tokens.
 **Prevention:** Explicitly guard all sensitive `Log` calls with `if (BuildConfig.DEBUG)`.
+
+## 2026-10-27 - Intent Scheme Hijacking via Server Description
+**Vulnerability:** `SettingsServerAboutFragment` was launching `Intent.ACTION_VIEW` for any URL scheme not matching http/https. This could allow malicious servers to launch arbitrary apps or exploit intent scheme hijacking vulnerabilities (e.g., `file://`, `content://`, or custom deep links).
+**Learning:** `WebViewClient.shouldOverrideUrlLoading` is a critical security boundary. Relying on a blacklist (`isUnsafeUrl`) is insufficient as it misses custom schemes. A whitelist approach is necessary for untrusted content.
+**Prevention:** Use `SecurityUtils.isWhitelistedScheme` to strictly enforce allowed schemes (http, https, mailto, tel, xmpp, matrix, magnet, geo) when handling external links from untrusted sources.

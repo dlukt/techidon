@@ -35,4 +35,25 @@ public class SecurityUtils {
 			return true;
 		}
 	}
+
+	/**
+	 * Checks if a URL scheme is in the whitelist of safe schemes.
+	 *
+	 * Allowed schemes: http, https, mailto, tel, xmpp, matrix, magnet, geo.
+	 *
+	 * @param scheme The scheme to check (e.g., from Uri.getScheme()).
+	 * @return True if the scheme is whitelisted, false otherwise.
+	 */
+	public static boolean isWhitelistedScheme(String scheme) {
+		if (scheme == null) return false;
+		scheme = scheme.toLowerCase(Locale.US);
+		return "http".equals(scheme) ||
+				"https".equals(scheme) ||
+				"mailto".equals(scheme) ||
+				"tel".equals(scheme) ||
+				"xmpp".equals(scheme) ||
+				"matrix".equals(scheme) ||
+				"magnet".equals(scheme) ||
+				"geo".equals(scheme);
+	}
 }
