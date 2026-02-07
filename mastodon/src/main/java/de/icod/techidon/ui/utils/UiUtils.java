@@ -163,7 +163,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.DrawableRes;
@@ -425,7 +424,16 @@ public class UiUtils {
 		CustomEmojiSpan[] spans = text.getSpans(0, text.length(), CustomEmojiSpan.class);
 		if (spans.length == 0)
 			return;
-		Map<Emoji, List<CustomEmojiSpan>> spansByEmoji = Arrays.stream(spans).collect(Collectors.groupingBy(s -> s.emoji));
+		// Optimization: Use loop and HashMap instead of Streams to avoid allocation overhead in this hot path
+		Map<Emoji, List<CustomEmojiSpan>> spansByEmoji = new HashMap<>();
+		for (CustomEmojiSpan span : spans) {
+			List<CustomEmojiSpan> list = spansByEmoji.get(span.emoji);
+			if (list == null) {
+				list = new ArrayList<>();
+				spansByEmoji.put(span.emoji, list);
+			}
+			list.add(span);
+		}
 		for (Map.Entry<Emoji, List<CustomEmojiSpan>> emoji : spansByEmoji.entrySet()) {
 			ViewImageLoader.load(new ViewImageLoader.Target() {
 				@Override
@@ -1113,8 +1121,16 @@ public class UiUtils {
 			MenuItem item = m.getItem(i);
 			SubMenu subMenu = item.getSubMenu();
 			if (subMenu != null) enableMenuIcons(context, subMenu, exclude);
-			if (item.getIcon() == null || Arrays.stream(exclude).anyMatch(id -> id == item.getItemId()))
+			if (item.getIcon() == null)
 				continue;
+			boolean excluded = false;
+			for (int id : exclude) {
+				if (id == item.getItemId()) {
+					excluded = true;
+					break;
+				}
+			}
+			if (excluded) continue;
 			insetPopupMenuIcon(item, iconTint, 0);
 		}
 	}
@@ -1182,9 +1198,10 @@ public class UiUtils {
 		if (maybeFediHandle.toLowerCase().startsWith("mailto:")) {
 			maybeFediHandle = maybeFediHandle.substring("mailto:".length());
 		}
-		List<String> parts = Arrays.stream(maybeFediHandle.split("@"))
-				.filter(part -> !part.isEmpty())
-				.collect(Collectors.toList());
+		List<String> parts = new ArrayList<>();
+		for (String part : maybeFediHandle.split("@")) {
+			if (!part.isEmpty()) parts.add(part);
+		}
 		if (parts.size() == 0 || !parts.get(0).matches("^[^/\\s]+$")) {
 			return Optional.empty();
 		} else if (parts.size() == 2) {
@@ -1445,11 +1462,15 @@ public class UiUtils {
 					public void onSuccess(SearchResults results) {
 						Bundle args = new Bundle();
 						args.putString("account", accountID);
-						Optional<Account> account = results.accounts.stream()
-								.filter(a -> acctMatches(accountID, a.acct, queryHandle.first, queryHandle.second.orElse(null)))
-								.findAny();
-						if (account.isPresent()) {
-							args.putParcelable("profileAccount", Parcels.wrap(account.get()));
+						Account account = null;
+						for (Account a : results.accounts) {
+							if (acctMatches(accountID, a.acct, queryHandle.first, queryHandle.second.orElse(null))) {
+								account = a;
+								break;
+							}
+						}
+						if (account != null) {
+							args.putParcelable("profileAccount", Parcels.wrap(account));
 							go.accept(ProfileFragment.class, args);
 							return;
 						}
@@ -1513,10 +1534,15 @@ public class UiUtils {
 									go.accept(ThreadFragment.class, args);
 									return;
 								}
-								Optional<Account> account = results.accounts.stream()
-										.filter(a -> uri.getPath().contains(a.username)).findAny();
-								if (account.isPresent()) {
-									args.putParcelable("profileAccount", Parcels.wrap(account.get()));
+								Account account = null;
+								for (Account a : results.accounts) {
+									if (uri.getPath().contains(a.username)) {
+										account = a;
+										break;
+									}
+								}
+								if (account != null) {
+									args.putParcelable("profileAccount", Parcels.wrap(account));
 									go.accept(ProfileFragment.class, args);
 									return;
 								}
