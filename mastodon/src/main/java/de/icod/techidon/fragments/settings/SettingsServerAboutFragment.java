@@ -94,7 +94,7 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 				String scheme=uri.getScheme();
 				if(scheme!=null && (scheme.equals("http") || scheme.equals("https"))){
 					UiUtils.openURL(getActivity(),accountID, url);
-				}else{
+				}else if(SecurityUtils.isWhitelistedScheme(scheme)){
 					Intent intent=new Intent(Intent.ACTION_VIEW, uri);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					try{
@@ -102,6 +102,8 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 					}catch(ActivityNotFoundException x){
 						Toast.makeText(getActivity(), R.string.no_app_to_handle_action, Toast.LENGTH_SHORT).show();
 					}
+				}else{
+					Toast.makeText(getActivity(), R.string.error, Toast.LENGTH_SHORT).show();
 				}
 				return true;
 			}
