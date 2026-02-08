@@ -464,8 +464,14 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 		emojiKeyboard.setOnIconChangedListener(new PopupKeyboard.OnIconChangeListener(){
 			@Override
 			public void onIconChanged(int icon){
-				emojiBtn.setSelected(icon!=PopupKeyboard.ICON_HIDDEN);
-				updateNavigationBarColor(icon!=PopupKeyboard.ICON_HIDDEN);
+				boolean isVisible = icon!=PopupKeyboard.ICON_HIDDEN;
+				emojiBtn.setSelected(isVisible);
+				int descriptionRes = isVisible ? R.string.close_emoji : R.string.emoji;
+				emojiBtn.setContentDescription(getString(descriptionRes));
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					emojiBtn.setTooltipText(getString(descriptionRes));
+				}
+				updateNavigationBarColor(isVisible);
 				if(autocompleteViewController.getMode()==ComposeAutocompleteViewController.Mode.EMOJIS){
 					contentView.layout(contentView.getLeft(), contentView.getTop(), contentView.getRight(), contentView.getBottom());
 					if(icon==PopupKeyboard.ICON_HIDDEN)
