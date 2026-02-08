@@ -232,6 +232,7 @@
 	<string name="add_poll">Add a poll</string>
 	<string name="remove_poll">Remove poll</string>
 	<string name="emoji">Emoji</string>
+	<string name="close_emoji">Close emoji keyboard</string>
 	<string name="home_timeline">Home timeline</string>
 	<string name="my_profile">My profile</string>
 	<string name="media_viewer">Media viewer</string>
