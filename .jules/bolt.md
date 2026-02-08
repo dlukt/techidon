@@ -37,3 +37,7 @@
 ## 2025-10-27 - [Stream Allocation in UiUtils]
 **Learning:** `UiUtils.loadCustomEmojiInTextView` (hot path) and other utility methods used Java Streams, creating unnecessary allocations during rendering and interactions.
 **Action:** Replaced all Stream usages in `UiUtils` with standard loops and HashMaps to minimize GC pressure.
+
+## 2025-10-28 - [Stream Allocation in CustomEmojiPopupKeyboard]
+**Learning:** `CustomEmojiPopupKeyboard` and its `SingleCategoryAdapter` used Java Streams (`stream().map().collect()`) during initialization and filtering. This runs on the UI thread when opening the emoji picker or typing, causing unnecessary object allocations (Stream, Optional, lambda, Collectors) for potentially large lists of emojis.
+**Action:** Replaced stream usage with standard `for` loops and pre-sized `ArrayList`s to minimize allocation overhead and improve responsiveness in this hot path.

@@ -42,7 +42,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -239,7 +238,11 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 			super(imgLoader);
 			this.category=category;
 			this.originalCategory=new EmojiCategory(category);
-			requests=category.emojis.stream().map(e->new UrlImageLoaderRequest(e.getUrl(playGifs), V.dp(24), V.dp(24))).collect(Collectors.toList());
+			// Optimization: Use loop instead of stream to reduce allocation overhead
+			requests=new ArrayList<>(category.emojis.size());
+			for(Emoji e:category.emojis){
+				requests.add(new UrlImageLoaderRequest(e.getUrl(playGifs), V.dp(24), V.dp(24)));
+			}
 		}
 
 		@NonNull
@@ -319,7 +322,11 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 						}
 					}
 				}
-				requests=category.emojis.stream().map(e->new UrlImageLoaderRequest(e.getUrl(playGifs), V.dp(24), V.dp(24))).collect(Collectors.toList());
+				// Optimization: Use loop instead of stream to reduce allocation overhead
+				requests=new ArrayList<>(category.emojis.size());
+				for(Emoji e:category.emojis){
+					requests.add(new UrlImageLoaderRequest(e.getUrl(playGifs), V.dp(24), V.dp(24)));
+				}
 				notifyDataSetChanged();
 			}
 		};
