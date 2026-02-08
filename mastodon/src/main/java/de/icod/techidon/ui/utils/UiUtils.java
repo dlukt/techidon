@@ -204,6 +204,15 @@ public class UiUtils {
 			Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show();
 			return;
 		}
+
+		// 🛡️ Sentinel: Prevent arbitrary intent launching by enforcing whitelist
+		Uri uri = Uri.parse(url);
+		if (!SecurityUtils.isWhitelistedScheme(uri.getScheme())) {
+			Log.w("UiUtils", "Blocked non-whitelisted scheme: " + uri.getScheme());
+			Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show();
+			return;
+		}
+
 		if(GlobalUserPreferences.removeTrackingParams)
 			url=Tracking.removeTrackingParameters(url);
 		try {
