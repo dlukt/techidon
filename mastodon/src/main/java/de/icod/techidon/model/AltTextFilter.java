@@ -18,7 +18,13 @@ public class AltTextFilter extends LegacyFilter {
 
 	@Override
 	public boolean matches(Status status) {
-		return status.getContentStatus().mediaAttachments.stream().map(attachment -> attachment.description).anyMatch(StringUtil::isBlank);
+		// Optimization: Use loop instead of stream to avoid allocation overhead in hot path
+		for (Attachment attachment : status.getContentStatus().mediaAttachments) {
+			if (StringUtil.isBlank(attachment.description)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
