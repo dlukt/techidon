@@ -91,7 +91,8 @@ public abstract class MastodonAPIRequest<T> extends APIRequest<T>{
 			domain=account.domain;
 			account.getApiController().submitRequest(this);
 		}catch(Exception x){
-			Log.e(TAG, "exec: this shouldn't happen, but it still did", x);
+			if(BuildConfig.DEBUG)
+				Log.e(TAG, "exec: this shouldn't happen, but it still did", x);
 			invokeErrorCallback(new MastodonErrorResponse(x.getLocalizedMessage(), -1, x));
 		}
 		return this;
@@ -220,7 +221,8 @@ public abstract class MastodonAPIRequest<T> extends APIRequest<T>{
 							((BaseModel) item).isRemote = isRemote;
 							((BaseModel) item).postprocess();
 						}catch(ObjectValidationException x){
-							Log.w(TAG, "Removing invalid object from list", x);
+							if(BuildConfig.DEBUG)
+								Log.w(TAG, "Removing invalid object from list", x);
 							itr.remove();
 						}
 					}
