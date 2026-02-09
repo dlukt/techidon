@@ -1,4 +1,4 @@
-# ![TechidonLogo](mastodon/src/main/res/mipmap-xhdpi/ic_launcher_round.png) Techidon, the material you mastodon client!
+# ![TechidonLogo](mastodon/src/main/res/mipmap-xhdpi/ic_launcher_round.png) Techidon, modified mastodon client!
 
 
 > A fast, highly customizable, up-to-date fork of [moshidon](https://github.com/LucasGGamerM/moshidon), which seems to be abandoned. It fixes a stopping timeline bug and refactored deprecated API to the current Android API. It also has ongoing security and accessibility improvements.
