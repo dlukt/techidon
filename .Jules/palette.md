@@ -9,3 +9,7 @@
 ## 2025-10-27 - Dynamic Accessibility Labels for Toggle Buttons
 **Learning:** Toggle buttons (like the emoji keyboard toggle) often retain static accessibility labels (e.g., "Emoji") regardless of state, confusing screen reader users about the action (Open vs Close).
 **Action:** Always check toggle buttons for dynamic state updates and ensure `contentDescription` and `tooltipText` are updated programmatically to reflect the *current* action (e.g., "Close emoji keyboard" when open).
+
+## 2025-10-27 - Hidden Alt Text Overlays
+**Learning:** Overlays designed to display accessibility information (like Alt Text) must never be hidden from accessibility services themselves (e.g., via `importantForAccessibility="noHideDescendants"`). This creates a paradox where the feature meant to help is inaccessible.
+**Action:** When auditing accessibility features, check that the containers themselves are accessible and that close buttons have explicit labels.
