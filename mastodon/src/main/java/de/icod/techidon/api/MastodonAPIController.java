@@ -93,7 +93,8 @@ public class MastodonAPIController{
 		thread.postRunnable(()->{
 			try{
 				if(isBad){
-					Log.i(TAG, "submitRequest: refusing to connect to bad domain: " + host);
+					if(BuildConfig.DEBUG)
+						Log.i(TAG, "submitRequest: refusing to connect to bad domain: " + host);
 					throw new IllegalArgumentException("Failed to connect to domain");
 				}
 
@@ -232,7 +233,8 @@ public class MastodonAPIController{
 								}
 							}
 						}catch(Exception x){
-							Log.w(TAG, "onResponse: error processing response", x);
+							if(BuildConfig.DEBUG)
+								Log.w(TAG, "onResponse: error processing response", x);
 							onFailure(call, (IOException) new IOException(x).fillInStackTrace());
 						}
 					}
