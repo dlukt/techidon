@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Outline;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.icu.text.BreakIterator;
@@ -43,6 +44,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.view.ViewTreeObserver;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -136,6 +139,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import me.grishka.appkit.Nav;
 import me.grishka.appkit.api.Callback;
 import me.grishka.appkit.api.ErrorResponse;
@@ -236,6 +242,9 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	private MenuItem actionItem;
 	private MenuItem draftMenuItem, undraftMenuItem, scheduleMenuItem, unscheduleMenuItem;
 	private boolean wasDetached;
+	private final Rect legacyKeyboardVisibleFrame=new Rect();
+	private ViewTreeObserver.OnGlobalLayoutListener legacyKeyboardListener;
+	private int legacyKeyboardExtraInset;
 
 	private BackgroundColorSpan overLimitBG;
 	private ForegroundColorSpan overLimitFG;
@@ -313,6 +322,14 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 
 	@Override
 	public void onDestroy(){
+		if(contentView!=null && legacyKeyboardListener!=null){
+			ViewTreeObserver vto=contentView.getViewTreeObserver();
+			if(vto.isAlive()){
+				vto.removeOnGlobalLayoutListener(legacyKeyboardListener);
+			}
+		}
+		legacyKeyboardListener=null;
+		legacyKeyboardExtraInset=0;
 		super.onDestroy();
 		E.unregister(this);
 		mediaViewController.cancelAllUploads();
@@ -616,6 +633,11 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
 		contentView.setSizeListener(emojiKeyboard::onContentViewSizeChanged);
+		if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.Q){
+			legacyKeyboardListener=this::updateLegacyKeyboardOverlapInset;
+			contentView.getViewTreeObserver().addOnGlobalLayoutListener(legacyKeyboardListener);
+			updateLegacyKeyboardOverlapInset();
+		}
 		InputMethodManager imm=getActivity().getSystemService(InputMethodManager.class);
 		mainEditText.requestFocus();
 		 view.postDelayed(()->{
@@ -1028,6 +1050,67 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
 		emojiKeyboard.onConfigurationChanged();
+	}
+
+	@Override
+	@SuppressWarnings("deprecation")
+	public void onApplyWindowInsets(WindowInsets insets){
+		View root=getView();
+		if(root==null){
+			super.onApplyWindowInsets(insets);
+			return;
+		}
+		WindowInsetsCompat compat=WindowInsetsCompat.toWindowInsetsCompat(insets, root);
+		Insets systemBars=compat.getInsets(WindowInsetsCompat.Type.systemBars());
+		int imeBottom=compat.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+		// API 29 may report IME only via legacy system window bottom inset.
+		if(imeBottom==0){
+			int legacyBottom=insets.getSystemWindowInsetBottom();
+			boolean imeVisible=compat.isVisible(WindowInsetsCompat.Type.ime());
+			if((imeVisible && legacyBottom>systemBars.bottom) ||
+					legacyBottom>systemBars.bottom+V.dp(120)){
+				imeBottom=legacyBottom;
+			}
+		}
+		if(imeBottom>systemBars.bottom){
+			WindowInsetsCompat adjustedCompat=new WindowInsetsCompat.Builder(compat)
+					.setInsets(WindowInsetsCompat.Type.systemBars(),
+							Insets.of(systemBars.left, systemBars.top, systemBars.right, imeBottom))
+					.build();
+			WindowInsets adjustedInsets=adjustedCompat.toWindowInsets();
+			if(adjustedInsets!=null){
+				root.dispatchApplyWindowInsets(adjustedInsets);
+				return;
+			}
+		}
+		root.dispatchApplyWindowInsets(insets);
+		updateLegacyKeyboardOverlapInset();
+	}
+
+	private void updateLegacyKeyboardOverlapInset(){
+		if(Build.VERSION.SDK_INT>Build.VERSION_CODES.Q || contentView==null || getActivity()==null){
+			return;
+		}
+		View root=getView();
+		View decorView=getActivity().getWindow().getDecorView();
+		decorView.getWindowVisibleDisplayFrame(legacyKeyboardVisibleFrame);
+		int overlap=Math.max(0, decorView.getHeight()-legacyKeyboardVisibleFrame.bottom);
+		int systemBottom=0;
+		WindowInsetsCompat rootInsets=ViewCompat.getRootWindowInsets(decorView);
+		if(rootInsets!=null){
+			systemBottom=rootInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+		}
+		int extraBottom=Math.max(0, overlap-systemBottom);
+		// If root already received IME bottom inset, don't add extra fallback padding.
+		if(root!=null && root.getPaddingBottom()>systemBottom+V.dp(80)){
+			extraBottom=0;
+		}
+		if(extraBottom==legacyKeyboardExtraInset){
+			return;
+		}
+		legacyKeyboardExtraInset=extraBottom;
+		contentView.setPadding(contentView.getPaddingLeft(), contentView.getPaddingTop(),
+				contentView.getPaddingRight(), extraBottom);
 	}
 
 	@SuppressLint("NewApi")
