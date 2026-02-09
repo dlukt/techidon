@@ -6,7 +6,6 @@
 	android:layout_height="wrap_content"
 	android:layout_gravity="end|bottom"
 	android:layout_margin="12dp"
-	android:importantForAccessibility="noHideDescendants"
 	android:background="@drawable/bg_image_alt_text_overlay">
 
 	<ImageView
@@ -35,6 +34,8 @@
 		android:layout_width="40dp"
 		android:layout_height="40dp"
 		android:layout_gravity="end|top"
+		android:contentDescription="@string/close_alt_text"
+		android:tooltipText="@string/close_alt_text"
 		android:src="@drawable/ic_fluent_dismiss_24_regular"
 		android:tint="?colorM3DarkOnSurface"
 		android:background="?android:actionBarItemBackground"/>
