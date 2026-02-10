@@ -189,6 +189,16 @@ public class ComposePollViewController{
 		addPollOptionBtn.setEnabled(pollOptions.size()<maxPollOptions);
 		option.edit.addTextChangedListener(new LengthLimitHighlighter(fragment.getActivity(), maxPollOptionLength).setListener(isOverLimit->{
 			option.view.setForeground(fragment.getResources().getDrawable(isOverLimit ? R.drawable.bg_m3_outlined_text_field_error_nopad : R.drawable.bg_m3_outlined_text_field_nopad, fragment.getActivity().getTheme()));
+			// Listener only fires on state change (valid <-> invalid), so this won't spam announcements on every keystroke
+			if (isOverLimit) {
+				int over = option.edit.length() - maxPollOptionLength;
+				String ann = fragment.getResources().getQuantityString(R.plurals.characters_over_limit, over, over);
+				option.edit.announceForAccessibility(ann);
+			} else {
+				int remaining = maxPollOptionLength - option.edit.length();
+				String ann = fragment.getResources().getQuantityString(R.plurals.characters_remaining, remaining, remaining);
+				option.edit.announceForAccessibility(ann);
+			}
 		}));
 
 		option.deleteBtn=option.view.findViewById(R.id.delete_btn);
