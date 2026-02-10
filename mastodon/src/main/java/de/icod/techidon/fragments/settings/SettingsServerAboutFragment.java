@@ -199,7 +199,8 @@ public class SettingsServerAboutFragment extends LoaderFragment{
 							}
 
 							HashMap<String, String> templateParams=new HashMap<>();
-							templateParams.put("content", Jsoup.clean(result.content, Safelist.relaxed()));
+							// 🛡️ Sentinel: Remove images to prevent tracking pixels and mixed content issues
+							templateParams.put("content", Jsoup.clean(result.content, Safelist.relaxed().removeTags("img")));
 							templateParams.put("colorSurface", getThemeColorAsCss(R.attr.colorM3Surface, 1));
 							templateParams.put("colorOnSurface", getThemeColorAsCss(R.attr.colorM3OnSurface, 1));
 							templateParams.put("colorPrimary", getThemeColorAsCss(R.attr.colorM3Primary, 1));

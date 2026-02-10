@@ -22,3 +22,8 @@
 **Vulnerability:** `SettingsServerAboutFragment` was launching `Intent.ACTION_VIEW` for any URL scheme not matching http/https. This could allow malicious servers to launch arbitrary apps or exploit intent scheme hijacking vulnerabilities (e.g., `file://`, `content://`, or custom deep links).
 **Learning:** `WebViewClient.shouldOverrideUrlLoading` is a critical security boundary. Relying on a blacklist (`isUnsafeUrl`) is insufficient as it misses custom schemes. A whitelist approach is necessary for untrusted content.
 **Prevention:** Use `SecurityUtils.isWhitelistedScheme` to strictly enforce allowed schemes (http, https, mailto, tel, xmpp, matrix, magnet, geo) when handling external links from untrusted sources.
+
+## 2024-05-23 - Jsoup Safelist.relaxed() Privacy Risk
+**Vulnerability:** `Safelist.relaxed()` allows `img` tags by default. When used to sanitize HTML for a WebView, this permits loading external images, which can be used for tracking pixels or mixed content (if not blocked by WebView settings).
+**Learning:** `Safelist.relaxed()` is not "safe" for privacy-sensitive contexts where external resource loading should be restricted.
+**Prevention:** Use `Safelist.relaxed().removeTags("img")` or `Safelist.basic()` (if structure is not needed) when sanitizing content for WebViews to prevent unwanted external requests.
