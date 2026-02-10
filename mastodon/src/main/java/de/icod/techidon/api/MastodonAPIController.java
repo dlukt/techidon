@@ -87,9 +87,21 @@ public class MastodonAPIController{
 		this.session=session;
 	}
 
+	private boolean isBadDomain(String host) {
+		if (host == null) return true;
+		// Optimized to avoid stream allocation and repeated toLowerCase() calls
+		String lowerHost = host.toLowerCase();
+		for (String badDomain : badDomains) {
+			if (lowerHost.equals(badDomain) || lowerHost.endsWith("." + badDomain)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public <T> void submitRequest(final MastodonAPIRequest<T> req){
 		final String host = req.getURL().getHost();
-		final boolean isBad = host == null || badDomains.stream().anyMatch(h -> h.equalsIgnoreCase(host) || host.toLowerCase().endsWith("." + h));
+		final boolean isBad = isBadDomain(host);
 		thread.postRunnable(()->{
 			try{
 				if(isBad){
