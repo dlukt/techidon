@@ -13,3 +13,6 @@
 ## 2025-10-27 - Hidden Alt Text Overlays
 **Learning:** Overlays designed to display accessibility information (like Alt Text) must never be hidden from accessibility services themselves (e.g., via `importantForAccessibility="noHideDescendants"`). This creates a paradox where the feature meant to help is inaccessible.
 **Action:** When auditing accessibility features, check that the containers themselves are accessible and that close buttons have explicit labels.
+## 2024-10-26 - Non-visual Feedback for Character Limits
+**Learning:** Visual-only cues (like red borders) for character limits exclude screen reader users. Accessibility announcements must be triggered on state transitions (e.g., crossing the limit) to avoid spamming the user on every keystroke.
+**Action:** Use `announceForAccessibility` in a `TextWatcher` that tracks state changes (valid <-> invalid) to provide timely context without noise.
