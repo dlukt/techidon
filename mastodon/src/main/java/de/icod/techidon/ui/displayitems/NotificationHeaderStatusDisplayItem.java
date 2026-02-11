@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -32,6 +33,7 @@ import de.icod.techidon.ui.utils.CustomEmojiHelper;
 import de.icod.techidon.ui.utils.UiUtils;
 import org.parceler.Parcels;
 
+import java.time.ZoneId;
 import java.util.Collections;
 
 import me.grishka.appkit.Nav;
@@ -162,6 +164,13 @@ public class NotificationHeaderStatusDisplayItem extends StatusDisplayItem{
 		public void onBind(NotificationHeaderStatusDisplayItem item){
 			text.setText(item.text);
 			timestamp.setText(item.timestamp);
+			if (item.notification.createdAt != null) {
+				String absoluteTime = UiUtils.DATE_TIME_FORMATTER.format(item.notification.createdAt.atZone(ZoneId.systemDefault()));
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					timestamp.setTooltipText(absoluteTime);
+				}
+				timestamp.setContentDescription(item.timestamp + ", " + absoluteTime);
+			}
 			avatar.setVisibility(item.notification.type==Notification.Type.POLL ? View.GONE : View.VISIBLE);
 			icon.setImageResource(switch(item.notification.type){
 				case FAVORITE -> GlobalUserPreferences.likeIcon ? R.drawable.ic_fluent_heart_24_filled : R.drawable.ic_fluent_star_24_filled;

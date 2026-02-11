@@ -328,7 +328,19 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 			this.username.setText(item.user.getDisplayUsername());
 			this.timeUsernameSeparator.setVisibility(time==null ? View.GONE : View.VISIBLE);
 			this.time.setVisibility(time==null ? View.GONE : View.VISIBLE);
-			if(time!=null) this.time.setText(time);
+			if(time!=null) {
+				this.time.setText(time);
+				if (item.scheduledStatus == null) {
+					Instant timestamp = item.status != null && item.status.editedAt != null ? item.status.editedAt : item.createdAt;
+					if (timestamp != null) {
+						String absoluteTime = UiUtils.DATE_TIME_FORMATTER.format(timestamp.atZone(ZoneId.systemDefault()));
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+							this.time.setTooltipText(absoluteTime);
+						}
+						this.time.setContentDescription(time + ", " + absoluteTime);
+					}
+				}
+			}
 
 			botIcon.setVisibility(item.user.bot ? View.VISIBLE : View.GONE);
 			botIcon.setColorFilter(username.getCurrentTextColor());
