@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import de.icod.techidon.R;
 import de.icod.techidon.api.requests.accounts.GetAccountRelationships;
@@ -562,17 +563,40 @@ public abstract class StatusDisplayItem{
 			item.parentFragment.onItemClick(item.parentID);
 		}
 
+		/**
+		 * @deprecated Use {@link #findNextVisibleDisplayItem(Predicate)} instead to avoid Optional allocation.
+		 */
+		@Deprecated
 		public Optional<StatusDisplayItem> getNextVisibleDisplayItem(){
-			return getNextVisibleDisplayItem(null);
+			return Optional.ofNullable(findNextVisibleDisplayItem(null));
 		}
+
+		/**
+		 * @deprecated Use {@link #findNextVisibleDisplayItem(Predicate)} instead to avoid Optional allocation.
+		 */
+		@Deprecated
 		public Optional<StatusDisplayItem> getNextVisibleDisplayItem(Predicate<StatusDisplayItem> predicate){
-			Optional<StatusDisplayItem> next=getNextDisplayItem();
-			for(int offset=1; next.isPresent(); next=getDisplayItemOffset(++offset)){
-				boolean isHidden=next.map(n->(n instanceof EmojiReactionsStatusDisplayItem e && e.isHidden())
-						|| (n instanceof DummyStatusDisplayItem)).orElse(false);
-				if(!isHidden && (predicate==null || predicate.test(next.get()))) return next;
+			return Optional.ofNullable(findNextVisibleDisplayItem(predicate));
+		}
+
+		public StatusDisplayItem findNextVisibleDisplayItem(Predicate<StatusDisplayItem> predicate){
+			int pos = getBindingAdapterPosition();
+			if (pos == RecyclerView.NO_POSITION)
+				return null;
+
+			List<StatusDisplayItem> displayItems = item.parentFragment.getDisplayItems();
+			int count = displayItems.size();
+
+			for (int i = pos + 1; i < count; i++) {
+				StatusDisplayItem next = displayItems.get(i);
+				boolean isHidden = (next instanceof EmojiReactionsStatusDisplayItem && ((EmojiReactionsStatusDisplayItem) next).isHidden())
+						|| (next instanceof DummyStatusDisplayItem);
+
+				if (!isHidden && (predicate == null || predicate.test(next))) {
+					return next;
+				}
 			}
-			return Optional.empty();
+			return null;
 		}
 
 		public Optional<StatusDisplayItem> getNextDisplayItem(){
@@ -589,9 +613,9 @@ public abstract class StatusDisplayItem{
 		}
 
 		public boolean isLastDisplayItemForStatus(){
-			return getNextVisibleDisplayItem()
-					.map(next->!next.parentID.equals(item.parentID) || item.inset && !next.inset)
-					.orElse(true);
+			StatusDisplayItem next = findNextVisibleDisplayItem(null);
+			if (next == null) return true;
+			return !next.parentID.equals(item.parentID) || (item.inset && !next.inset);
 		}
 
 		@Override

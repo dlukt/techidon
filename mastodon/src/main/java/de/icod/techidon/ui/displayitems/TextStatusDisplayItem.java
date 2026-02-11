@@ -126,7 +126,7 @@ public class TextStatusDisplayItem extends StatusDisplayItem{
 
 			readMore.setText(item.status.textExpanded ? R.string.sk_collapse : R.string.sk_expand);
 
-			StatusDisplayItem next=getNextVisibleDisplayItem().orElse(null);
+			StatusDisplayItem next=findNextVisibleDisplayItem(null);
 			if(next!=null && !next.parentID.equals(item.parentID)) next=null;
 			int bottomPadding=item.inset ? V.dp(12)
 					: next instanceof FooterStatusDisplayItem ? V.dp(6)
