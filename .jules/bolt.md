@@ -41,3 +41,7 @@
 ## 2025-10-28 - [Stream Allocation in CustomEmojiPopupKeyboard]
 **Learning:** `CustomEmojiPopupKeyboard` and its `SingleCategoryAdapter` used Java Streams (`stream().map().collect()`) during initialization and filtering. This runs on the UI thread when opening the emoji picker or typing, causing unnecessary object allocations (Stream, Optional, lambda, Collectors) for potentially large lists of emojis.
 **Action:** Replaced stream usage with standard `for` loops and pre-sized `ArrayList`s to minimize allocation overhead and improve responsiveness in this hot path.
+
+## 2025-10-28 - [Stream Allocation in StatusDisplayItem]
+**Learning:** `StatusDisplayItem.getNextVisibleDisplayItem` (called in `onBind` of various items) used `indexOf` (O(N) in `ArrayList`) and `Optional` allocations. This caused unnecessary overhead and GC pressure during scrolling.
+**Action:** Replaced `indexOf` with `getBindingAdapterPosition` (O(1)) and removed `Optional` usage by returning nullable `StatusDisplayItem`.

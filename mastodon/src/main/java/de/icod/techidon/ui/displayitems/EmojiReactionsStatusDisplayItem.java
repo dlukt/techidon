@@ -222,7 +222,7 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			if(!GlobalUserPreferences.showDividers || item.isHidden())
 				return;
 
-			StatusDisplayItem next=getNextVisibleDisplayItem().orElse(null);
+			StatusDisplayItem next=findNextVisibleDisplayItem(null);
 			if(next!=null && !next.parentID.equals(item.parentID)) next=null;
 			if(next instanceof ExtendedFooterStatusDisplayItem)
 				itemView.setPadding(0, 0, 0, V.dp(12));

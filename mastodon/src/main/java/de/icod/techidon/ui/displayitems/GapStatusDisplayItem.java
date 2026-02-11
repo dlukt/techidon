@@ -65,12 +65,16 @@ public class GapStatusDisplayItem extends StatusDisplayItem{
 			}
 			top.setClickable(!item.loading);
 			bottom.setClickable(!item.loading);
-			Status next=!(item.parentFragment instanceof StatusListFragment) ? null : getNextVisibleDisplayItem(i->{
-				Status s=((StatusListFragment) item.parentFragment).getStatusByID(i.parentID);
-				return s!=null && !s.fromStatusCreated;
-			})
-					.map(i->((StatusListFragment) item.parentFragment).getStatusByID(i.parentID))
-					.orElse(null);
+			Status next=null;
+			if(item.parentFragment instanceof StatusListFragment){
+				StatusDisplayItem nextItem = findNextVisibleDisplayItem(i->{
+					Status s=((StatusListFragment) item.parentFragment).getStatusByID(i.parentID);
+					return s!=null && !s.fromStatusCreated;
+				});
+				if(nextItem!=null){
+					next = ((StatusListFragment) item.parentFragment).getStatusByID(nextItem.parentID);
+				}
+			}
 			bottom.setVisibility(next==null ? View.GONE : View.VISIBLE);
 			Instant dateBelow=next!=null ? next.createdAt : null;
 			String text=dateBelow!=null && item.status.createdAt!=null && dateBelow.isBefore(item.status.createdAt)
