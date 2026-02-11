@@ -16,6 +16,7 @@ import org.unifiedpush.android.connector.MessagingReceiver;
 import org.unifiedpush.android.connector.data.PublicKeySet;
 import org.unifiedpush.android.connector.data.PushEndpoint;
 import org.unifiedpush.android.connector.data.PushMessage;
+import org.unifiedpush.android.connector.UnifiedPush;
 
 import java.util.List;
 import java.util.function.Function;
@@ -35,7 +36,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	public void onNewEndpoint(@NotNull Context context, @NotNull PushEndpoint endpoint, @NotNull String instance) {
 		// Called when a new endpoint be used for sending push messages
 		if(BuildConfig.DEBUG)
-			Log.d(TAG, "onNewEndpoint: New Endpoint " + endpoint.getUrl() + " for "+ instance);
+			Log.d(TAG, "onNewEndpoint: New Endpoint [REDACTED] for "+ instance);
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
 		if (account != null) {
 			PublicKeySet ks = endpoint.getPubKeySet();
@@ -74,6 +75,13 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	public void onMessage(@NotNull Context context, @NotNull PushMessage message, @NotNull String instance) {
 		if(BuildConfig.DEBUG)
 			Log.d(TAG, "New message for " + instance);
+
+		// 🛡️ Sentinel: Basic check to ensure a distributor is actually registered
+		if (UnifiedPush.getAckDistributor(context).isEmpty()) {
+			if (BuildConfig.DEBUG) Log.w(TAG, "Received message but no UnifiedPush distributor registered");
+			return;
+		}
+
 		// Called when a new message is received. The message contains the full POST body of the push message
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
 

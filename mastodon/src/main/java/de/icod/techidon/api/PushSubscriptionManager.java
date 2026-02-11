@@ -352,7 +352,7 @@ public class PushSubscriptionManager{
 			byte[] decrypted=cipher.doFinal(payload);
 			decryptedStr=new String(decrypted, 2, decrypted.length-2, StandardCharsets.UTF_8);
 			if(BuildConfig.DEBUG)
-				Log.i(TAG, "decryptNotification: notification json "+decryptedStr);
+				Log.i(TAG, "decryptNotification: notification decrypted successfully");
 		}catch(NoSuchAlgorithmException|NoSuchPaddingException|InvalidAlgorithmParameterException|InvalidKeyException|BadPaddingException|IllegalBlockSizeException x){
 			Log.e(TAG, "decryptNotification: error decrypting payload", x);
 			return null;
