@@ -48,6 +48,16 @@ public class OAuthActivity extends Activity{
 			finish();
 			return;
 		}
+
+		// 🛡️ Sentinel: Verify CSRF state parameter
+		String state = uri.getQueryParameter("state");
+		String expectedState = AccountSessionManager.getInstance().getAuthenticatingState();
+		if (state == null || !state.equals(expectedState)) {
+			Toast.makeText(this, "Security error: invalid state parameter", Toast.LENGTH_LONG).show();
+			finish();
+			return;
+		}
+
 		Instance instance=AccountSessionManager.getInstance().getAuthenticatingInstance();
 		Application app=AccountSessionManager.getInstance().getAuthenticatingApp();
 		if(instance==null || app==null){

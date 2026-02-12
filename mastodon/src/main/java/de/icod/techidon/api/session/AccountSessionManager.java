@@ -11,6 +11,7 @@ import android.content.pm.ShortcutManager;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Base64;
 import android.util.Log;
 
 import de.icod.techidon.BuildConfig;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -73,6 +75,7 @@ public class AccountSessionManager{
 	private HashMap<String, Instance> instances=new HashMap<>();
 	private Instance authenticatingInstance;
 	private Application authenticatingApp;
+	private String authenticatingState;
 	private String lastActiveAccountID;
 	private SharedPreferences prefs;
 	private boolean loadedInstances;
@@ -254,6 +257,12 @@ public class AccountSessionManager{
 					@Override
 					public void onSuccess(Application result){
 						authenticatingApp=result;
+
+						// 🛡️ Sentinel: Generate random state for CSRF protection
+						byte[] randomBytes = new byte[16];
+						new SecureRandom().nextBytes(randomBytes);
+						authenticatingState = Base64.encodeToString(randomBytes, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
+
 						Uri uri=new Uri.Builder()
 								.scheme("https")
 								.authority(instance.uri)
@@ -262,6 +271,7 @@ public class AccountSessionManager{
 								.appendQueryParameter("client_id", result.clientId)
 								.appendQueryParameter("redirect_uri", REDIRECT_URI)
 								.appendQueryParameter("scope", SCOPE)
+								.appendQueryParameter("state", authenticatingState)
 								.build();
 
 						new CustomTabsIntent.Builder()
@@ -290,6 +300,10 @@ public class AccountSessionManager{
 
 	public Application getAuthenticatingApp(){
 		return authenticatingApp;
+	}
+
+	public String getAuthenticatingState() {
+		return authenticatingState;
 	}
 
 	public void maybeUpdateLocalInfo(){
