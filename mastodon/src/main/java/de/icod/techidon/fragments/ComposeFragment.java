@@ -565,6 +565,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 		if (contentTypePopup.getMenu().findItem(typeIndex) != null)
 			contentTypePopup.getMenu().findItem(typeIndex).setChecked(true);
 		contentTypeBtn.setSelected(typeIndex != ContentType.UNSPECIFIED.ordinal() && typeIndex != ContentType.PLAIN.ordinal());
+		updateContentTypeButton();
 
 		autocompleteViewController=new ComposeAutocompleteViewController(getActivity(), accountID);
 		autocompleteViewController.setCompletionSelectedListener(new ComposeAutocompleteViewController.AutocompleteListener(){
@@ -1856,6 +1857,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			contentType=ContentType.values()[index];
 			btn.setSelected(index!=ContentType.UNSPECIFIED.ordinal() && index!=ContentType.PLAIN.ordinal());
 			i.setChecked(true);
+			updateContentTypeButton();
 			return true;
 		});
 
@@ -1923,6 +1925,15 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 		icon.setBounds(0, 0, V.dp(18), V.dp(18));
 		visibilityBtn.setCompoundDrawableTintList(getContext().getResources().getColorStateList(R.color.m3_primary_selector, getContext().getTheme()));
 		visibilityBtn.setCompoundDrawablesRelative(icon, null, visibilityBtn.getCompoundDrawablesRelative()[2], null);
+	}
+
+	private void updateContentTypeButton() {
+		String typeName = getString(contentType.getName());
+		String desc = getString(R.string.sk_content_type) + ": " + typeName;
+		contentTypeBtn.setContentDescription(desc);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			contentTypeBtn.setTooltipText(desc);
+		}
 	}
 
 	@Override
