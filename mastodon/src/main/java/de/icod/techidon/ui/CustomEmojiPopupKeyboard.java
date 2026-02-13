@@ -9,6 +9,7 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
+import android.os.Build;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -202,6 +203,10 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 			hideKeyboard.setImageTintList(ColorStateList.valueOf(UiUtils.getThemeColor(activity, R.attr.colorM3OnSurfaceVariant)));
 			hideKeyboard.setBackground(UiUtils.getThemeDrawable(activity, android.R.attr.actionBarItemBackground));
 			hideKeyboard.setOnClickListener(v->hide());
+			hideKeyboard.setContentDescription(activity.getString(R.string.close_emoji));
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				hideKeyboard.setTooltipText(activity.getString(R.string.close_emoji));
+			}
 			bottomPanel.addView(hideKeyboard, new FrameLayout.LayoutParams(V.dp(48), V.dp(48), Gravity.START | Gravity.CENTER_VERTICAL));
 
 			ImageButton backspace=new ImageButton(activity);
@@ -209,6 +214,10 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 			backspace.setImageTintList(ColorStateList.valueOf(UiUtils.getThemeColor(activity, R.attr.colorM3OnSurfaceVariant)));
 			backspace.setBackground(UiUtils.getThemeDrawable(activity, android.R.attr.actionBarItemBackground));
 			backspace.setOnClickListener(v->listener.onBackspace());
+			backspace.setContentDescription(activity.getString(R.string.delete));
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				backspace.setTooltipText(activity.getString(R.string.delete));
+			}
 			bottomPanel.addView(backspace, new FrameLayout.LayoutParams(V.dp(48), V.dp(48), Gravity.END | Gravity.CENTER_VERTICAL));
 		}
 
