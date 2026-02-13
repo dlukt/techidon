@@ -47,6 +47,15 @@ public class Emoji extends BaseModel{
 		return idealUrl;
 	}
 
+	private transient String lowerShortcode;
+
+	public String getLowerShortcode() {
+		if (lowerShortcode == null && shortcode != null) {
+			lowerShortcode = shortcode.toLowerCase();
+		}
+		return lowerShortcode;
+	}
+
 	@Override
 	public String toString(){
 		return "Emoji{"+

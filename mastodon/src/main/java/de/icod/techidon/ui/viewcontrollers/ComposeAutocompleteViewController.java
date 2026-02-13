@@ -222,7 +222,7 @@ public class ComposeAutocompleteViewController{
 					for(Emoji e : category.emojis){
 						if(!e.visibleInPicker) continue;
 
-						String shortcode = e.shortcode.toLowerCase();
+						String shortcode = e.getLowerShortcode();
 						if(shortcode.startsWith(lowerText)){
 							startsWith.add(new WrappedEmoji(e));
 						}else if(shortcode.contains(lowerText)){
