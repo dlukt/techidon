@@ -60,7 +60,7 @@ public class ComposeAutocompleteViewController{
 	private ListImageLoaderWrapper imgLoader;
 	private List<AccountViewModel> users=Collections.emptyList();
 	private List<Hashtag> hashtags=Collections.emptyList();
-	private List<WrappedEmoji> emojis=Collections.emptyList();
+	private List<Emoji> emojis=Collections.emptyList();
 	private Mode mode;
 	private APIRequest currentRequest;
 	private Runnable usersDebouncer=this::doSearchUsers, hashtagsDebouncer=this::doSearchHashtags;
@@ -205,11 +205,11 @@ public class ComposeAutocompleteViewController{
 			list.postDelayed(hashtagsDebouncer, 300);
 		}else if(mode==Mode.EMOJIS){
 			String _text=text.substring(1); // remove ':'
-			List<WrappedEmoji> oldList=emojis;
+			List<Emoji> oldList=emojis;
 
 			String lowerText = _text.toLowerCase();
-			List<WrappedEmoji> startsWith = new ArrayList<>();
-			List<WrappedEmoji> contains = new ArrayList<>();
+			List<Emoji> startsWith = new ArrayList<>();
+			List<Emoji> contains = new ArrayList<>();
 
 			List<EmojiCategory> categories = AccountSessionManager.getInstance()
 					.getCustomEmojis(AccountSessionManager.getInstance().getAccount(accountID).domain);
@@ -224,9 +224,9 @@ public class ComposeAutocompleteViewController{
 
 						String shortcode = e.getLowerShortcode();
 						if(shortcode.startsWith(lowerText)){
-							startsWith.add(new WrappedEmoji(e));
+							startsWith.add(e);
 						}else if(shortcode.contains(lowerText)){
-							contains.add(new WrappedEmoji(e));
+							contains.add(e);
 						}
 					}
 				}
@@ -236,7 +236,7 @@ public class ComposeAutocompleteViewController{
 			emojis = startsWith;
 
 			emptyButtonAdapter.setVisible(emojis.isEmpty());
-			UiUtils.updateList(oldList, emojis, list, emojisAdapter, (e1, e2)->e1.emoji.shortcode.equals(e2.emoji.shortcode));
+			UiUtils.updateList(oldList, emojis, list, emojisAdapter, (e1, e2)->e1.shortcode.equals(e2.shortcode));
 			list.invalidateItemDecorations();
 			imgLoader.updateImages();
 		}
@@ -494,11 +494,11 @@ public class ComposeAutocompleteViewController{
 
 		@Override
 		public ImageLoaderRequest getImageRequest(int position, int image){
-			return emojis.get(position).request;
+			return new UrlImageLoaderRequest(emojis.get(position).url, V.dp(44), V.dp(44));
 		}
 	}
 
-	private class EmojiViewHolder extends BindableViewHolder<WrappedEmoji> implements ImageLoaderViewHolder, UsableRecyclerView.Clickable{
+	private class EmojiViewHolder extends BindableViewHolder<Emoji> implements ImageLoaderViewHolder, UsableRecyclerView.Clickable{
 		private final ImageView ava;
 		private final TextView name;
 
@@ -520,23 +520,13 @@ public class ComposeAutocompleteViewController{
 
 		@SuppressLint("SetTextI18n")
 		@Override
-		public void onBind(WrappedEmoji item){
-			name.setText(":"+item.emoji.shortcode+":");
+		public void onBind(Emoji item){
+			name.setText(":"+item.shortcode+":");
 		}
 
 		@Override
 		public void onClick(){
-			completionSelectedListener.onCompletionSelected(":"+item.emoji.shortcode+":");
-		}
-	}
-
-	private static class WrappedEmoji{
-		private Emoji emoji;
-		private ImageLoaderRequest request;
-
-		public WrappedEmoji(Emoji emoji){
-			this.emoji=emoji;
-			request=new UrlImageLoaderRequest(emoji.url, V.dp(44), V.dp(44));
+			completionSelectedListener.onCompletionSelected(":"+item.shortcode+":");
 		}
 	}
 
