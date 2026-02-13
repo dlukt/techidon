@@ -183,6 +183,16 @@ public class AccountSessionManager{
 		return sessions.get(id);
 	}
 
+	@Nullable
+	public AccountSession tryGetAccountByUnifiedPushToken(String token){
+		if(token==null) return null;
+		for(AccountSession session:sessions.values()){
+			if(token.equals(session.unifiedPushToken))
+				return session;
+		}
+		return null;
+	}
+
 	public static Optional<AccountSession> getOptional(String id) {
 		return Optional.ofNullable(getInstance().tryGetAccount(id));
 	}

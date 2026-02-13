@@ -37,7 +37,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 		// Called when a new endpoint be used for sending push messages
 		if(BuildConfig.DEBUG)
 			Log.d(TAG, "onNewEndpoint: New Endpoint [REDACTED] for "+ instance);
-		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
+		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 		if (account != null) {
 			PublicKeySet ks = endpoint.getPubKeySet();
 			if (ks != null){
@@ -55,7 +55,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 		if(BuildConfig.DEBUG)
 			Log.d(TAG, "onRegistrationFailed: " + instance);
 		//re-register for gcm
-		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
+		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 		if (account != null)
 			account.getPushSubscriptionManager().registerAccountForPush(null);
 	}
@@ -66,7 +66,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 		if(BuildConfig.DEBUG)
 			Log.d(TAG, "onUnregistered: " + instance);
 		//re-register for gcm
-		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
+		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 		if (account != null)
 			account.getPushSubscriptionManager().registerAccountForPush(null);
 	}
@@ -83,7 +83,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 		}
 
 		// Called when a new message is received. The message contains the full POST body of the push message
-		AccountSession account = AccountSessionManager.getInstance().tryGetAccount(instance);
+		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 
 		if (account == null)
 		    return;
@@ -97,15 +97,15 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 					.setCallback(new Callback<>(){
 						@Override
 						public void onSuccess(de.icod.techidon.model.Notification result){
-							MastodonAPIController.runInBackground(()->new PushNotificationReceiver().notify(context, pn, instance, result));
+							MastodonAPIController.runInBackground(()->new PushNotificationReceiver().notify(context, pn, account.getID(), result));
 						}
 
 						@Override
 						public void onError(ErrorResponse error){
-							MastodonAPIController.runInBackground(()-> new PushNotificationReceiver().notify(context, pn, instance, null));
+							MastodonAPIController.runInBackground(()-> new PushNotificationReceiver().notify(context, pn, account.getID(), null));
 						}
 					})
-					.exec(instance);
+					.exec(account.getID());
 		} else {
 			// else, we have to sync with the server
 			if(BuildConfig.DEBUG)

@@ -27,3 +27,8 @@
 **Vulnerability:** `Safelist.relaxed()` allows `img` tags by default. When used to sanitize HTML for a WebView, this permits loading external images, which can be used for tracking pixels or mixed content (if not blocked by WebView settings).
 **Learning:** `Safelist.relaxed()` is not "safe" for privacy-sensitive contexts where external resource loading should be restricted.
 **Prevention:** Use `Safelist.relaxed().removeTags("img")` or `Safelist.basic()` (if structure is not needed) when sanitizing content for WebViews to prevent unwanted external requests.
+
+## 2025-02-20 - UnifiedPush Notification Spoofing
+**Vulnerability:** The application used the predictable account ID (e.g., `domain_userID`) as the UnifiedPush instance identifier token. Because `UnifiedPushNotificationReceiver` is exported and relies on this token to route messages, a local malicious app could spoof push messages by guessing the token and sending an intent with a fake payload, potentially triggering unauthorized API calls or displaying fake notifications.
+**Learning:** Identifiers that act as authentication tokens (like push registration IDs) must be cryptographically random and secret. Using predictable IDs (like public user IDs) for internal routing or authentication creates spoofing vulnerabilities in inter-app communication.
+**Prevention:** Generate a random UUID for the UnifiedPush instance token upon registration. Use this random token for routing incoming messages and do not expose it or derive it from public information.

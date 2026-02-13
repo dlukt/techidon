@@ -60,6 +60,7 @@ public class AccountSession{
 	public String pushPrivateKey;
 	public String pushPublicKey;
 	public String pushAuthKey;
+	public String unifiedPushToken;
 	public PushSubscription pushSubscription;
 	public boolean needUpdatePushSettings;
 	public long filtersLastUpdated;
