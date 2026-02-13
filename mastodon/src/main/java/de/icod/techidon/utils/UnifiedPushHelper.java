@@ -31,6 +31,16 @@ public class UnifiedPushHelper {
 
 	public static void registerAllAccounts(@NonNull Context context) {
 		for (AccountSession accountSession : AccountSessionManager.getInstance().getLoggedInAccounts()){
+			// 🛡️ Sentinel: Generate random token for UnifiedPush instance ID to prevent spoofing
+			// This prevents attackers from guessing the instance ID (which was previously predictable)
+			// and sending fake push messages to the app.
+			if (accountSession.unifiedPushToken == null) {
+				// Unregister legacy registration that used getID()
+				UnifiedPush.unregister(context, accountSession.getID());
+				accountSession.unifiedPushToken = java.util.UUID.randomUUID().toString();
+				AccountSessionManager.getInstance().writeAccountsFile();
+			}
+
 			String vapidKey = accountSession.app.vapidKey;
 			// Sometimes this is null when the account's server has died (don't ask me how I know this)
 			if (vapidKey == null) {
@@ -48,7 +58,7 @@ public class UnifiedPushHelper {
 			}
 			UnifiedPush.register(
 					context,
-					accountSession.getID(),
+					accountSession.unifiedPushToken,
 					accountSession.self.fqn,
 					vapidKey
 			);
@@ -59,7 +69,7 @@ public class UnifiedPushHelper {
 		for (AccountSession accountSession : AccountSessionManager.getInstance().getLoggedInAccounts()){
 			UnifiedPush.unregister(
 				context,
-				accountSession.getID()
+				accountSession.unifiedPushToken != null ? accountSession.unifiedPushToken : accountSession.getID()
 			);
 			// use FCM again
 			accountSession.getPushSubscriptionManager().registerAccountForPush(null);
