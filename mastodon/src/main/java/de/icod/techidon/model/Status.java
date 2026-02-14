@@ -248,7 +248,7 @@ public class Status extends BaseModel implements DisplayItemsParent, Searchable{
 			Pair<String, List<String>> decoded=BOTTOM_TEXT_PATTERN.matcher(getStrippedText()).find()
 					? new StatusTextEncoder(Bottom::decode).decode(getStrippedText(), BOTTOM_TEXT_PATTERN)
 					: null;
-			String bottomText=decoded==null || decoded.second.stream().allMatch(s->s.trim().isEmpty()) ? null : decoded.first;
+			String bottomText=decoded==null || isAllBlank(decoded.second) ? null : decoded.first;
 			if(bottomText!=null){
 				translation=new Translation();
 				translation.content=bottomText;
@@ -273,6 +273,16 @@ public class Status extends BaseModel implements DisplayItemsParent, Searchable{
 		return visibility.isReblogPermitted(account.id.equals(
 				AccountSessionManager.getInstance().getAccount(accountID).self.id
 		));
+	}
+
+	private boolean isAllBlank(List<String> list) {
+		for (int i = 0; i < list.size(); i++) {
+			String s = list.get(i);
+			if (s != null && !s.trim().isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static Status ofFake(String id, String text, Instant createdAt) {
