@@ -32,6 +32,7 @@
 				android:layout_gravity="center_vertical"
 				android:tint="?colorM3OnSecondaryContainer"
 				android:scaleType="center"
+				android:importantForAccessibility="no"
 				android:src="@drawable/ic_poll_option_button" />
 
 			<TextView

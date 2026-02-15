@@ -16,3 +16,7 @@
 ## 2024-10-26 - Non-visual Feedback for Character Limits
 **Learning:** Visual-only cues (like red borders) for character limits exclude screen reader users. Accessibility announcements must be triggered on state transitions (e.g., crossing the limit) to avoid spamming the user on every keystroke.
 **Action:** Use `announceForAccessibility` in a `TextWatcher` that tracks state changes (valid <-> invalid) to provide timely context without noise.
+
+## 2025-10-21 - Decorative Image Cleanup
+**Learning:** Many list item layouts (`item_discover_account`, `display_item_header`, `display_item_poll_option`) contain decorative `ImageView`s (avatars next to names, unread dots, state icons) that lack `importantForAccessibility="no"`, creating redundant focus targets and noise for screen readers.
+**Action:** Audit list item layouts for decorative images and explicitly mark them as `importantForAccessibility="no"` when their information is conveyed by adjacent text or parent container state.
