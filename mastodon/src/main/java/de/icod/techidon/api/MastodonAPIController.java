@@ -19,6 +19,7 @@ import de.icod.techidon.api.gson.IsoLocalDateTypeAdapter;
 import de.icod.techidon.api.session.AccountSession;
 import de.icod.techidon.model.Status;
 import de.icod.techidon.ui.utils.UiUtils;
+import de.icod.techidon.utils.SecurityUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -88,15 +89,7 @@ public class MastodonAPIController{
 	}
 
 	private boolean isBadDomain(String host) {
-		if (host == null) return true;
-		// Optimized to avoid stream allocation and repeated toLowerCase() calls
-		String lowerHost = host.toLowerCase();
-		for (String badDomain : badDomains) {
-			if (lowerHost.equals(badDomain) || lowerHost.endsWith("." + badDomain)) {
-				return true;
-			}
-		}
-		return false;
+		return SecurityUtils.isDomainBlocked(host, badDomains);
 	}
 
 	public <T> void submitRequest(final MastodonAPIRequest<T> req){
