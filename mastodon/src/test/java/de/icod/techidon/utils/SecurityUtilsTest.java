@@ -35,4 +35,40 @@ public class SecurityUtilsTest {
         // Null
         assertFalse(SecurityUtils.isWhitelistedScheme(null));
     }
+
+    @Test
+    public void testIsDomainBlocked() {
+        java.util.List<String> blocked = java.util.Arrays.asList("evil.com", "bad.org", "blocked.net");
+
+        // Exact match
+        assertTrue(SecurityUtils.isDomainBlocked("evil.com", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("bad.org", blocked));
+
+        // Subdomain match
+        assertTrue(SecurityUtils.isDomainBlocked("sub.evil.com", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("deep.sub.evil.com", blocked));
+
+        // Trailing dot (should be blocked now)
+        assertTrue(SecurityUtils.isDomainBlocked("evil.com.", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("sub.evil.com.", blocked));
+
+        // Partial match (suffix but not subdomain) - should allowed
+        assertFalse(SecurityUtils.isDomainBlocked("not-evil.com", blocked));
+        assertFalse(SecurityUtils.isDomainBlocked("good.org", blocked));
+        assertFalse(SecurityUtils.isDomainBlocked("realyblocked.net", blocked));
+
+        // Partial match (prefix) - should allowed
+        assertFalse(SecurityUtils.isDomainBlocked("evil.com.example.com", blocked));
+
+        // Case insensitivity
+        assertTrue(SecurityUtils.isDomainBlocked("EVIL.COM", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("Evil.Com", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("Evil.Com.", blocked));
+
+        // Null
+        assertTrue(SecurityUtils.isDomainBlocked(null, blocked));
+
+        // Empty blocklist
+        assertFalse(SecurityUtils.isDomainBlocked("evil.com", java.util.Collections.emptyList()));
+    }
 }

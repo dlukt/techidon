@@ -56,4 +56,28 @@ public class SecurityUtils {
 				"magnet".equals(scheme) ||
 				"geo".equals(scheme);
 	}
+
+	/**
+	 * Checks if a host (domain) is in the list of blocked domains.
+	 *
+	 * @param host The host to check.
+	 * @param blockedDomains The list of blocked domains.
+	 * @return True if the host is blocked, false otherwise.
+	 */
+	public static boolean isDomainBlocked(String host, Iterable<String> blockedDomains) {
+		if (host == null) return true; // Fail closed
+		// Normalize: remove trailing dot if present
+		if (host.endsWith(".")) {
+			host = host.substring(0, host.length() - 1);
+		}
+		// Convert to lowercase using Locale.ROOT to avoid locale-dependent issues (e.g. Turkish I)
+		String lowerHost = host.toLowerCase(Locale.ROOT);
+		for (String badDomain : blockedDomains) {
+			// badDomains are expected to be lowercase already
+			if (lowerHost.equals(badDomain) || lowerHost.endsWith("." + badDomain)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
