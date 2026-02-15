@@ -23,6 +23,7 @@
 			android:visibility="gone"
 			android:tint="?android:colorAccent"
 			android:scaleType="center"
+			android:importantForAccessibility="no"
 			android:src="@drawable/ic_fluent_circle_small_20_filled" />
 
 		<ImageView

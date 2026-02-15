@@ -14,7 +14,8 @@
 		android:layout_marginTop="4dp"
 		android:layout_marginEnd="8dp"
 		android:layout_marginStart="16dp"
-		android:layout_alignParentEnd="true"/>
+		android:layout_alignParentEnd="true"
+		android:importantForAccessibility="no"/>
 
 	<TextView
 		android:id="@+id/title"

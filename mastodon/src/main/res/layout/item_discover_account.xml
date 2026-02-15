@@ -13,6 +13,7 @@
 		android:layout_marginLeft="6dp"
 		android:layout_marginRight="6dp"
 		android:scaleType="centerCrop"
+		android:importantForAccessibility="no"
 		tools:src="#0f0"/>
 
 	<FrameLayout
@@ -38,6 +39,7 @@
 			android:layout_width="60dp"
 			android:layout_height="60dp"
 			android:scaleType="centerCrop"
+			android:importantForAccessibility="no"
 			tools:src="#f00" />
 
 	</FrameLayout>

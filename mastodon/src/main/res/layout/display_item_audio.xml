@@ -37,6 +37,7 @@
 			android:layout_width="96dp"
 			android:layout_height="96dp"
 			android:background="@drawable/bg_audio_play_button"
+			android:contentDescription="@string/play"
 			android:layout_gravity="center"
 			android:tint="?colorM3DarkOnSurface"
 			android:src="@drawable/ic_fluent_play_48_regular"/>
