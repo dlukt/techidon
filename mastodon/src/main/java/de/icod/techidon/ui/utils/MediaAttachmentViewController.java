@@ -66,9 +66,16 @@ public class MediaAttachmentViewController{
 		boolean hasAltText = !TextUtils.isEmpty(attachment.description);
 		photo.setContentDescription(!hasAltText ? context.getString(R.string.media_no_description) : attachment.description);
 		if(btnsWrap!=null){
-			btnsWrap.setVisibility(View.VISIBLE);
-			altButton.setVisibility(hasAltText && GlobalUserPreferences.showAltIndicator ? View.VISIBLE : View.GONE);
-			noAltButton.setVisibility(!hasAltText && GlobalUserPreferences.showNoAltIndicator ? View.VISIBLE : View.GONE);
+			boolean showAlt = hasAltText && GlobalUserPreferences.showAltIndicator;
+			boolean showNoAlt = !hasAltText && GlobalUserPreferences.showNoAltIndicator;
+			altButton.setVisibility(showAlt ? View.VISIBLE : View.GONE);
+			noAltButton.setVisibility(showNoAlt ? View.VISIBLE : View.GONE);
+			if(showAlt || showNoAlt){
+				btnsWrap.setVisibility(View.VISIBLE);
+				btnsWrap.setContentDescription(context.getString(showAlt ? R.string.alt_text : R.string.media_no_description));
+			}else{
+				btnsWrap.setVisibility(View.GONE);
+			}
 		}
 		if(type==MediaGridStatusDisplayItem.GridItemType.VIDEO){
 			duration.setText(UiUtils.formatMediaDuration((int)attachment.getDuration()));
