@@ -264,11 +264,12 @@ public abstract class StatusDisplayItem{
 
 			LegacyFilter applyingFilter=null;
 			if(status.filtered!=null){
-				ArrayList<FilterResult> filters= new ArrayList<>(status.filtered);
+				// Bolt: Use list directly to avoid allocation
+				List<FilterResult> filters=status.filtered;
 
 				// Only add client filters if there are no pre-existing status filter
 				if(filters.isEmpty())
-					filters.addAll(AccountSessionManager.get(accountID).getClientSideFilters(status));
+					filters=AccountSessionManager.get(accountID).getClientSideFilters(status);
 
 				for(FilterResult filter : filters){
 					LegacyFilter f=filter.filter;

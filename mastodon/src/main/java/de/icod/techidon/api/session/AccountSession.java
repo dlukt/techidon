@@ -333,18 +333,17 @@ public class AccountSession{
 	}
 
 	public List<FilterResult> getClientSideFilters(Status status) {
-		List<FilterResult> filters = new ArrayList<>();
-
 		// filter post that have no alt text
 		// it only applies when activated in the settings
+		// Bolt: Avoid allocation by returning immutable lists
 		AltTextFilter altTextFilter=new AltTextFilter(FilterAction.WARN, EnumSet.allOf(FilterContext.class));
 		if(altTextFilter.matches(status)){
 			FilterResult filterResult=new FilterResult();
 			filterResult.filter=altTextFilter;
 			filterResult.keywordMatches=List.of();
-			filters.add(filterResult);
+			return java.util.Collections.singletonList(filterResult);
 		}
-		return filters;
+		return java.util.Collections.emptyList();
 	}
 
 	public void updateAccountInfo(){
