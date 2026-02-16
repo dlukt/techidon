@@ -5,7 +5,8 @@
 	android:layout_height="wrap_content"
 	android:layout_gravity="end|bottom"
 	android:padding="12dp"
-	android:importantForAccessibility="noHideDescendants">
+	android:focusable="true"
+	android:clickable="true">
 
 	<ImageView
 		android:id="@+id/no_alt_button"
@@ -16,7 +17,8 @@
 		android:src="@drawable/ic_fluent_important_20_filled"
 		android:background="@drawable/bg_image_no_alt_overlay"
 		android:tint="?colorGray25"
-		android:visibility="gone" />
+		android:visibility="gone"
+		android:importantForAccessibility="no" />
 
 	<TextView
 		android:id="@+id/alt_button"
@@ -31,6 +33,7 @@
 		android:paddingVertical="3dp"
 		android:background="@drawable/bg_image_alt_overlay"
 		android:maxLines="1"
-		android:text="@string/sk_alt_button"/>
+		android:text="@string/sk_alt_button"
+		android:importantForAccessibility="no" />
 
 </FrameLayout>
