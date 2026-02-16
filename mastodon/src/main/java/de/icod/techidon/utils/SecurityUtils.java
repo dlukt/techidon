@@ -11,27 +11,26 @@ public class SecurityUtils {
 	 * Checks if a URL has an unsafe scheme that should be blocked to prevent
 	 * XSS, local file access, or arbitrary intent launching.
 	 *
+	 * This method enforces a whitelist of safe schemes. Any scheme not in the whitelist
+	 * (including javascript, file, content, intent, etc.) is considered unsafe.
+	 *
 	 * Blocked schemes: javascript, vbscript, file, content, data, jar, intent.
+	 * Allowed schemes: http, https, mailto, tel, xmpp, matrix, magnet, geo.
 	 *
 	 * @param url The URL to check.
-	 * @return True if the URL is considered unsafe, false otherwise.
+	 * @return True if the URL is considered unsafe (not whitelisted), false otherwise.
 	 */
 	public static boolean isUnsafeUrl(String url) {
-		if (TextUtils.isEmpty(url)) return true;
+		if (url == null || url.length() == 0) return true;
 		try {
-			Uri uri = Uri.parse(url);
+			// 🛡️ Sentinel: Use whitelist enforcement instead of blacklist
+			// Using java.net.URI for stricter parsing and better testability
+			java.net.URI uri = new java.net.URI(url);
 			String scheme = uri.getScheme();
-			if (scheme == null) return false;
-			scheme = scheme.toLowerCase(Locale.US);
-			return "javascript".equals(scheme) ||
-					"vbscript".equals(scheme) ||
-					"file".equals(scheme) ||
-					"content".equals(scheme) ||
-					"data".equals(scheme) ||
-					"jar".equals(scheme) ||
-					"intent".equals(scheme) ||
-					"blob".equals(scheme);
+			// If scheme is null, it's considered unsafe (fail closed)
+			return !isWhitelistedScheme(scheme);
 		} catch (Exception e) {
+			// Fail closed on parsing errors
 			return true;
 		}
 	}

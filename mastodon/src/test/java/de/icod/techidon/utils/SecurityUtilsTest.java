@@ -71,4 +71,32 @@ public class SecurityUtilsTest {
         // Empty blocklist
         assertFalse(SecurityUtils.isDomainBlocked("evil.com", java.util.Collections.emptyList()));
     }
+
+    @Test
+    public void testIsUnsafeUrl() {
+       // Whitelisted schemes should return false (safe)
+       assertFalse("http should be safe", SecurityUtils.isUnsafeUrl("http://example.com"));
+       assertFalse("https should be safe", SecurityUtils.isUnsafeUrl("https://example.com"));
+       assertFalse("mailto should be safe", SecurityUtils.isUnsafeUrl("mailto:user@example.com"));
+
+       // Blacklisted schemes should return true (unsafe)
+       assertTrue("javascript should be unsafe", SecurityUtils.isUnsafeUrl("javascript:alert(1)"));
+       assertTrue("file should be unsafe", SecurityUtils.isUnsafeUrl("file:///etc/passwd"));
+       assertTrue("content should be unsafe", SecurityUtils.isUnsafeUrl("content://provider/path"));
+
+       // Non-whitelisted schemes (custom, etc.) should return true (unsafe) - ENHANCEMENT
+       assertTrue("ftp should be unsafe", SecurityUtils.isUnsafeUrl("ftp://example.com"));
+       assertTrue("market should be unsafe", SecurityUtils.isUnsafeUrl("market://details?id=com.example"));
+       assertTrue("custom scheme should be unsafe", SecurityUtils.isUnsafeUrl("custom:evil"));
+
+       // Malformed URLs should return true (unsafe) due to fail-closed logic
+       assertTrue("malformed URL should be unsafe", SecurityUtils.isUnsafeUrl("://"));
+       assertTrue("null URL should be unsafe", SecurityUtils.isUnsafeUrl(null));
+       assertTrue("empty URL should be unsafe", SecurityUtils.isUnsafeUrl(""));
+
+       // URLs without scheme (relative) are ambiguous but currently treated as unsafe because getScheme() returns null,
+       // and isWhitelistedScheme(null) returns false, so !false is true.
+       // This is safer default behavior.
+       assertTrue("relative URL should be unsafe (no scheme)", SecurityUtils.isUnsafeUrl("/relative/path"));
+    }
 }
