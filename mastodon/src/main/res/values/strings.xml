@@ -287,6 +287,10 @@
 		<item quantity="one">%,d boost</item>
 		<item quantity="other">%,d boosts</item>
 	</plurals>
+	<plurals name="x_replies">
+		<item quantity="one">%,d reply</item>
+		<item quantity="other">%,d replies</item>
+	</plurals>
 	<string name="time_now">now</string>
 	<string name="edit_history">Edit history</string>
 	<string name="last_edit_at_x">Last edit %s</string>

@@ -472,9 +472,33 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 
 		private void updateButtonDescription(View view) {
 			String desc = item.parentFragment.getString(descriptionForId(view.getId(), item.status));
+
+			boolean showCounts = AccountSessionManager.get(item.accountID).getLocalPreferences().showInteractionCounts && !item.hideCounts;
+			if (showCounts) {
+				int id = view.getId();
+				long count = 0;
+				int pluralRes = 0;
+
+				if (id == R.id.reply_btn) {
+					count = item.status.repliesCount;
+					pluralRes = R.plurals.x_replies;
+				} else if (id == R.id.boost_btn) {
+					count = item.status.reblogsCount;
+					pluralRes = R.plurals.x_reblogs;
+				} else if (id == R.id.favorite_btn) {
+					count = item.status.favouritesCount;
+					pluralRes = R.plurals.x_favorites;
+				}
+
+				if (count > 0 && pluralRes != 0) {
+					String countStr = item.parentFragment.getResources().getQuantityString(pluralRes, (int)count, count);
+					desc += ", " + countStr;
+				}
+			}
+
 			view.setContentDescription(desc);
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				view.setTooltipText(desc);
+				view.setTooltipText(item.parentFragment.getString(descriptionForId(view.getId(), item.status)));
 			}
 		}
 
