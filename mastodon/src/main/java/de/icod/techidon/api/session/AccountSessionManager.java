@@ -35,6 +35,7 @@ import de.icod.techidon.model.EmojiCategory;
 import de.icod.techidon.model.LegacyFilter;
 import de.icod.techidon.model.Instance;
 import de.icod.techidon.model.Token;
+import de.icod.techidon.utils.EmojiUtils;
 import de.icod.techidon.utils.UnifiedPushHelper;
 import org.unifiedpush.android.connector.UnifiedPush;
 
@@ -48,7 +49,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -426,7 +426,7 @@ public class AccountSessionManager{
 						emojis.lastUpdated=System.currentTimeMillis();
 						emojis.emojis=result;
 						emojis.instance=instance;
-						customEmojis.put(domain, groupCustomEmojis(emojis));
+						customEmojis.put(domain, EmojiUtils.groupCustomEmojis(emojis.emojis));
 						instancesLastUpdated.put(domain, emojis.lastUpdated);
 						MastodonAPIController.runInBackground(()->writeInstanceInfoFile(emojis, domain));
 						E.post(new EmojiUpdatedEvent(domain));
@@ -464,7 +464,7 @@ public class AccountSessionManager{
 			try(FileInputStream in=new FileInputStream(getInstanceInfoFile(domain))){
 				InputStreamReader reader=new InputStreamReader(in, StandardCharsets.UTF_8);
 				InstanceInfoStorageWrapper emojis=MastodonAPIController.gson.fromJson(reader, InstanceInfoStorageWrapper.class);
-				customEmojis.put(domain, groupCustomEmojis(emojis));
+				customEmojis.put(domain, EmojiUtils.groupCustomEmojis(emojis.emojis));
 				instances.put(domain, emojis.instance);
 				instancesLastUpdated.put(domain, emojis.lastUpdated);
 			}catch(Exception x){
@@ -475,17 +475,6 @@ public class AccountSessionManager{
 			loadedInstances=true;
 			maybeUpdateCustomEmojis(domains, null);
 		}
-	}
-
-	private List<EmojiCategory> groupCustomEmojis(InstanceInfoStorageWrapper emojis){
-		return emojis.emojis.stream()
-				.filter(e->e.visibleInPicker)
-				.collect(Collectors.groupingBy(e->e.category==null ? "" : e.category))
-				.entrySet()
-				.stream()
-				.map(e->new EmojiCategory(e.getKey(), e.getValue()))
-				.sorted(Comparator.comparing(c->c.title))
-				.collect(Collectors.toList());
 	}
 
 	public List<EmojiCategory> getCustomEmojis(String domain){
