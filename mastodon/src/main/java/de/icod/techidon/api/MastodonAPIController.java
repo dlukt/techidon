@@ -67,19 +67,21 @@ public class MastodonAPIController{
 	static{
 		thread.start();
 		try {
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(
-					MastodonApp.context.getAssets().open("blocks.txt")
-			));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.isBlank() || line.startsWith("#")) continue;
-				String[] parts = line.replaceAll("\"", "").split("[\s,;]");
-				if (parts.length == 0) continue;
-				String domain = parts[0].toLowerCase().trim();
-				if (domain.isBlank()) continue;
-				badDomains.add(domain);
+			if (MastodonApp.context != null) {
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(
+						MastodonApp.context.getAssets().open("blocks.txt")
+				));
+				String line;
+				while ((line = reader.readLine()) != null) {
+					if (line.isBlank() || line.startsWith("#")) continue;
+					String[] parts = line.replaceAll("\"", "").split("[\s,;]");
+					if (parts.length == 0) continue;
+					String domain = parts[0].toLowerCase().trim();
+					if (domain.isBlank()) continue;
+					badDomains.add(domain);
+				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -264,12 +266,25 @@ public class MastodonAPIController{
 		return "["+(session==null ? "no-auth" : session.getID())+"] ";
 	}
 
-	private JsonElement redactSensitiveData(JsonElement element) {
+	/*package*/ JsonElement redactSensitiveData(JsonElement element) {
 		if (element.isJsonObject()) {
 			JsonObject newObject = new JsonObject();
 			for (Map.Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet()) {
 				String key = entry.getKey();
-				if (key.equalsIgnoreCase("access_token") || key.equalsIgnoreCase("refresh_token") || key.equalsIgnoreCase("client_secret")) {
+				// 🛡️ Sentinel: Redact sensitive keys to prevent PII/secret leakage in logs
+				if (key.equalsIgnoreCase("access_token") ||
+						key.equalsIgnoreCase("refresh_token") ||
+						key.equalsIgnoreCase("client_secret") ||
+						key.equalsIgnoreCase("password") ||
+						key.equalsIgnoreCase("email") ||
+						key.equalsIgnoreCase("code") ||
+						key.equalsIgnoreCase("bearer_token") ||
+						key.equalsIgnoreCase("authorization_code") ||
+						key.equalsIgnoreCase("otp_attempt") ||
+						key.equalsIgnoreCase("otp_token") ||
+						key.equalsIgnoreCase("encrypted_message") ||
+						key.equalsIgnoreCase("private_key") ||
+						key.equalsIgnoreCase("auth_key")) {
 					newObject.addProperty(key, "[REDACTED]");
 				} else {
 					newObject.add(key, redactSensitiveData(entry.getValue()));
