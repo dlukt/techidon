@@ -20,3 +20,7 @@
 ## 2025-10-21 - Decorative Image Cleanup
 **Learning:** Many list item layouts (`item_discover_account`, `display_item_header`, `display_item_poll_option`) contain decorative `ImageView`s (avatars next to names, unread dots, state icons) that lack `importantForAccessibility="no"`, creating redundant focus targets and noise for screen readers.
 **Action:** Audit list item layouts for decorative images and explicitly mark them as `importantForAccessibility="no"` when their information is conveyed by adjacent text or parent container state.
+
+## 2025-10-27 - Semantic Accessibility for Custom Poll Options
+**Learning:** Custom interactive list items (like poll options built with `FrameLayout`) often lack semantic roles (CheckBox/RadioButton) and state (Checked/Selected), making them confusing for screen reader users. Using `AccessibilityDelegate` to set the `className` effectively communicates these roles without needing custom strings or changing the UI.
+**Action:** Always implement an `AccessibilityDelegate` for custom list items to expose the correct role (e.g., `android.widget.CheckBox`) and state (`isChecked`) to accessibility services.
