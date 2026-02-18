@@ -48,6 +48,12 @@ public class Hashtag extends BaseModel implements DisplayItemsParent{
 	}
 
 	public int getWeekPosts(){
-		return history.stream().mapToInt(h->h.uses).sum();
+		// Optimization: Use loop instead of Stream to avoid allocation overhead in hot paths.
+		if(history==null) return 0;
+		int sum=0;
+		for(History h:history){
+			sum+=h.uses;
+		}
+		return sum;
 	}
 }
