@@ -9,6 +9,7 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -98,6 +99,18 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 			itemView.setOnClickListener(this::onButtonClick);
 			button.setOutlineProvider(OutlineProviders.roundedRect(20));
 			button.setClipToOutline(true);
+
+			itemView.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+				@Override
+				public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+					super.onInitializeAccessibilityNodeInfo(host, info);
+					if (item != null && item.poll != null) {
+						info.setCheckable(true);
+						info.setChecked(host.isSelected());
+						info.setClassName(item.poll.multiple ? "android.widget.CheckBox" : "android.widget.RadioButton");
+					}
+				}
+			});
 		}
 
 		@Override
