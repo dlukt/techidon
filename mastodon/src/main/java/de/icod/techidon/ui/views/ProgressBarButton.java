@@ -15,6 +15,7 @@ public class ProgressBarButton extends Button{
 	private boolean textVisible=true;
 	private ProgressBar progressBar;
 	private int progressBarID;
+	private CharSequence originalContentDescription;
 
 	public ProgressBarButton(Context context){
 		this(context, null);
@@ -52,12 +53,20 @@ public class ProgressBarButton extends Button{
 		if(progressBar==null)
 			throw new IllegalStateException("progressBar is not set");
 		if(visible){
-			setTextVisible(false);
-			progressBar.setIndeterminateTintList(getTextColors());
-			progressBar.setVisibility(View.VISIBLE);
+			if(progressBar.getVisibility()!=View.VISIBLE){
+				originalContentDescription=getContentDescription();
+				setContentDescription(getContext().getString(R.string.loading));
+				setTextVisible(false);
+				progressBar.setIndeterminateTintList(getTextColors());
+				progressBar.setVisibility(View.VISIBLE);
+			}
 		}else{
-			setTextVisible(true);
-			progressBar.setVisibility(View.GONE);
+			if(progressBar.getVisibility()==View.VISIBLE){
+				setTextVisible(true);
+				progressBar.setVisibility(View.GONE);
+				setContentDescription(originalContentDescription);
+				originalContentDescription=null;
+			}
 		}
 	}
 
