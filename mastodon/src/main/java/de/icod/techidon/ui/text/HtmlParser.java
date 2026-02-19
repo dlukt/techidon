@@ -194,7 +194,6 @@ public class HtmlParser{
 									for (Mention mention : mentions) {
 										if (mention.id != null && mention.url.equals(href)) {
 											id = mention.id;
-											break;
 										}
 									}
 								}
