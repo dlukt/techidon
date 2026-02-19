@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -118,19 +117,25 @@ public class HtmlParser{
 			}
 		}
 
-		Map<String, String> idsByUrl = new HashMap<>();
-		for (Mention mention : mentions) {
-			if (mention.id != null) {
-				idsByUrl.put(mention.url, mention.id);
+		// Bolt: optimizing large list handling by pre-allocating maps only when necessary
+		Map<String, String> idsByUrl = null;
+		if (mentions.size() > 8) {
+			idsByUrl = new HashMap<>();
+			for (Mention mention : mentions) {
+				if (mention.id != null) {
+					idsByUrl.put(mention.url, mention.id);
+				}
 			}
 		}
-		// Hashtags in remote posts have remote URLs, these have local URLs so they don't match.
-//		Map<String, String> tagsByUrl=tags.stream().collect(Collectors.toMap(t->t.url, t->t.name));
-		Map<String, Hashtag> tagsByTag = new HashMap<>();
-		for (Hashtag tag : tags) {
-			String lowerName = tag.name.toLowerCase();
-			if (!tagsByTag.containsKey(lowerName)) {
-				tagsByTag.put(lowerName, tag);
+
+		Map<String, Hashtag> tagsByTag = null;
+		if (tags.size() > 8) {
+			tagsByTag = new HashMap<>();
+			for (Hashtag tag : tags) {
+				String lowerName = tag.name.toLowerCase();
+				if (!tagsByTag.containsKey(lowerName)) {
+					tagsByTag.put(lowerName, tag);
+				}
 			}
 		}
 
@@ -140,6 +145,10 @@ public class HtmlParser{
 
 		if(source.endsWith("\n"))
 			source=source.stripTrailing();
+
+		// capture potentially null maps for use in inner class
+		final Map<String, String> finalIdsByUrl = idsByUrl;
+		final Map<String, Hashtag> finalTagsByTag = tagsByTag;
 
 		Jsoup.parseBodyFragment(source).body().traverse(new NodeVisitor(){
 			private final ArrayList<SpanInfo> openSpans=new ArrayList<>();
@@ -163,10 +172,32 @@ public class HtmlParser{
 								// TECHIDON: we have slightly refactored this so that the hashtags properly work in akkoma
 								// TODO: upstream this
 								linkType=LinkSpan.Type.HASHTAG;
-								href=text.substring(1);
-								linkObject=tagsByTag.get(text.substring(1).toLowerCase());
+								// Bolt: Optimized to avoid allocating HashMap and lowercased Strings for hashtags.
+								String tagName = text.substring(1);
+								href = tagName;
+								if (finalTagsByTag != null) {
+									linkObject = finalTagsByTag.get(tagName.toLowerCase());
+								} else {
+									for (Hashtag tag : tags) {
+										if (tag.name.equalsIgnoreCase(tagName)) {
+											linkObject = tag;
+											break;
+										}
+									}
+								}
 							}else if(el.hasClass("mention")){
-								String id=idsByUrl.get(href);
+								// Bolt: Optimized to avoid allocating HashMap for mentions.
+								String id=null;
+								if (finalIdsByUrl != null) {
+									id = finalIdsByUrl.get(href);
+								} else {
+									for (Mention mention : mentions) {
+										if (mention.id != null && mention.url.equals(href)) {
+											id = mention.id;
+											break;
+										}
+									}
+								}
 								if(id!=null){
 									linkType=LinkSpan.Type.MENTION;
 									href=id;
@@ -250,11 +281,16 @@ public class HtmlParser{
 	}
 
 	public static void parseCustomEmoji(SpannableStringBuilder ssb, List<Emoji> emojis){
-		if(emojis==null) return;
-		Map<String, Emoji> emojiByCode = new HashMap<>(emojis.size());
-		for (Emoji e : emojis) {
-			if (!emojiByCode.containsKey(e.shortcode)) {
-				emojiByCode.put(e.shortcode, e);
+		if(emojis==null || emojis.isEmpty()) return;
+
+		// Bolt: optimizing large list handling by pre-allocating maps only when necessary
+		Map<String, Emoji> emojiByCode = null;
+		if (emojis.size() > 8) {
+			emojiByCode = new HashMap<>(emojis.size());
+			for (Emoji e : emojis) {
+				if (!emojiByCode.containsKey(e.shortcode)) {
+					emojiByCode.put(e.shortcode, e);
+				}
 			}
 		}
 
@@ -262,7 +298,20 @@ public class HtmlParser{
 		int spanCount=0;
 		CustomEmojiSpan lastSpan=null;
 		while(matcher.find()){
-			Emoji emoji=emojiByCode.get(matcher.group(1));
+			String shortcode = matcher.group(1);
+			Emoji emoji = null;
+			if (emojiByCode != null) {
+				emoji = emojiByCode.get(shortcode);
+			} else {
+				for (int i = 0; i < emojis.size(); i++) {
+					Emoji e = emojis.get(i);
+					if (e.shortcode.equals(shortcode)) {
+						emoji = e;
+						break;
+					}
+				}
+			}
+
 			if(emoji==null)
 				continue;
 			ssb.setSpan(lastSpan=new CustomEmojiSpan(emoji), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
