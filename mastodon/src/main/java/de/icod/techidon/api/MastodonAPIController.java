@@ -284,7 +284,9 @@ public class MastodonAPIController{
 						key.equalsIgnoreCase("otp_token") ||
 						key.equalsIgnoreCase("encrypted_message") ||
 						key.equalsIgnoreCase("private_key") ||
-						key.equalsIgnoreCase("auth_key")) {
+						key.equalsIgnoreCase("auth_key") ||
+						key.equalsIgnoreCase("unified_push_token") ||
+						key.equalsIgnoreCase("instance")) {
 					newObject.addProperty(key, "[REDACTED]");
 				} else {
 					newObject.add(key, redactSensitiveData(entry.getValue()));

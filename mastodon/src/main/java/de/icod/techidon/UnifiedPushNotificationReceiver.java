@@ -36,7 +36,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	public void onNewEndpoint(@NotNull Context context, @NotNull PushEndpoint endpoint, @NotNull String instance) {
 		// Called when a new endpoint be used for sending push messages
 		if(BuildConfig.DEBUG)
-			Log.d(TAG, "onNewEndpoint: New Endpoint [REDACTED] for "+ instance);
+			Log.d(TAG, "onNewEndpoint: New Endpoint [REDACTED]");
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 		if (account != null) {
 			PublicKeySet ks = endpoint.getPubKeySet();
@@ -53,7 +53,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	public void onRegistrationFailed(@NotNull Context context, @NotNull FailedReason reason, @NotNull String instance) {
 		// called when the registration is not possible, eg. no network
 		if(BuildConfig.DEBUG)
-			Log.d(TAG, "onRegistrationFailed: " + instance);
+			Log.d(TAG, "onRegistrationFailed");
 		//re-register for gcm
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 		if (account != null)
@@ -64,7 +64,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	public void onUnregistered(@NotNull Context context, @NotNull String instance) {
 		// called when this application is unregistered from receiving push messages
 		if(BuildConfig.DEBUG)
-			Log.d(TAG, "onUnregistered: " + instance);
+			Log.d(TAG, "onUnregistered");
 		//re-register for gcm
 		AccountSession account = AccountSessionManager.getInstance().tryGetAccountByUnifiedPushToken(instance);
 		if (account != null)
@@ -74,7 +74,7 @@ public class UnifiedPushNotificationReceiver extends MessagingReceiver{
 	@Override
 	public void onMessage(@NotNull Context context, @NotNull PushMessage message, @NotNull String instance) {
 		if(BuildConfig.DEBUG)
-			Log.d(TAG, "New message for " + instance);
+			Log.d(TAG, "New message received");
 
 		// 🛡️ Sentinel: Basic check to ensure a distributor is actually registered
 		if (UnifiedPush.getAckDistributor(context).isEmpty()) {
