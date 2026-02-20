@@ -120,6 +120,9 @@ public class AccountSessionManager{
 		Context context = MastodonApp.context;
 		instances.put(instance.uri, instance);
 		AccountSession session=new AccountSession(token, self, app, instance.uri, activationInfo==null, activationInfo);
+		// 🛡️ Sentinel: Initialize secure UnifiedPush token immediately to prevent predictable token usage
+		session.unifiedPushToken = java.util.UUID.randomUUID().toString();
+
 		sessions.put(session.getID(), session);
 		lastActiveAccountID=session.getID();
 		writeAccountsFile();
