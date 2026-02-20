@@ -24,3 +24,7 @@
 ## 2025-10-27 - Semantic Accessibility for Custom Poll Options
 **Learning:** Custom interactive list items (like poll options built with `FrameLayout`) often lack semantic roles (CheckBox/RadioButton) and state (Checked/Selected), making them confusing for screen reader users. Using `AccessibilityDelegate` to set the `className` effectively communicates these roles without needing custom strings or changing the UI.
 **Action:** Always implement an `AccessibilityDelegate` for custom list items to expose the correct role (e.g., `android.widget.CheckBox`) and state (`isChecked`) to accessibility services.
+
+## 2024-05-28 - Discoverability of Long Press Actions
+**Learning:** Hidden long-press features (like "Copy link") on common buttons (Share) are completely invisible to screen reader users unless explicitly exposed as custom accessibility actions.
+**Action:** Use `ViewCompat.replaceAccessibilityAction` to add descriptive labels (e.g., "Copy link to post") for `ACTION_LONG_CLICK` on buttons that have long-press listeners.

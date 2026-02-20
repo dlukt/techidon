@@ -26,6 +26,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+
 import de.icod.techidon.GlobalUserPreferences;
 import de.icod.techidon.R;
 import de.icod.techidon.api.session.AccountSession;
@@ -499,6 +502,9 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			view.setContentDescription(desc);
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				view.setTooltipText(item.parentFragment.getString(descriptionForId(view.getId(), item.status)));
+			}
+			if (view.getId() == R.id.share_btn) {
+				ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, item.parentFragment.getString(R.string.sk_copy_link_to_post), null);
 			}
 		}
 
