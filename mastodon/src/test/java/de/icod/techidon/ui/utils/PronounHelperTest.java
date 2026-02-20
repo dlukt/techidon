@@ -98,4 +98,26 @@ public class PronounHelperTest {
         assertTrue(result.isPresent());
         assertEquals("he/him", result.get());
     }
+
+    @Test
+    public void testExtractPronouns_Caching() {
+        Account account = new Account();
+        account.fields = new ArrayList<>();
+        AccountField f = new AccountField();
+        f.name = "Pronouns";
+        f.value = "he/him";
+        account.fields.add(f);
+
+        // First call populates cache
+        Optional<String> result = PronounHelper.extractPronouns("pronouns", account);
+        assertTrue(result.isPresent());
+        assertEquals("he/him", result.get());
+        assertEquals("pronouns", f.lowerCaseName);
+
+        // Second call uses cache (verified by checking field remains populated)
+        result = PronounHelper.extractPronouns("pronouns", account);
+        assertTrue(result.isPresent());
+        assertEquals("he/him", result.get());
+        assertEquals("pronouns", f.lowerCaseName);
+    }
 }

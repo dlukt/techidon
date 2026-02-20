@@ -33,6 +33,12 @@ public class AccountField extends BaseModel{
 	public transient CustomEmojiSpan[] valueEmojis, nameEmojis;
 	public transient ArrayList<UrlImageLoaderRequest> emojiRequests;
 
+	/**
+	 * Cache for the lowercased version of the name field.
+	 * This avoids repeated string allocations and toLowerCase() calls in hot paths like PronounHelper.
+	 */
+	public transient String lowerCaseName;
+
 	@Override
 	public String toString(){
 		return "AccountField{"+
