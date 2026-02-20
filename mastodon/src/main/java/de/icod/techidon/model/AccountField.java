@@ -37,7 +37,7 @@ public class AccountField extends BaseModel{
 	 * Cache for the lowercased version of the name field.
 	 * This avoids repeated string allocations and toLowerCase() calls in hot paths like PronounHelper.
 	 */
-	public transient String lowerCaseName;
+	public transient String lowerCasedName;
 
 	@Override
 	public String toString(){
