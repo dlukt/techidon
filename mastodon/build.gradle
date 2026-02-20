@@ -2,6 +2,11 @@ plugins {
 	id 'com.android.application'
 }
 
+def explicitVersionCode = project.findProperty("VERSION_CODE") ?: System.getenv("VERSION_CODE")
+def autoVersionCode = explicitVersionCode != null
+	? Integer.parseInt(explicitVersionCode.toString())
+	: (int) ((System.currentTimeMillis() / 1000L) - 1704067200L) // Seconds since 2024-01-01 UTC
+
 configurations.configureEach {
 	exclude group: 'androidx.collection', module: 'collection'
 	exclude group: 'androidx.concurrent', module: 'concurrent-futures'
@@ -26,8 +31,8 @@ android {
 		applicationId = "de.icod.techidon"
 		minSdk = 23
 		targetSdk = 35
-		versionCode = 10100
-		versionName = "1.1.0"
+		versionCode = autoVersionCode
+		versionName = "1.2.0"
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		resourceConfigurations += ['ar-rSA', 'ar-rDZ', 'be-rBY', 'bn-rBD', 'bs-rBA', 'ca-rES', 'cs-rCZ', 'da-rDK', 'de-rDE', 'el-rGR', 'es-rES', 'eu-rES', 'fa-rIR', 'fi-rFI', 'fil-rPH', 'fr-rFR', 'ga-rIE', 'gd-rGB', 'gl-rES', 'hi-rIN', 'hr-rHR', 'hu-rHU', 'hy-rAM', 'ig-rNG', 'in-rID', 'is-rIS', 'it-rIT', 'iw-rIL', 'ja-rJP', 'kab', 'ko-rKR', 'my-rMM', 'nl-rNL', 'no-rNO', 'oc-rFR', 'pl-rPL', 'pt-rBR', 'pt-rPT', 'ro-rRO', 'ru-rRU', 'si-rLK', 'sl-rSI', 'sv-rSE', 'th-rTH', 'tr-rTR', 'uk-rUA', 'ur-rIN', 'vi-rVN', 'zh-rCN', 'zh-rTW']
 	}
