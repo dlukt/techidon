@@ -30,7 +30,12 @@ public class PronounHelper {
         int bestScore = Integer.MAX_VALUE;
 
         for (AccountField f : account.fields) {
-            String t = f.name.toLowerCase();
+            // Optimization: Cache lowercased name to avoid repeated allocations in this hot path
+            String t = f.lowerCaseName;
+            if (t == null) {
+                t = f.name.toLowerCase();
+                f.lowerCaseName = t;
+            }
             int localizedIndex = t.indexOf(localizedPronouns);
             int englishIndex = t.indexOf("pronouns");
 
