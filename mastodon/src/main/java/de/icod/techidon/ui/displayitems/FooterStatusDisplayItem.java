@@ -517,6 +517,10 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 				} else {
 					ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
 				}
+					ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, item.parentFragment.getString(R.string.sk_reply_as), null);
+				} else {
+					ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
+				}
 			} else if (view.getId() == R.id.favorite_btn) {
 				view.setLongClickable(multipleAccounts);
 				if (multipleAccounts) {
@@ -528,6 +532,8 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 				view.setLongClickable(multipleAccounts);
 				if (multipleAccounts) {
 					ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, item.parentFragment.getString(R.string.sk_bookmark_as), null);
+				} else {
+					ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
 				} else {
 					ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
 				} else {
