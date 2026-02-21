@@ -37,7 +37,7 @@ public class LinkCardStatusDisplayItem extends StatusDisplayItem{
 		super(parentID, parentFragment);
 		this.status=status;
 		// Bolt: Parse domain once in constructor to avoid repeated allocation in onBind
-		this.domain=Uri.parse(status.card.url).getHost();
+		this.domain=Optional.ofNullable(Uri.parse(status.card.url).getHost()).orElse("");
 		if(status.card.image!=null && showImagePreview)
 			imgRequest=new UrlImageLoaderRequest(status.card.image, 1000, 1000);
 		else
