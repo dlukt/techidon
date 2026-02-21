@@ -19,6 +19,7 @@ import de.icod.techidon.ui.OutlineProviders;
 import de.icod.techidon.ui.drawables.BlurhashCrossfadeDrawable;
 import de.icod.techidon.ui.text.HtmlParser;
 import de.icod.techidon.ui.utils.UiUtils;
+import de.icod.techidon.utils.SecurityUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -35,7 +36,8 @@ public class LinkCardStatusDisplayItem extends StatusDisplayItem{
 	public LinkCardStatusDisplayItem(String parentID, BaseStatusListFragment parentFragment, Status status, boolean showImagePreview){
 		super(parentID, parentFragment);
 		this.status=status;
-		if(status.card.image!=null && showImagePreview)
+		// 🛡️ Sentinel: Prevent arbitrary URL loading (e.g. file://) by checking against whitelist
+		if(status.card.image!=null && showImagePreview && !SecurityUtils.isUnsafeUrl(status.card.image))
 			imgRequest=new UrlImageLoaderRequest(status.card.image, 1000, 1000);
 		else
 			imgRequest=null;

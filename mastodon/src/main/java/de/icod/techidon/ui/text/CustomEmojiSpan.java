@@ -8,6 +8,7 @@ import android.text.style.ReplacementSpan;
 
 import de.icod.techidon.GlobalUserPreferences;
 import de.icod.techidon.model.Emoji;
+import de.icod.techidon.utils.SecurityUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,6 +59,9 @@ public class CustomEmojiSpan extends ReplacementSpan{
 	}
 
 	public UrlImageLoaderRequest createImageLoaderRequest(){
-		return new UrlImageLoaderRequest(GlobalUserPreferences.playGifs ? emoji.url : emoji.staticUrl, 0, V.dp(20));
+		String url = GlobalUserPreferences.playGifs ? emoji.url : emoji.staticUrl;
+		// 🛡️ Sentinel: Prevent arbitrary URL loading (e.g. file://) by checking against whitelist
+		if (SecurityUtils.isUnsafeUrl(url)) return null;
+		return new UrlImageLoaderRequest(url, 0, V.dp(20));
 	}
 }

@@ -38,6 +38,7 @@ import de.icod.techidon.ui.utils.UiUtils;
 import de.icod.techidon.ui.views.FrameLayoutThatOnlyMeasuresFirstChild;
 import de.icod.techidon.ui.views.MaxWidthFrameLayout;
 import de.icod.techidon.ui.views.MediaGridLayout;
+import de.icod.techidon.utils.SecurityUtils;
 import de.icod.techidon.utils.TypedObjectPool;
 
 import java.util.ArrayList;
@@ -71,11 +72,17 @@ public class MediaGridStatusDisplayItem extends StatusDisplayItem{
 		this.attachments=attachments;
 		this.status=status;
 		for(Attachment att:attachments){
-			requests.add(new UrlImageLoaderRequest(switch(att.type){
+			String url = switch(att.type){
 				case IMAGE -> att.url;
 				case VIDEO, GIFV -> att.previewUrl == null ? att.url : att.previewUrl;
 				default -> throw new IllegalStateException("Unexpected value: "+att.url);
-			}, 1000, 1000));
+			};
+			// 🛡️ Sentinel: Prevent arbitrary URL loading (e.g. file://) by checking against whitelist
+			if (SecurityUtils.isUnsafeUrl(url)) {
+				requests.add(null);
+			} else {
+				requests.add(new UrlImageLoaderRequest(url, 1000, 1000));
+			}
 		}
 	}
 

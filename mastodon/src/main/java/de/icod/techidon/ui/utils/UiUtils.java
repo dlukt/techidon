@@ -444,6 +444,9 @@ public class UiUtils {
 			list.add(span);
 		}
 		for (Map.Entry<Emoji, List<CustomEmojiSpan>> emoji : spansByEmoji.entrySet()) {
+			// 🛡️ Sentinel: Prevent arbitrary URL loading (e.g. file://) by checking against whitelist
+			if (SecurityUtils.isUnsafeUrl(emoji.getKey().url)) continue;
+
 			ViewImageLoader.load(new ViewImageLoader.Target() {
 				@Override
 				public void setImageDrawable(Drawable d) {
