@@ -31,10 +31,13 @@ import me.grishka.appkit.imageloader.requests.UrlImageLoaderRequest;
 
 public class LinkCardStatusDisplayItem extends StatusDisplayItem{
 	private final UrlImageLoaderRequest imgRequest;
+	public final String domain;
 
 	public LinkCardStatusDisplayItem(String parentID, BaseStatusListFragment parentFragment, Status status, boolean showImagePreview){
 		super(parentID, parentFragment);
 		this.status=status;
+		// Bolt: Parse domain once in constructor to avoid repeated allocation in onBind
+		this.domain=Optional.ofNullable(Uri.parse(status.card.url).getHost()).orElse("");
 		if(status.card.image!=null && showImagePreview)
 			imgRequest=new UrlImageLoaderRequest(status.card.image, 1000, 1000);
 		else
@@ -87,11 +90,10 @@ public class LinkCardStatusDisplayItem extends StatusDisplayItem{
 				description.setText(card.description);
 				description.setVisibility(TextUtils.isEmpty(card.description) ? View.GONE : View.VISIBLE);
 			}
-			String cardDomain=Uri.parse(card.url).getHost();
 			if(isLarge && !TextUtils.isEmpty(card.authorName)){
-				domain.setText(itemView.getContext().getString(R.string.article_by_author, card.authorName)+" · "+cardDomain);
+				domain.setText(itemView.getContext().getString(R.string.article_by_author, card.authorName)+" · "+item.domain);
 			}else{
-				domain.setText(cardDomain);
+				domain.setText(item.domain);
 			}
 			if(card.publishedAt!=null){
 				timestamp.setVisibility(View.VISIBLE);
