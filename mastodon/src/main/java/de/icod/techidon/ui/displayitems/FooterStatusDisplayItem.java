@@ -537,6 +537,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 				view.setLongClickable(true);
 				ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, item.parentFragment.getString(R.string.more_options), null);
 			} else if (view.getId() == R.id.share_btn) {
+				view.setLongClickable(true);
 				ViewCompat.replaceAccessibilityAction(view, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, item.parentFragment.getString(R.string.sk_copy_link_to_post), null);
 			}
 		}
