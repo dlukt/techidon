@@ -444,6 +444,10 @@ public class UiUtils {
 			list.add(span);
 		}
 		for (Map.Entry<Emoji, List<CustomEmojiSpan>> emoji : spansByEmoji.entrySet()) {
+			if (SecurityUtils.isUnsafeUrl(emoji.getKey().url)) {
+				Log.w("UiUtils", "Blocked unsafe custom emoji URL: " + emoji.getKey().url);
+				continue;
+			}
 			ViewImageLoader.load(new ViewImageLoader.Target() {
 				@Override
 				public void setImageDrawable(Drawable d) {
