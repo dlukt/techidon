@@ -139,6 +139,7 @@ public class TextStatusDisplayItem extends StatusDisplayItem{
 				readMore.setVisibility(View.GONE);
 			}
 
+			// Bolt: Cache text expandable calculation to avoid expensive measure() on every bind
 			if (GlobalUserPreferences.collapseLongPosts && !item.status.textExpandableCalculated) {
 				// incredibly ugly workaround for https://github.com/sk22/megalodon/issues/520
 				// i am so, so sorry. FIXME
