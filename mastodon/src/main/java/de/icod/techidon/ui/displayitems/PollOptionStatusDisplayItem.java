@@ -104,7 +104,7 @@ public class PollOptionStatusDisplayItem extends StatusDisplayItem{
 				@Override
 				public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
 					super.onInitializeAccessibilityNodeInfo(host, info);
-					if (item != null && item.poll != null) {
+					if (item != null && item.poll != null && !item.showResults) {
 						info.setCheckable(true);
 						info.setChecked(host.isSelected());
 						info.setClassName(item.poll.multiple ? "android.widget.CheckBox" : "android.widget.RadioButton");
