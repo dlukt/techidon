@@ -139,7 +139,8 @@ public class TextStatusDisplayItem extends StatusDisplayItem{
 				readMore.setVisibility(View.GONE);
 			}
 
-			if (GlobalUserPreferences.collapseLongPosts && !item.status.textExpandable) {
+			// Bolt: Cache text expandable calculation to avoid expensive measure() on every bind
+			if (GlobalUserPreferences.collapseLongPosts && !item.status.textExpandableCalculated) {
 				// incredibly ugly workaround for https://github.com/sk22/megalodon/issues/520
 				// i am so, so sorry. FIXME
 				// attempts to use OnPreDrawListener, OnGlobalLayoutListener and .post have failed -
@@ -157,6 +158,7 @@ public class TextStatusDisplayItem extends StatusDisplayItem{
 
 				boolean tooBig = text.getMeasuredHeight() > textMaxHeight;
 				boolean expandable = tooBig && !item.status.hasSpoiler();
+				item.status.textExpandableCalculated = true;
 				item.parentFragment.onEnableExpandable(Holder.this, expandable, item.isForQuote);
 			}
 

@@ -565,6 +565,14 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
 		updateToolbar();
+		for(StatusDisplayItem item : displayItems){
+			if(item.status!=null){
+				item.status.textExpandableCalculated=false;
+			}
+		}
+		if(adapter!=null){
+			adapter.notifyDataSetChanged();
+		}
 	}
 
 	private void updateToolbar(){
