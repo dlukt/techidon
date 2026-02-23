@@ -29,7 +29,11 @@ public class RedactSensitiveDataTest {
             "otp_token",
             "encrypted_message",
             "private_key",
-            "auth_key"
+            "auth_key",
+            "unified_push_token",
+            "instance",
+            "endpoint",
+            "auth"
         };
 
         for (String key : sensitiveKeys) {
