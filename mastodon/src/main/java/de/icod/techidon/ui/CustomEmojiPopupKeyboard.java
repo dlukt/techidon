@@ -381,7 +381,10 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 
 		@Override
 		public void onBind(Emoji item){
-
+			itemView.setContentDescription(item.shortcode);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				itemView.setTooltipText(item.shortcode);
+			}
 		}
 
 		@Override
