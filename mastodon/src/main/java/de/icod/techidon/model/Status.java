@@ -245,16 +245,19 @@ public class Status extends BaseModel implements DisplayItemsParent, Searchable{
 		);
 
 		try {
-			Pair<String, List<String>> decoded=BOTTOM_TEXT_PATTERN.matcher(getStrippedText()).find()
-					? new StatusTextEncoder(Bottom::decode).decode(getStrippedText(), BOTTOM_TEXT_PATTERN)
-					: null;
-			String bottomText=decoded==null || isAllBlank(decoded.second) ? null : decoded.first;
-			if(bottomText!=null){
-				translation=new Translation();
-				translation.content=bottomText;
-				translation.detectedSourceLanguage="\uD83E\uDD7A\uD83D\uDC49\uD83D\uDC48";
-				translation.provider="bottom-java";
-				return true;
+			// Bolt: Optimization - avoid expensive regex if the required suffix "👉👈" isn't present
+			if (getStrippedText().contains("\uD83D\uDC49\uD83D\uDC48")) {
+				Pair<String, List<String>> decoded=BOTTOM_TEXT_PATTERN.matcher(getStrippedText()).find()
+						? new StatusTextEncoder(Bottom::decode).decode(getStrippedText(), BOTTOM_TEXT_PATTERN)
+						: null;
+				String bottomText=decoded==null || isAllBlank(decoded.second) ? null : decoded.first;
+				if(bottomText!=null){
+					translation=new Translation();
+					translation.content=bottomText;
+					translation.detectedSourceLanguage="\uD83E\uDD7A\uD83D\uDC49\uD83D\uDC48";
+					translation.provider="bottom-java";
+					return true;
+				}
 			}
 		} catch (TranslationError ignored) {}
 
