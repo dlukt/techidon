@@ -28,3 +28,7 @@
 ## 2024-05-28 - Discoverability of Long Press Actions
 **Learning:** Hidden long-press features (like "Copy link") on common buttons (Share) are completely invisible to screen reader users unless explicitly exposed as custom accessibility actions.
 **Action:** Use `ViewCompat.replaceAccessibilityAction` to add descriptive labels (e.g., "Copy link to post") for `ACTION_LONG_CLICK` on buttons that have long-press listeners.
+
+## 2025-05-23 - Accessibility of Dynamic Content in ViewHolders
+**Learning:** `RecyclerView.ViewHolder`s that dynamically generate content (like `EmojiViewHolder`) often miss standard accessibility attributes (contentDescription, tooltipText) that are present in static XML definitions or specialized view classes.
+**Action:** When implementing or modifying `onBind` in `RecyclerView.Adapter`, always check if the bound item (like an Emoji) provides a meaningful text representation for `contentDescription` and `tooltipText`.
