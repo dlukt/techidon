@@ -215,17 +215,11 @@ public abstract class StatusDisplayItem{
 						fragment instanceof HashtagTimelineFragment ||
 						fragment instanceof ListTimelineFragment
 				) && fragment.getParentFragment() instanceof HomeTabFragment home){
-					// Bolt: Replaced stream with loop to reduce allocation
-					Collection<Hashtag> followedHashtags = home.getHashtags();
+					// Bolt: Optimized hashtag lookup to O(N) using name index instead of O(N*M)
 					Hashtag foundHashtag = null;
-					search:
-					for(Hashtag followed : followedHashtags) {
-						for(Hashtag tag : status.tags) {
-							if(followed.name.equalsIgnoreCase(tag.name)) {
-								foundHashtag = followed;
-								break search;
-							}
-						}
+					for (Hashtag tag : status.tags) {
+						foundHashtag = home.getFollowedHashtag(tag.name);
+						if (foundHashtag != null) break;
 					}
 					// post contains a hashtag the user is following
 					if (foundHashtag != null) {
