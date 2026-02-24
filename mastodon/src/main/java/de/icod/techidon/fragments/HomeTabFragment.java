@@ -99,6 +99,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	private PopupMenu switcherPopup;
 	private final Map<Integer, FollowList> listItems = new HashMap<>();
 	private final Map<Integer, Hashtag> hashtagsItems = new HashMap<>();
+	private final Map<String, Hashtag> hashtagsByName = new HashMap<>();
 	private List<TimelineDefinition> timelinesList;
 	private int count;
 	private Fragment[] fragments;
@@ -291,6 +292,10 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 			@Override
 			public void onSuccess(HeaderPaginationList<Hashtag> hashtags) {
 				updateList(hashtags, hashtagsItems);
+				hashtagsByName.clear();
+				for (Hashtag h : hashtags) {
+					hashtagsByName.put(h.name.toLowerCase(), h);
+				}
 			}
 
 			@Override
@@ -704,6 +709,14 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 			hashtag.following = true;
 			return hashtag;
 		});
+		if (event.following) {
+			Hashtag h = new Hashtag();
+			h.name = event.name;
+			h.following = true;
+			hashtagsByName.put(event.name.toLowerCase(), h);
+		} else {
+			hashtagsByName.remove(event.name.toLowerCase());
+		}
 	}
 
 	@Subscribe
@@ -742,6 +755,11 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 
 	public Collection<Hashtag> getHashtags() {
 		return hashtagsItems.values();
+	}
+
+	public Hashtag getFollowedHashtag(String name) {
+		if (name == null) return null;
+		return hashtagsByName.get(name.toLowerCase());
 	}
 
 	public Fragment getCurrentFragment() {
