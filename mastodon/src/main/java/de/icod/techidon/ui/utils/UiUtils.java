@@ -401,7 +401,7 @@ public class UiUtils {
 				cursor.moveToFirst();
 				String name = cursor.getString(0);
 				if (name != null)
-					return name;
+					return SecurityUtils.sanitizeFileName(name);
 			} catch (Throwable ignore) {
 			}
 		}

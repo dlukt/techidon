@@ -79,4 +79,30 @@ public class SecurityUtils {
 		}
 		return false;
 	}
+
+	/**
+	 * Sanitizes a file name to prevent path traversal and ensure a safe basename.
+	 *
+	 * @param displayName The display name (potentially containing path info).
+	 * @return A sanitized basename safe for use, or "file" if the name is invalid.
+	 */
+	public static String sanitizeFileName(String displayName) {
+		if (displayName == null) return null;
+
+		// 1. Get the last part of the path (handle both / and \)
+		int lastSlash = Math.max(displayName.lastIndexOf('/'), displayName.lastIndexOf('\\'));
+		if (lastSlash >= 0) {
+			displayName = displayName.substring(lastSlash + 1);
+		}
+
+		// 2. Trim whitespace
+		displayName = displayName.trim();
+
+		// 3. Check for reserved names or traversal attempts
+		if (displayName.isEmpty() || displayName.equals(".") || displayName.equals("..")) {
+			return "file";
+		}
+
+		return displayName;
+	}
 }
