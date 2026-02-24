@@ -99,4 +99,40 @@ public class SecurityUtilsTest {
        // This is safer default behavior.
        assertTrue("relative URL should be unsafe (no scheme)", SecurityUtils.isUnsafeUrl("/relative/path"));
     }
+
+    @Test
+    public void testSanitizeFileName() {
+        // Null
+        assertNull(SecurityUtils.sanitizeFileName(null));
+
+        // Simple valid names
+        assertEquals("simple.jpg", SecurityUtils.sanitizeFileName("simple.jpg"));
+        assertEquals("file.txt", SecurityUtils.sanitizeFileName("file.txt"));
+        assertEquals("my_photo_2023.png", SecurityUtils.sanitizeFileName("my_photo_2023.png"));
+
+        // Paths (Unix)
+        assertEquals("file.png", SecurityUtils.sanitizeFileName("path/to/file.png"));
+        assertEquals("file", SecurityUtils.sanitizeFileName("/absolute/path/to/file"));
+
+        // Paths (Windows)
+        assertEquals("calc.exe", SecurityUtils.sanitizeFileName("C:\\Windows\\system32\\calc.exe"));
+        assertEquals("file.txt", SecurityUtils.sanitizeFileName("foo\\bar\\file.txt"));
+
+        // Mixed separators
+        assertEquals("file.txt", SecurityUtils.sanitizeFileName("foo/bar\\file.txt"));
+
+        // Traversal attempts
+        assertEquals("passwd", SecurityUtils.sanitizeFileName("../../etc/passwd"));
+        assertEquals("boot.ini", SecurityUtils.sanitizeFileName("..\\..\\Windows\\boot.ini"));
+
+        // Edge cases
+        assertEquals("file", SecurityUtils.sanitizeFileName(".."));
+        assertEquals("file", SecurityUtils.sanitizeFileName("."));
+        assertEquals("file", SecurityUtils.sanitizeFileName(""));
+        assertEquals("file", SecurityUtils.sanitizeFileName("   ")); // Whitespace only -> empty after trim -> file
+
+        // Whitespace trimming
+        assertEquals("spaced.txt", SecurityUtils.sanitizeFileName("  spaced.txt  "));
+        assertEquals("file.txt", SecurityUtils.sanitizeFileName("path/to/  file.txt  "));
+    }
 }
