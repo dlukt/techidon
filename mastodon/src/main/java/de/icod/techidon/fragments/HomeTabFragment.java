@@ -292,6 +292,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 			@Override
 			public void onSuccess(HeaderPaginationList<Hashtag> hashtags) {
 				updateList(hashtags, hashtagsItems);
+				hashtagsByName.clear();
 				for (Hashtag h : hashtags) {
 					hashtagsByName.put(h.name.toLowerCase(), h);
 				}

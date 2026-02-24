@@ -216,18 +216,20 @@ public abstract class StatusDisplayItem{
 						fragment instanceof ListTimelineFragment
 				) && fragment.getParentFragment() instanceof HomeTabFragment home){
 					// Bolt: Optimized hashtag lookup to O(N) using name index instead of O(N*M)
-					Hashtag foundHashtag = null;
+					Hashtag matchingTag = null;
 					for (Hashtag tag : status.tags) {
-						foundHashtag = home.getFollowedHashtag(tag.name);
-						if (foundHashtag != null) break;
+						if (home.getFollowedHashtag(tag.name) != null) {
+							matchingTag = tag;
+							break;
+						}
 					}
 					// post contains a hashtag the user is following
-					if (foundHashtag != null) {
-						Hashtag finalFoundHashtag = foundHashtag;
+					if (matchingTag != null) {
+						Hashtag finalTag = matchingTag;
 						items.add(new ReblogOrReplyLineStatusDisplayItem(
-								parentID, fragment, finalFoundHashtag.name, List.of(),
+								parentID, fragment, finalTag.name, List.of(),
 								R.drawable.ic_fluent_number_symbol_20sp_filled, null,
-								i -> UiUtils.openHashtagTimeline(fragment.getActivity(), accountID, finalFoundHashtag),
+								i -> UiUtils.openHashtagTimeline(fragment.getActivity(), accountID, finalTag),
 								status
 						));
 					}
