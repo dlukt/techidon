@@ -60,6 +60,7 @@ import de.icod.techidon.model.Attachment;
 import de.icod.techidon.model.Status;
 import de.icod.techidon.ui.M3AlertDialogBuilder;
 import de.icod.techidon.ui.utils.UiUtils;
+import de.icod.techidon.utils.SecurityUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -500,7 +501,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 			MastodonAPIController.runInBackground(()->{
 				File imageDir=new File(activity.getCacheDir(), ".");
 				File renamedFile;
-				file.renameTo(renamedFile=new File(imageDir, Uri.parse(att.url).getLastPathSegment()));
+				file.renameTo(renamedFile=new File(imageDir, getSanitizedFileName(Uri.parse(att.url))));
 				shareFile(renamedFile);
 			});
 		}catch(IOException x){
@@ -534,6 +535,14 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		}
 	}
 
+	private String getSanitizedFileName(Uri uri) {
+		String fileName = SecurityUtils.sanitizeFileName(uri.getLastPathSegment());
+		if (fileName == null || fileName.isEmpty()) {
+			return "file";
+		}
+		return fileName;
+	}
+
 	private String mimeTypeForFileName(String fileName){
 		int extOffset=fileName.lastIndexOf('.');
 		if(extOffset>0){
@@ -551,7 +560,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 	}
 
 	private OutputStream destinationStreamForFile(Attachment att) throws IOException{
-		String fileName=Uri.parse(att.url).getLastPathSegment();
+		String fileName=getSanitizedFileName(Uri.parse(att.url));
 		if(Build.VERSION.SDK_INT>=29){
 			ContentValues values=new ContentValues();
 //			values.put(MediaStore.Downloads.DOWNLOAD_URI, att.url);
@@ -585,7 +594,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 						buf.flush();
 						activity.runOnUiThread(()->Toast.makeText(activity, R.string.file_saved, Toast.LENGTH_SHORT).show());
 						if(Build.VERSION.SDK_INT<29){
-							String fileName=Uri.parse(att.url).getLastPathSegment();
+							String fileName=getSanitizedFileName(Uri.parse(att.url));
 							File dstFile=new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
 							MediaScannerConnection.scanFile(activity, new String[]{dstFile.getAbsolutePath()}, new String[]{mimeTypeForFileName(fileName)}, null);
 						}
@@ -608,7 +617,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		DownloadManager.Request req=new DownloadManager.Request(uri);
 		req.allowScanningByMediaScanner();
 		req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-		req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, uri.getLastPathSegment());
+		req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, getSanitizedFileName(uri));
 		activity.getSystemService(DownloadManager.class).enqueue(req);
 		Toast.makeText(activity, R.string.downloading, Toast.LENGTH_SHORT).show();
 	}
@@ -631,7 +640,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 
 				File imageDir = new File(activity.getCacheDir(), ".");
 				InputStream inputStream = response.body().byteStream();
-				File file = new File(imageDir, uri.getLastPathSegment());
+				File file = new File(imageDir, getSanitizedFileName(uri));
 				FileOutputStream outputStream = new FileOutputStream(file);
 
 				byte[] buffer = new byte[4096];
