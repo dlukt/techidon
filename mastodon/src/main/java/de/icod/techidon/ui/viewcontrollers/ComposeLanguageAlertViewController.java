@@ -28,11 +28,11 @@ import de.icod.techidon.utils.MastodonLanguage;
 import org.parceler.Parcel;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -63,10 +63,11 @@ public class ComposeLanguageAlertViewController{
 		this.context=context;
 		this.resolver=resolver;
 
-		allLocales=MastodonLanguage.allLanguages.stream()
-				.map(l -> new LocaleInfo(l, l.getDisplayName(context)))
-				.sorted(Comparator.comparing(a->a.displayName))
-				.collect(Collectors.toList());
+		allLocales = new ArrayList<>(MastodonLanguage.allLanguages.size());
+		for (MastodonLanguage l : MastodonLanguage.allLanguages) {
+			allLocales.add(new LocaleInfo(l, l.getDisplayName(context)));
+		}
+		Collections.sort(allLocales, (a, b) -> a.displayName.compareTo(b.displayName));
 
 		if(!TextUtils.isEmpty(preferred)){
 			MastodonLanguage lang=resolver.fromOrFallback(preferred);
@@ -96,12 +97,20 @@ public class ComposeLanguageAlertViewController{
 
 		AccountLocalPreferences lp=session==null ? null : session.getLocalPreferences();
 		if(lp!=null){
+			HashSet<String> presentTags = new HashSet<>();
+			for (SpecialLocaleInfo l : specialLocales) {
+				if (l.language != null && l.language.languageTag != null) {
+					presentTags.add(l.language.languageTag);
+				}
+			}
 			for(String tag : lp.recentLanguages){
-				if(specialLocales.stream().anyMatch(l->l.language!=null && l.language.languageTag!=null
-						&& l.language.languageTag.equals(tag))) continue;
-				resolver.from(tag).ifPresent(lang->specialLocales.add(new SpecialLocaleInfo(
-						lang, lang.getDisplayName(context), null
-				)));
+				if(presentTags.contains(tag)) continue;
+				resolver.from(tag).ifPresent(lang->{
+					specialLocales.add(new SpecialLocaleInfo(
+							lang, lang.getDisplayName(context), null
+					));
+					presentTags.add(lang.languageTag);
+				});
 			}
 			if(lp.bottomEncoding) {
 				specialLocales.add(new SpecialLocaleInfo(null, "\uD83E\uDD7A\uD83D\uDC49\uD83D\uDC48", "bottom"));
