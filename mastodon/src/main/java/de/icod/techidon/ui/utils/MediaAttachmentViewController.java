@@ -72,7 +72,11 @@ public class MediaAttachmentViewController{
 			noAltButton.setVisibility(showNoAlt ? View.VISIBLE : View.GONE);
 			if(showAlt || showNoAlt){
 				btnsWrap.setVisibility(View.VISIBLE);
-				btnsWrap.setContentDescription(context.getString(showAlt ? R.string.alt_text : R.string.media_no_description));
+				String desc = context.getString(showAlt ? R.string.alt_text : R.string.media_no_description);
+				btnsWrap.setContentDescription(desc);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					btnsWrap.setTooltipText(desc);
+				}
 			}else{
 				btnsWrap.setVisibility(View.GONE);
 			}
