@@ -98,8 +98,13 @@ public class SecurityUtils {
 		// 2. Trim whitespace
 		displayName = displayName.trim();
 
-		// 3. Check for reserved names or traversal attempts
-		if (displayName.isEmpty() || displayName.equals(".") || displayName.equals("..")) {
+		// 3. Check for reserved names, traversal attempts, or control characters
+		// Also block Windows reserved filenames (CON, PRN, AUX, NUL, COM1-9, LPT1-9)
+		if (displayName.isEmpty() ||
+				displayName.equals(".") ||
+				displayName.equals("..") ||
+				displayName.matches("(?i)^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\\..*)?$") ||
+				displayName.chars().anyMatch(c -> c < 32 || c == 127)) {
 			return "file";
 		}
 
