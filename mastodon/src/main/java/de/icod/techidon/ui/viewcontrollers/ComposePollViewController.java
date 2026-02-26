@@ -12,9 +12,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Checkable;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import de.icod.techidon.R;
 import de.icod.techidon.api.requests.statuses.CreateStatus;
@@ -69,6 +71,14 @@ public class ComposePollViewController{
 	private int maxPollOptions=4;
 	private int maxPollOptionLength=50;
 
+	private final View.AccessibilityDelegate buttonDelegate = new View.AccessibilityDelegate() {
+		@Override
+		public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+			super.onInitializeAccessibilityNodeInfo(host, info);
+			info.setClassName(Button.class.getName());
+		}
+	};
+
 	public ComposePollViewController(ComposeFragment fragment){
 		this.fragment=fragment;
 	}
@@ -108,6 +118,9 @@ public class ComposePollViewController{
 		pollStyleButton=pollWrap.findViewById(R.id.poll_style);
 		pollStyleValue=pollWrap.findViewById(R.id.poll_style_value);
 		pollStyleButton.setOnClickListener(v->showPollStyleAlert());
+
+		pollDurationButton.setAccessibilityDelegate(buttonDelegate);
+		pollStyleButton.setAccessibilityDelegate(buttonDelegate);
 
 		if(!fragment.getWasDetached() && savedInstanceState!=null && savedInstanceState.containsKey("pollOptions")){ // Fragment was recreated without retaining instance
 			pollWrap.setVisibility(View.VISIBLE);

@@ -32,3 +32,7 @@
 ## 2025-05-23 - Accessibility of Dynamic Content in ViewHolders
 **Learning:** `RecyclerView.ViewHolder`s that dynamically generate content (like `EmojiViewHolder`) often miss standard accessibility attributes (contentDescription, tooltipText) that are present in static XML definitions or specialized view classes.
 **Action:** When implementing or modifying `onBind` in `RecyclerView.Adapter`, always check if the bound item (like an Emoji) provides a meaningful text representation for `contentDescription` and `tooltipText`.
+
+## 2024-05-29 - Semantic Role for Clickable Layouts
+**Learning:** Clickable `LinearLayout`s (like poll duration/style selectors) are often announced as generic groups by screen readers, hiding their interactive nature. Setting an `AccessibilityDelegate` to define the class name as `android.widget.Button` effectively communicates that the element is actionable.
+**Action:** Always verify that custom clickable containers expose a specific role (Button, Spinner, etc.) via `AccessibilityDelegate` or `ViewCompat` to ensure users know they can interact with them.
