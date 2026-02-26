@@ -108,6 +108,13 @@ public class AccountSessionManager{
 				domains.add(session.domain.toLowerCase());
 				sessions.put(session.getID(), session);
 			}
+			// 🛡️ Sentinel: Restore authentication state if present
+			authenticatingInstance = w.authenticatingInstance;
+			authenticatingApp = w.authenticatingApp;
+			authenticatingState = w.authenticatingState;
+			if (authenticatingInstance != null) {
+				try { authenticatingInstance.postprocess(); } catch(Exception ignored) {}
+			}
 		}catch(Exception x){
 			Log.e(TAG, "Error loading accounts", x);
 		}
@@ -125,6 +132,12 @@ public class AccountSessionManager{
 
 		sessions.put(session.getID(), session);
 		lastActiveAccountID=session.getID();
+
+		// 🛡️ Sentinel: Clear pending authentication state after successful login
+		authenticatingInstance = null;
+		authenticatingApp = null;
+		authenticatingState = null;
+
 		writeAccountsFile();
 
 		// write initial instance info to file immediately to avoid sessions without instance info
@@ -153,6 +166,11 @@ public class AccountSessionManager{
 			try(FileOutputStream out=new FileOutputStream(tmpFile)){
 				SessionsStorageWrapper w=new SessionsStorageWrapper();
 				w.accounts=new ArrayList<>(sessions.values());
+				// 🛡️ Sentinel: Persist authentication state to prevent loss on process death (security/usability fix)
+				w.authenticatingInstance=authenticatingInstance;
+				w.authenticatingApp=authenticatingApp;
+				w.authenticatingState=authenticatingState;
+
 				OutputStreamWriter writer=new OutputStreamWriter(out, StandardCharsets.UTF_8);
 				MastodonAPIController.gson.toJson(w, writer);
 				writer.flush();
@@ -275,6 +293,9 @@ public class AccountSessionManager{
 						byte[] randomBytes = new byte[16];
 						new SecureRandom().nextBytes(randomBytes);
 						authenticatingState = Base64.encodeToString(randomBytes, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
+
+						// 🛡️ Sentinel: Persist state immediately to handle process death during browser flow
+						MastodonAPIController.runInBackground(() -> writeAccountsFile());
 
 						Uri uri=new Uri.Builder()
 								.scheme("https")
@@ -525,6 +546,9 @@ public class AccountSessionManager{
 
 	private static class SessionsStorageWrapper{
 		public List<AccountSession> accounts;
+		public Instance authenticatingInstance;
+		public Application authenticatingApp;
+		public String authenticatingState;
 	}
 
 	private static class InstanceInfoStorageWrapper{
