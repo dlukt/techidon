@@ -71,6 +71,14 @@ public class ComposePollViewController{
 	private int maxPollOptions=4;
 	private int maxPollOptionLength=50;
 
+	private final View.AccessibilityDelegate buttonDelegate = new View.AccessibilityDelegate() {
+		@Override
+		public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+			super.onInitializeAccessibilityNodeInfo(host, info);
+			info.setClassName(Button.class.getName());
+		}
+	};
+
 	public ComposePollViewController(ComposeFragment fragment){
 		this.fragment=fragment;
 	}
@@ -111,17 +119,8 @@ public class ComposePollViewController{
 		pollStyleValue=pollWrap.findViewById(R.id.poll_style_value);
 		pollStyleButton.setOnClickListener(v->showPollStyleAlert());
 
-		View.AccessibilityDelegate buttonDelegate = new View.AccessibilityDelegate() {
-			@Override
-			public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
-				super.onInitializeAccessibilityNodeInfo(host, info);
-				info.setClassName(Button.class.getName());
-			}
-		};
 		pollDurationButton.setAccessibilityDelegate(buttonDelegate);
 		pollStyleButton.setAccessibilityDelegate(buttonDelegate);
-		pollDurationButton.setFocusable(true);
-		pollStyleButton.setFocusable(true);
 
 		if(!fragment.getWasDetached() && savedInstanceState!=null && savedInstanceState.containsKey("pollOptions")){ // Fragment was recreated without retaining instance
 			pollWrap.setVisibility(View.VISIBLE);
