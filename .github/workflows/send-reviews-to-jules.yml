@@ -1,0 +1,44 @@
+name: Send reviews to Jules
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  comment-review-link:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Comment review link
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT }}
+          script: |
+            const review = context.payload.review;
+            const pr = context.payload.pull_request;
+
+            const reviewer = review.user?.login ?? 'unknown';
+            const state = review.state?.toLowerCase() ?? 'commented';
+            const stateEmoji = {
+              changes_requested: '🔴',
+              approved: '✅',
+              commented: '💬',
+            }[state] ?? '📝';
+
+            const body = [
+              `@jules ${stateEmoji} **New PR review** from @${reviewer} (${state.replace('_', ' ')}).`,
+              ``,
+              `Please review all inline comments and use your \`pr review comment\` tool (or similar) to reply to each inline comment.`,
+              ``,
+              `🔗 **Review link:** ${review.html_url}`,
+              `📌 **PR:** #${pr.number} — ${pr.title}`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body,
+            });
