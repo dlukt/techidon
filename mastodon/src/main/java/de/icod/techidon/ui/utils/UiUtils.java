@@ -195,6 +195,26 @@ public class UiUtils {
 
 	public static final float ALPHA_PRESSED=0.55f;
 
+	// Bolt: Pre-compiled patterns for performance
+	private static final Pattern DOMAIN_PATTERN = Pattern.compile("^(((?!-))(xn--|_)?[a-z0-9-]{0,61}[a-z0-9]\\.)+(xn--)?([a-z0-9][a-z0-9\\-]{0,60}|[a-z0-9-]{1,30}\\.[a-z]{2,})$");
+	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[^/\\s]+$");
+
+	private static final Pattern[] FEDIVERSE_URL_PATTERNS = {
+			Pattern.compile("^/@[^/]+$"),
+			Pattern.compile("^/@[^/]+/\\d+$"),
+			Pattern.compile("^/users/\\w+$"),
+			Pattern.compile("^/notice/[a-zA-Z0-9]+$"),
+			Pattern.compile("^/objects/[-a-f0-9]+$"),
+			Pattern.compile("^/notes/[a-z0-9]+$"),
+			Pattern.compile("^/display/[-a-f0-9]+$"),
+			Pattern.compile("^/profile/\\w+$"),
+			Pattern.compile("^/p/\\w+/\\d+$"),
+			Pattern.compile("^/\\w+$"),
+			Pattern.compile("^/@[^/]+/statuses/[a-zA-Z0-9]+$"),
+			Pattern.compile("^/users/[^/]+/statuses/[a-zA-Z0-9]+$"),
+			Pattern.compile("^/o/[a-f0-9]+$")
+	};
+
 	private UiUtils() {
 	}
 
@@ -1207,7 +1227,6 @@ public class UiUtils {
 
 	public static Optional<Pair<String, Optional<String>>> parseFediverseHandle(String maybeFediHandle) {
 		// https://stackoverflow.com/a/26987741, except i put a + here ... v
-		String domainRegex = "^(((?!-))(xn--|_)?[a-z0-9-]{0,61}[a-z0-9]\\.)+(xn--)?([a-z0-9][a-z0-9\\-]{0,60}|[a-z0-9-]{1,30}\\.[a-z]{2,})$";
 		if (maybeFediHandle.toLowerCase().startsWith("mailto:")) {
 			maybeFediHandle = maybeFediHandle.substring("mailto:".length());
 		}
@@ -1215,12 +1234,12 @@ public class UiUtils {
 		for (String part : maybeFediHandle.split("@")) {
 			if (!part.isEmpty()) parts.add(part);
 		}
-		if (parts.size() == 0 || !parts.get(0).matches("^[^/\\s]+$")) {
+		if (parts.size() == 0 || !USERNAME_PATTERN.matcher(parts.get(0)).matches()) {
 			return Optional.empty();
 		} else if (parts.size() == 2) {
 			try {
 				String domain = IDN.toASCII(parts.get(1));
-				if (!domain.matches(domainRegex)) return Optional.empty();
+				if (!DOMAIN_PATTERN.matcher(domain).matches()) return Optional.empty();
 				return Optional.of(Pair.create(parts.get(0), Optional.of(parts.get(1))));
 			} catch (IllegalArgumentException ignored) {
 				return Optional.empty();
@@ -1266,19 +1285,11 @@ public class UiUtils {
 			return false;
 
 		String it = uri.getPath();
-		return it.matches("^/@[^/]+$") ||
-				it.matches("^/@[^/]+/\\d+$") ||
-				it.matches("^/users/\\w+$") ||
-				it.matches("^/notice/[a-zA-Z0-9]+$") ||
-				it.matches("^/objects/[-a-f0-9]+$") ||
-				it.matches("^/notes/[a-z0-9]+$") ||
-				it.matches("^/display/[-a-f0-9]+$") ||
-				it.matches("^/profile/\\w+$") ||
-				it.matches("^/p/\\w+/\\d+$") ||
-				it.matches("^/\\w+$") ||
-				it.matches("^/@[^/]+/statuses/[a-zA-Z0-9]+$") ||
-				it.matches("^/users/[^/]+/statuses/[a-zA-Z0-9]+$") ||
-				it.matches("^/o/[a-f0-9]+$");
+		for (Pattern p : FEDIVERSE_URL_PATTERNS) {
+			if (p.matcher(it).matches())
+				return true;
+		}
+		return false;
 	}
 
 	public static String getInstanceName(String accountID) {
