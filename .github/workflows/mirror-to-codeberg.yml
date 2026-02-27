@@ -4,6 +4,7 @@ on: [push]
 jobs:
   sync-git:
     runs-on: ubuntu-latest
+    if: github.repository == 'dlukt/techidon'
 
     steps:
     - uses: actions/checkout@v3
