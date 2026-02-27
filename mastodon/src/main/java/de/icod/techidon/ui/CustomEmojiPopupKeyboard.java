@@ -41,6 +41,7 @@ import de.icod.techidon.ui.utils.UiUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -304,17 +305,16 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 			@Override
 			protected FilterResults performFiltering(CharSequence charSequence){
 				List<Emoji> filteredEmoji=new ArrayList<>();
-				String search=charSequence.toString().toLowerCase().trim();
-
 				if(charSequence==null || charSequence.length()==0){
 					filteredEmoji.addAll(originalCategory.emojis);
 				}else{
+					// Bolt: compute search string only when non-null/non-empty to avoid NPE
+					String search=charSequence.toString().toLowerCase(Locale.ROOT).trim();
 					for(Emoji emoji : originalCategory.emojis){
 						if(emoji.getLowerShortcode().contains(search)){
 							filteredEmoji.add(emoji);
 						}
 					}
-
 				}
 				FilterResults results=new FilterResults();
 				results.values=filteredEmoji;

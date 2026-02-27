@@ -1,6 +1,7 @@
 package de.icod.techidon.model;
 
 import de.icod.techidon.api.RequiredField;
+import java.util.Locale;
 import org.parceler.Parcel;
 
 /**
@@ -51,7 +52,7 @@ public class Emoji extends BaseModel{
 
 	public String getLowerShortcode() {
 		if (lowerShortcode == null && shortcode != null) {
-			lowerShortcode = shortcode.toLowerCase();
+			lowerShortcode = shortcode.toLowerCase(Locale.ROOT);
 		}
 		return lowerShortcode;
 	}
