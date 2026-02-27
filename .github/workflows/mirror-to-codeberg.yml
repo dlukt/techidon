@@ -1,6 +1,9 @@
 name: Mirror to Codeberg
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   sync-git:
     runs-on: ubuntu-latest
