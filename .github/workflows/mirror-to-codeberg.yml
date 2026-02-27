@@ -1,10 +1,12 @@
 name: Mirror to Codeberg
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   sync-git:
     runs-on: ubuntu-latest
-    if: github.repository == 'dlukt/techidon'
 
     steps:
     - uses: actions/checkout@v3
