@@ -310,7 +310,7 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 					filteredEmoji.addAll(originalCategory.emojis);
 				}else{
 					for(Emoji emoji : originalCategory.emojis){
-						if(emoji.shortcode.toLowerCase().contains(search)){
+						if(emoji.getLowerShortcode().contains(search)){
 							filteredEmoji.add(emoji);
 						}
 					}
