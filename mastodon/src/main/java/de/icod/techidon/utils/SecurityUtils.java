@@ -89,16 +89,26 @@ public class SecurityUtils {
 	public static String sanitizeFileName(String displayName) {
 		if (displayName == null) return null;
 
-		// 1. Get the last part of the path (handle both / and \)
+		// 1. Decode potential URL-encoded characters to prevent bypasses
+		try {
+			// Basic decoding for common separators
+			displayName = displayName.replace("%2e", ".").replace("%2E", ".")
+					.replace("%2f", "/").replace("%2F", "/")
+					.replace("%5c", "\\").replace("%5C", "\\");
+		} catch (Exception e) {
+			// Ignore decoding errors
+		}
+
+		// 2. Get the last part of the path (handle both / and \)
 		int lastSlash = Math.max(displayName.lastIndexOf('/'), displayName.lastIndexOf('\\'));
 		if (lastSlash >= 0) {
 			displayName = displayName.substring(lastSlash + 1);
 		}
 
-		// 2. Trim whitespace
+		// 3. Trim whitespace
 		displayName = displayName.trim();
 
-		// 3. Check for reserved names, traversal attempts, or control characters
+		// 4. Check for reserved names, traversal attempts, or control characters
 		// Also block Windows reserved filenames (CON, PRN, AUX, NUL, COM1-9, LPT1-9)
 		if (displayName.isEmpty() ||
 				displayName.equals(".") ||

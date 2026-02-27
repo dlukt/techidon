@@ -135,4 +135,20 @@ public class SecurityUtilsTest {
         assertEquals("spaced.txt", SecurityUtils.sanitizeFileName("  spaced.txt  "));
         assertEquals("file.txt", SecurityUtils.sanitizeFileName("path/to/  file.txt  "));
     }
+
+    @Test
+    public void testSanitizeFileName_onPathSegmentLikeInputs() {
+        // While Uri.getLastPathSegment() typically returns decoded segments,
+        // we should ensure sanitizeFileName handles edge cases defensively.
+
+        // Input resembling raw path traversal attempts
+        assertEquals("passwd", SecurityUtils.sanitizeFileName("..%2F..%2Fetc%2Fpasswd"));
+
+        // Input with control characters (which could technically appear if not properly handled upstream)
+        assertEquals("file", SecurityUtils.sanitizeFileName("invalid\u0000name"));
+
+        // Windows reserved names as raw segments
+        assertEquals("file", SecurityUtils.sanitizeFileName("CON"));
+        assertEquals("file", SecurityUtils.sanitizeFileName("nul.txt"));
+    }
 }
