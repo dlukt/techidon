@@ -137,7 +137,7 @@ public class SecurityUtilsTest {
     }
 
     @Test
-    public void testSanitizeFileName_onPathSegmentLikeInputs() {
+    public void testSanitizeFileNameOnPathSegmentLikeInputs() {
         // While Uri.getLastPathSegment() typically returns decoded segments,
         // we should ensure sanitizeFileName handles edge cases defensively.
 

@@ -90,14 +90,10 @@ public class SecurityUtils {
 		if (displayName == null) return null;
 
 		// 1. Decode potential URL-encoded characters to prevent bypasses
-		try {
-			// Basic decoding for common separators
-			displayName = displayName.replace("%2e", ".").replace("%2E", ".")
-					.replace("%2f", "/").replace("%2F", "/")
-					.replace("%5c", "\\").replace("%5C", "\\");
-		} catch (Exception e) {
-			// Ignore decoding errors
-		}
+		// Basic decoding for common separators
+		displayName = displayName.replace("%2e", ".").replace("%2E", ".")
+				.replace("%2f", "/").replace("%2F", "/")
+				.replace("%5c", "\\").replace("%5C", "\\");
 
 		// 2. Get the last part of the path (handle both / and \)
 		int lastSlash = Math.max(displayName.lastIndexOf('/'), displayName.lastIndexOf('\\'));
