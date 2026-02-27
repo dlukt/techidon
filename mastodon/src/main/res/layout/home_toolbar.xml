@@ -19,6 +19,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_gravity="center_vertical"
+			android:importantForAccessibility="no"
 			android:src="@drawable/ic_fluent_home_24_regular"/>
 		<FrameLayout
 			android:layout_width="wrap_content"
@@ -30,6 +31,7 @@
 				android:layout_height="wrap_content"
 				android:layout_marginStart="8dp"
 				android:layout_gravity="center_vertical"
+				android:importantForAccessibility="no"
 				android:src="@drawable/ic_fluent_chevron_down_16_filled"
 				android:visibility="gone"/>
 			<TextView
