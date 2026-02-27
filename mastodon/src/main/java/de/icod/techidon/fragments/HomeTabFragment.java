@@ -512,8 +512,13 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 
 	private void updateSwitcherIcon(int i) {
 		timelineIcon.setImageResource(timelines[i].getIcon().iconRes);
-		timelineTitle.setText(timelines[i].getTitle(getContext()));
-		switcher.setContentDescription(timelines[i].getTitle(getContext()));
+		CharSequence currentTimelineTitle = timelines[i].getTitle(getContext());
+		timelineTitle.setText(currentTimelineTitle);
+		String switcherDescription = getString(R.string.sk_switch_timeline_content_description, currentTimelineTitle);
+		switcher.setContentDescription(switcherDescription);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			switcher.setTooltipText(switcherDescription);
+		}
 		showFab();
 		if (elevationOnScrollListener != null && getCurrentFragment() instanceof IsOnTop f) {
 			elevationOnScrollListener.handleScroll(getContext(), f.isOnTop());
