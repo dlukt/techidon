@@ -1,0 +1,41 @@
+name: PR Quality Gates
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: pr-quality-gates-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      SIGNING_STORE_PASSWORD: ci
+      SIGNING_KEY_ALIAS: ci
+      SIGNING_KEY_PASSWORD: ci
+      UPLOAD_SIGNING_STORE_PASSWORD: ci
+      UPLOAD_SIGNING_KEY_ALIAS: ci
+      UPLOAD_SIGNING_KEY_PASSWORD: ci
+      CURRENT_DATE: 1970-01-01
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35"
+      - name: Create local.properties for CI
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+      - name: Build debug and run unit tests
+        run: ./gradlew --no-daemon :mastodon:assembleDebug :mastodon:testDebugUnitTest -x lint
