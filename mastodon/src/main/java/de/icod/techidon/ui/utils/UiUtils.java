@@ -425,7 +425,7 @@ public class UiUtils {
 			} catch (Throwable ignore) {
 			}
 		}
-		return uri.getLastPathSegment();
+		return SecurityUtils.sanitizeFileName(uri.getLastPathSegment());
 	}
 
 	public static String formatFileSize(Context context, long size, boolean atLeastKB) {
