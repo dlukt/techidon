@@ -2,5 +2,10 @@
 <data-extraction-rules>
 	<cloud-backup>
 		<exclude domain="file" path="accounts.json"/>
+		<exclude domain="file" path="accounts.json~"/>
 	</cloud-backup>
+	<device-transfer>
+		<exclude domain="file" path="accounts.json"/>
+		<exclude domain="file" path="accounts.json~"/>
+	</device-transfer>
 </data-extraction-rules>
