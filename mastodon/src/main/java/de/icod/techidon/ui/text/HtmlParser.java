@@ -3,7 +3,6 @@ package de.icod.techidon.ui.text;
 import android.content.Context;
 import android.net.Uri;
 import android.graphics.Color;
-import android.util.LruCache;
 import android.graphics.Typeface;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -19,6 +18,7 @@ import android.text.style.SubscriptSpan;
 import android.text.style.SuperscriptSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.UnderlineSpan;
+import android.util.LruCache;
 import android.widget.TextView;
 
 import com.twitter.twittertext.Regex;
