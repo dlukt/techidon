@@ -45,3 +45,7 @@
 ## 2025-10-28 - [Stream Allocation in StatusDisplayItem]
 **Learning:** `StatusDisplayItem.getNextVisibleDisplayItem` (called in `onBind` of various items) used `indexOf` (O(N) in `ArrayList`) and `Optional` allocations. This caused unnecessary overhead and GC pressure during scrolling.
 **Action:** Replaced `indexOf` with `getBindingAdapterPosition` (O(1)) and removed `Optional` usage by returning nullable `StatusDisplayItem`.
+
+## 2025-02-13 - Cached compiled regular expressions in filtering logic
+**Learning:** `HtmlParser.applyFilterHighlights` was compiling a regular expression (`Pattern.compile(...)`) for each keyword matched against the text inside a `while` and `for` loop, leading to repeated pattern compilation overhead in a rendering hot path. Using `LruCache<String, Pattern>` avoids unbounded growth while significantly reducing allocations and compilation time.
+**Action:** Always precompile or cache expensive `Pattern.compile` calls, especially inside nested loops or frequently invoked methods like `onBindViewHolder` equivalents or text formatters.

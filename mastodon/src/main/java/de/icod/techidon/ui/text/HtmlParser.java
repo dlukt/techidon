@@ -18,6 +18,7 @@ import android.text.style.SubscriptSpan;
 import android.text.style.SuperscriptSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.UnderlineSpan;
+import android.util.LruCache;
 import android.widget.TextView;
 
 import com.twitter.twittertext.Regex;
@@ -71,6 +72,8 @@ public class HtmlParser{
 	public static final Pattern URL_PATTERN=Pattern.compile(VALID_URL_PATTERN_STRING, Pattern.CASE_INSENSITIVE);
 	public static final Pattern INVITE_LINK_PATTERN=Pattern.compile("^https://"+Regex.URL_VALID_DOMAIN+"/invite/[a-z\\d]+$", Pattern.CASE_INSENSITIVE);
 	private static Pattern EMOJI_CODE_PATTERN=Pattern.compile(":([\\w]+):");
+	// Bolt: Cache compiled regex patterns for filter keywords to avoid expensive recompilation in the rendering hot path
+	private static final LruCache<String, Pattern> FILTER_PATTERN_CACHE = new LruCache<>(64);
 
 	private HtmlParser(){}
 
@@ -392,7 +395,13 @@ public class HtmlParser{
 			if(!filter.filter.isActive())
 				continue;
 			for(String word:filter.keywordMatches){
-				Matcher matcher=Pattern.compile("\\b"+Pattern.quote(word)+"\\b", Pattern.CASE_INSENSITIVE).matcher(text);
+				// Bolt: Retrieve compiled pattern from cache or compile and cache if missing
+				Pattern pattern = FILTER_PATTERN_CACHE.get(word);
+				if (pattern == null) {
+					pattern = Pattern.compile("\\b"+Pattern.quote(word)+"\\b", Pattern.CASE_INSENSITIVE);
+					FILTER_PATTERN_CACHE.put(word, pattern);
+				}
+				Matcher matcher=pattern.matcher(text);
 				while(matcher.find()){
 					ForegroundColorSpan fg=new ForegroundColorSpan(fgColor);
 					BackgroundColorSpan bg=new BackgroundColorSpan(bgColor);
