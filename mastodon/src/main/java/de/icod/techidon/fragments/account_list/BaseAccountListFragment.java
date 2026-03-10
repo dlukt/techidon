@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
@@ -79,7 +78,11 @@ public abstract class BaseAccountListFragment extends MastodonRecyclerFragment<A
 	}
 
 	protected void loadRelationships(List<AccountViewModel> accounts){
-		Set<String> ids=accounts.stream().map(ai->ai.account.id).collect(Collectors.toSet());
+		// Bolt: Replaced stream with loop to reduce allocation overhead when preparing account IDs for relationships API request
+		Set<String> ids=new java.util.HashSet<>(accounts.size());
+		for (AccountViewModel ai : accounts) {
+			ids.add(ai.account.id);
+		}
 		if(ids.isEmpty())
 			return;
 		GetAccountRelationships req=new GetAccountRelationships(ids);
