@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 public class ApiUtils{
 	private ApiUtils(){
@@ -17,7 +18,7 @@ public static <E extends Enum<E>> List<String> enumSetToStrings(EnumSet<E> e, Cl
 		for (E ev : e) {
 			try {
 				SerializedName annotation = cls.getField(ev.name()).getAnnotation(SerializedName.class);
-				result.add(annotation != null ? annotation.value() : ev.name().toLowerCase());
+				result.add(annotation != null ? annotation.value() : ev.name().toLowerCase(Locale.ROOT));
 			} catch (NoSuchFieldException x) {
 				throw new RuntimeException(x);
 			}
