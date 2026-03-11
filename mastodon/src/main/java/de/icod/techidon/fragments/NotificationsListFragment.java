@@ -46,8 +46,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -366,14 +364,14 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 	public void onRemoveAccountPostsEvent(RemoveAccountPostsEvent ev){
 		if(!ev.accountID.equals(accountID) || ev.isUnfollow)
 			return;
-		// Bolt: Use loops instead of Streams to avoid allocation overhead during event handling.
+		// Optimization: Use loops instead of Streams to avoid allocation overhead during event handling.
 		List<Notification> toRemove = new ArrayList<>();
-		for(Notification n:data){
+		for (Notification n : data) {
 			if (n.account != null && n.account.id.equals(ev.postsByAccountID)) {
 				toRemove.add(n);
 			}
 		}
-		for(Notification n:preloadedData){
+		for (Notification n : preloadedData) {
 			if (n.account != null && n.account.id.equals(ev.postsByAccountID)) {
 				toRemove.add(n);
 			}

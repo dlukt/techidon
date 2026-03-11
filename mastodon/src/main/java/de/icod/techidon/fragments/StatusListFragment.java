@@ -40,8 +40,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import androidx.recyclerview.widget.RecyclerView;
 import me.grishka.appkit.Nav;
@@ -194,14 +192,14 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status> 
 	}
 
 	protected void onRemoveAccountPostsEvent(RemoveAccountPostsEvent ev){
-		// Bolt: Use loops instead of Streams to avoid allocation overhead during event handling.
+		// Optimization: Use loops instead of Streams to avoid allocation overhead during event handling.
 		List<Status> toRemove = new ArrayList<>();
-		for(Status s:data){
+		for (Status s : data) {
 			if (s.account.id.equals(ev.postsByAccountID) || (!ev.isUnfollow && s.reblog!=null && s.reblog.account.id.equals(ev.postsByAccountID))) {
 				toRemove.add(s);
 			}
 		}
-		for(Status s:preloadedData){
+		for (Status s : preloadedData) {
 			if (s.account.id.equals(ev.postsByAccountID) || (!ev.isUnfollow && s.reblog!=null && s.reblog.account.id.equals(ev.postsByAccountID))) {
 				toRemove.add(s);
 			}
