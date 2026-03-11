@@ -366,7 +366,7 @@ public class NotificationsListFragment extends BaseStatusListFragment<Notificati
 	public void onRemoveAccountPostsEvent(RemoveAccountPostsEvent ev){
 		if(!ev.accountID.equals(accountID) || ev.isUnfollow)
 			return;
-		// Optimization: Use loops instead of Streams to avoid allocation overhead during event handling.
+		// Bolt: Use loops instead of Streams to avoid allocation overhead during event handling.
 		List<Notification> toRemove = new ArrayList<>();
 		for (Notification n : data) {
 			if (n.account != null && n.account.id.equals(ev.postsByAccountID)) {
