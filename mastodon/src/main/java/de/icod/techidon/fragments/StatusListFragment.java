@@ -194,7 +194,7 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status> 
 	}
 
 	protected void onRemoveAccountPostsEvent(RemoveAccountPostsEvent ev){
-		// Optimization: Use loops instead of Streams to avoid allocation overhead during event handling.
+		// Bolt: Use loops instead of Streams to avoid allocation overhead during event handling.
 		List<Status> toRemove = new ArrayList<>();
 		for (Status s : data) {
 			if (s.account.id.equals(ev.postsByAccountID) || (!ev.isUnfollow && s.reblog!=null && s.reblog.account.id.equals(ev.postsByAccountID))) {
