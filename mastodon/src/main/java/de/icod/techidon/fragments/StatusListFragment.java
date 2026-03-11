@@ -194,9 +194,18 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status> 
 	}
 
 	protected void onRemoveAccountPostsEvent(RemoveAccountPostsEvent ev){
-		List<Status> toRemove=Stream.concat(data.stream(), preloadedData.stream())
-				.filter(s->s.account.id.equals(ev.postsByAccountID) || (!ev.isUnfollow && s.reblog!=null && s.reblog.account.id.equals(ev.postsByAccountID)))
-				.collect(Collectors.toList());
+		// Bolt: Use loops instead of Streams to avoid allocation overhead during event handling.
+		List<Status> toRemove = new ArrayList<>();
+		for(Status s:data){
+			if (s.account.id.equals(ev.postsByAccountID) || (!ev.isUnfollow && s.reblog!=null && s.reblog.account.id.equals(ev.postsByAccountID))) {
+				toRemove.add(s);
+			}
+		}
+		for(Status s:preloadedData){
+			if (s.account.id.equals(ev.postsByAccountID) || (!ev.isUnfollow && s.reblog!=null && s.reblog.account.id.equals(ev.postsByAccountID))) {
+				toRemove.add(s);
+			}
+		}
 		for(Status s:toRemove){
 			removeStatus(s);
 		}
