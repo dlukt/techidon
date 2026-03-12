@@ -49,3 +49,7 @@
 ## 2025-02-13 - Cached compiled regular expressions in filtering logic
 **Learning:** `HtmlParser.applyFilterHighlights` was compiling a regular expression (`Pattern.compile(...)`) for each keyword matched against the text inside a `while` and `for` loop, leading to repeated pattern compilation overhead in a rendering hot path. Using `LruCache<String, Pattern>` avoids unbounded growth while significantly reducing allocations and compilation time.
 **Action:** Always precompile or cache expensive `Pattern.compile` calls, especially inside nested loops or frequently invoked methods like `onBindViewHolder` equivalents or text formatters.
+
+## 2025-05-28 - [Stream Allocation in HashtagTimelineFragment]
+**Learning:** `HashtagTimelineFragment.updateHeader` was using `hashtag.history.stream().mapToInt(h->h.uses).sum()` and similar stream operations to compute post/account counts. Since this executes during UI updates, the repeated stream allocation contributes to GC churn in the hot path.
+**Action:** Replaced stream usages with explicit loop methods (`getWeekPosts()`, `getWeekAccounts()`) directly in the `Hashtag` model, minimizing allocation overhead and improving rendering performance.
