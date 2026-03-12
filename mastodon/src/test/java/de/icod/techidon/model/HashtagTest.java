@@ -40,4 +40,39 @@ public class HashtagTest {
         hashtag.history = null;
         assertEquals(0, hashtag.getWeekPosts());
     }
+
+
+    @Test
+    public void testGetWeekAccounts_CalculatesCorrectSum() {
+        Hashtag hashtag = new Hashtag();
+        hashtag.history = new ArrayList<>();
+
+        History h1 = new History();
+        h1.accounts = 5;
+        hashtag.history.add(h1);
+
+        History h2 = new History();
+        h2.accounts = 10;
+        hashtag.history.add(h2);
+
+        History h3 = new History();
+        h3.accounts = 3;
+        hashtag.history.add(h3);
+
+        assertEquals(18, hashtag.getWeekAccounts());
+    }
+
+    @Test
+    public void testGetWeekAccounts_EmptyHistoryReturnsZero() {
+        Hashtag hashtag = new Hashtag();
+        hashtag.history = Collections.emptyList();
+        assertEquals(0, hashtag.getWeekAccounts());
+    }
+
+    @Test
+    public void testGetWeekAccounts_NullHistoryReturnsZero() {
+        Hashtag hashtag = new Hashtag();
+        hashtag.history = null;
+        assertEquals(0, hashtag.getWeekAccounts());
+    }
 }

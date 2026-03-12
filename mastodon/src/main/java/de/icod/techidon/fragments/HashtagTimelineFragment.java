@@ -362,9 +362,9 @@ public class HashtagTimelineFragment extends PinnableStatusListFragment{
 			return;
 
 		if(hashtag.history!=null && !hashtag.history.isEmpty()){
-			int weekPosts=hashtag.history.stream().mapToInt(h->h.uses).sum();
+			int weekPosts=hashtag.getWeekPosts();
 			int todayPosts=hashtag.history.get(0).uses;
-			int numAccounts=hashtag.history.stream().mapToInt(h->h.accounts).sum();
+			int numAccounts=hashtag.getWeekAccounts();
 			int hSpace=V.dp(8);
 			SpannableStringBuilder ssb=new SpannableStringBuilder();
 			ssb.append(getResources().getQuantityString(R.plurals.x_posts, weekPosts, weekPosts));

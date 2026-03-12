@@ -56,4 +56,14 @@ public class Hashtag extends BaseModel implements DisplayItemsParent{
 		}
 		return sum;
 	}
+
+	public int getWeekAccounts(){
+		// Optimization: Use loop instead of Stream to avoid allocation overhead in hot paths.
+		if(history==null) return 0;
+		int sum=0;
+		for(History h:history){
+			sum+=h.accounts;
+		}
+		return sum;
+	}
 }
