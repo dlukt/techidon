@@ -183,7 +183,7 @@ public class HomeTimelineFragment extends StatusListFragment {
 							AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(new ArrayList<>(toAdd), false);
 						// removing statuses that come up as duplicates (hopefully only posts and boosts that were locally created
 						// and thus were already prepended to the timeline earlier)
-						HashSet<String> existingIds=new HashSet<>((int)(data.size()/0.75f)+1);
+						HashSet<String> existingIds=new HashSet<>(data.size());
 						for(Status s:data){
 							existingIds.add(s.getID());
 						}
@@ -312,7 +312,13 @@ public class HomeTimelineFragment extends StatusListFragment {
 								List<StatusDisplayItem> targetList=displayItems.subList(gapPos, gapPos+1);
 								if(indexOfGapInResponse<result.size()){
 									result=result.subList(indexOfGapInResponse+1,result.size());
-									Status gapStatus=getStatusByID(gap.parentID);
+									Status gapStatus=null;
+									for(Status s:data){
+										if(Objects.equals(s.id, gap.parentID)){
+											gapStatus=s;
+											break;
+										}
+									}
 									if (gapStatus != null) {
 										gapStatus.hasGapAfter=null;
 										AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(Collections.singletonList(gapStatus), false);
