@@ -183,7 +183,7 @@ public class HomeTimelineFragment extends StatusListFragment {
 							AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(new ArrayList<>(toAdd), false);
 						// removing statuses that come up as duplicates (hopefully only posts and boosts that were locally created
 						// and thus were already prepended to the timeline earlier)
-						HashSet<String> existingIds=new HashSet<>(data.size());
+						HashSet<String> existingIds=new HashSet<>((int)(data.size()/0.75f)+1);
 						for(Status s:data){
 							existingIds.add(s.getID());
 						}
