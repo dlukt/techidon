@@ -3,4 +3,5 @@
     <exclude domain="file" path="accounts.json" />
     <exclude domain="file" path="accounts.json~" />
     <exclude domain="sharedpref" path="push.xml" />
+    <exclude domain="sharedpref" path="account_manager.xml" />
 </full-backup-content>
