@@ -312,13 +312,7 @@ public class HomeTimelineFragment extends StatusListFragment {
 								List<StatusDisplayItem> targetList=displayItems.subList(gapPos, gapPos+1);
 								if(indexOfGapInResponse<result.size()){
 									result=result.subList(indexOfGapInResponse+1,result.size());
-									Status gapStatus=null;
-									for(Status s:data){
-										if(Objects.equals(s.id, gap.parentID)){
-											gapStatus=s;
-											break;
-										}
-									}
+									Status gapStatus=getStatusByID(gap.parentID);
 									if (gapStatus != null) {
 										gapStatus.hasGapAfter=null;
 										AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(Collections.singletonList(gapStatus), false);
