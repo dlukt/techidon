@@ -53,3 +53,7 @@
 ## 2025-05-28 - [Stream Allocation in HashtagTimelineFragment]
 **Learning:** `HashtagTimelineFragment.updateHeader` was using `hashtag.history.stream().mapToInt(h->h.uses).sum()` and similar stream operations to compute post/account counts. Since this executes during UI updates, the repeated stream allocation contributes to GC churn in the hot path.
 **Action:** Replaced stream usages with explicit loop methods (`getWeekPosts()`, `getWeekAccounts()`) directly in the `Hashtag` model, minimizing allocation overhead and improving rendering performance.
+
+## 2025-10-29 - [Stream Allocation and O(N^2) trap in HomeTimelineFragment]
+**Learning:** `HomeTimelineFragment.loadNewPosts` used a Java Stream to collect `existingIds` into a `List`, and then called `toAdd.removeIf(s -> existingIds.contains(s.getID()))`. Since `List.contains` is O(N), this created an O(N * M) operation in a hot path, causing both allocation overhead from Streams and quadratic performance degradation for duplicate checking.
+**Action:** Replaced the Stream with a simple `for` loop that populates a `HashSet<String>`. This eliminates the Stream allocations and reduces the time complexity of the duplicate check from O(N * M) to O(N + M) because `HashSet.contains` is O(1). Additionally, replaced other `Optional` and `Stream` usages in `loadNewPosts` and `onGapClick` with simple loops to further reduce GC pressure.

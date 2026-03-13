@@ -152,7 +152,12 @@ public class HomeTimelineFragment extends StatusListFragment {
 		dataLoading=true;
 		// we only care about the data that was actually retrieved from the timeline api since
 		// user-created statuses are probably in the wrong position
-		List<Status> dataFromTimeline=data.stream().filter(s->!s.fromStatusCreated).collect(Collectors.toList());
+		List<Status> dataFromTimeline=new ArrayList<>(data.size());
+		for(Status s:data){
+			if(!s.fromStatusCreated){
+				dataFromTimeline.add(s);
+			}
+		}
 		// The idea here is that we request the timeline such that if there are fewer than `limit` posts,
 		// we'll get the currently topmost post as last in the response. This way we know there's no gap
 		// between the existing and newly loaded parts of the timeline.
@@ -178,7 +183,10 @@ public class HomeTimelineFragment extends StatusListFragment {
 							AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(new ArrayList<>(toAdd), false);
 						// removing statuses that come up as duplicates (hopefully only posts and boosts that were locally created
 						// and thus were already prepended to the timeline earlier)
-						List<String> existingIds=data.stream().map(Status::getID).collect(Collectors.toList());
+						HashSet<String> existingIds=new HashSet<>(data.size());
+						for(Status s:data){
+							existingIds.add(s.getID());
+						}
 						toAdd.removeIf(s->existingIds.contains(s.getID()));
 						AccountSessionManager.get(accountID).filterStatuses(toAdd, getFilterContext());
 						if(!toAdd.isEmpty()){
@@ -304,12 +312,16 @@ public class HomeTimelineFragment extends StatusListFragment {
 								List<StatusDisplayItem> targetList=displayItems.subList(gapPos, gapPos+1);
 								if(indexOfGapInResponse<result.size()){
 									result=result.subList(indexOfGapInResponse+1,result.size());
-									Optional<Status> gapStatus=data.stream()
-											.filter(s->Objects.equals(s.id, gap.parentID))
-											.findFirst();
-									if (gapStatus.isPresent()) {
-										gapStatus.get().hasGapAfter=null;
-										AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(Collections.singletonList(gapStatus.get()), false);
+									Status gapStatus=null;
+									for(Status s:data){
+										if(Objects.equals(s.id, gap.parentID)){
+											gapStatus=s;
+											break;
+										}
+									}
+									if (gapStatus != null) {
+										gapStatus.hasGapAfter=null;
+										AccountSessionManager.getInstance().getAccount(accountID).getCacheController().putHomeTimeline(Collections.singletonList(gapStatus), false);
 									}
 									targetList.clear();
 								} else {
