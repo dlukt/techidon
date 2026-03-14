@@ -65,8 +65,8 @@ public class SecurityUtils {
 	 */
 	public static boolean isDomainBlocked(String host, Iterable<String> blockedDomains) {
 		if (host == null) return true; // Fail closed
-		// Normalize: remove trailing dot if present
-		if (host.endsWith(".")) {
+		// Normalize: remove all trailing dots if present to prevent bypasses like `evil.com..`
+		while (host.endsWith(".")) {
 			host = host.substring(0, host.length() - 1);
 		}
 		// Convert to lowercase using Locale.ROOT to avoid locale-dependent issues (e.g. Turkish I)
