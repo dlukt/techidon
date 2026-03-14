@@ -54,12 +54,12 @@ public class SecurityUtilsTest {
         assertTrue(SecurityUtils.isDomainBlocked("evil.com..", blocked));
         assertTrue(SecurityUtils.isDomainBlocked("sub.evil.com...", blocked));
 
-        // Partial match (suffix but not subdomain) - should allowed
+        // Partial match (suffix but not subdomain) - should be allowed
         assertFalse(SecurityUtils.isDomainBlocked("not-evil.com", blocked));
         assertFalse(SecurityUtils.isDomainBlocked("good.org", blocked));
         assertFalse(SecurityUtils.isDomainBlocked("realyblocked.net", blocked));
 
-        // Partial match (prefix) - should allowed
+        // Partial match (prefix) - should be allowed
         assertFalse(SecurityUtils.isDomainBlocked("evil.com.example.com", blocked));
 
         // Case insensitivity
