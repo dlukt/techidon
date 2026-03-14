@@ -51,6 +51,8 @@ public class SecurityUtilsTest {
         // Trailing dot (should be blocked now)
         assertTrue(SecurityUtils.isDomainBlocked("evil.com.", blocked));
         assertTrue(SecurityUtils.isDomainBlocked("sub.evil.com.", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("evil.com..", blocked));
+        assertTrue(SecurityUtils.isDomainBlocked("sub.evil.com...", blocked));
 
         // Partial match (suffix but not subdomain) - should allowed
         assertFalse(SecurityUtils.isDomainBlocked("not-evil.com", blocked));
