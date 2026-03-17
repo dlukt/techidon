@@ -69,20 +69,21 @@ public class MastodonAPIController{
 		thread.start();
 		try {
 			if (MastodonApp.context != null) {
-				final BufferedReader reader = new BufferedReader(new InputStreamReader(
+				try (BufferedReader reader = new BufferedReader(new InputStreamReader(
 						MastodonApp.context.getAssets().open("blocks.txt")
-				));
-				String line;
-				while ((line = reader.readLine()) != null) {
-					if (line.isBlank() || line.startsWith("#")) continue;
-					String[] parts = line.replaceAll("\"", "").split("[\s,;]");
-					if (parts.length == 0) continue;
-					String domain = parts[0].toLowerCase(Locale.ROOT).trim();
-					while (domain.endsWith(".")) {
-						domain = domain.substring(0, domain.length() - 1);
+				))) {
+					String line;
+					while ((line = reader.readLine()) != null) {
+						if (line.isBlank() || line.startsWith("#")) continue;
+						String[] parts = line.replaceAll("\"", "").split("[\s,;]");
+						if (parts.length == 0) continue;
+						String domain = parts[0].toLowerCase(Locale.ROOT).trim();
+						while (domain.endsWith(".")) {
+							domain = domain.substring(0, domain.length() - 1);
+						}
+						if (domain.isBlank()) continue;
+						badDomains.add(domain);
 					}
-					if (domain.isBlank()) continue;
-					badDomains.add(domain);
 				}
 			}
 		} catch (Exception e) {
