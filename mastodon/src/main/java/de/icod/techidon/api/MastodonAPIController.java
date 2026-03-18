@@ -76,7 +76,11 @@ public class MastodonAPIController{
 					if (line.isBlank() || line.startsWith("#")) continue;
 					String[] parts = line.replaceAll("\"", "").split("[\s,;]");
 					if (parts.length == 0) continue;
-					String domain = parts[0].toLowerCase().trim();
+					// 🛡️ Sentinel: Normalize domain to prevent bypass via trailing dots and locale-dependent case folding
+					String domain = parts[0].toLowerCase(java.util.Locale.ROOT).trim();
+					while (domain.endsWith(".")) {
+						domain = domain.substring(0, domain.length() - 1);
+					}
 					if (domain.isBlank()) continue;
 					badDomains.add(domain);
 				}
