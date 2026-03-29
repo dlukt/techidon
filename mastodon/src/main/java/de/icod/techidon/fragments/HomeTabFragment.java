@@ -150,11 +150,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 		fab = view.findViewById(R.id.fab);
 		fab.setOnClickListener(this::onFabClick);
 		fab.setOnLongClickListener(this::onFabLongClick);
-		if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
-			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
-		} else {
-			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
-		}
+		updateFabLongClickAccessibilityAction();
 		pager = new ViewPager2(getContext());
 		toolbarFrame = (FrameLayout) LayoutInflater.from(getContext()).inflate(R.layout.home_toolbar, getToolbar(), false);
 
@@ -693,8 +689,19 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	@Override
 	protected void onShown() {
 		super.onShown();
+		updateFabLongClickAccessibilityAction();
 		Object timelines = AccountSessionManager.get(accountID).getLocalPreferences().timelines;
 		if (timelines != null && timelinesList!= timelines) UiUtils.restartApp();
+	}
+
+	private void updateFabLongClickAccessibilityAction() {
+		if (fab == null)
+			return;
+		if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
+			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
+		} else {
+			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
+		}
 	}
 
 	@Override

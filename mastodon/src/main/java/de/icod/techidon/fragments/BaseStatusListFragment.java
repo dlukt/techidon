@@ -240,6 +240,7 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	protected void onShown(){
 		super.onShown();
 		imgLoader.activate();
+		updateFabLongClickAccessibilityAction();
 	}
 
 	@Override
@@ -558,13 +559,19 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 			fab.setVisibility(View.VISIBLE);
 			fab.setOnClickListener(this::onFabClick);
 			fab.setOnLongClickListener(this::onFabLongClick);
-			if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
-				ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
-			} else {
-				ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
-			}
+			updateFabLongClickAccessibilityAction();
 		} else if (fab != null) {
 			fab.setVisibility(View.GONE);
+		}
+	}
+
+	private void updateFabLongClickAccessibilityAction() {
+		if (fab == null)
+			return;
+		if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
+			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
+		} else {
+			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
 		}
 	}
 
