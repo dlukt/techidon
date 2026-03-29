@@ -689,7 +689,9 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	@Override
 	protected void onShown() {
 		super.onShown();
-		updateFabLongClickAccessibilityAction();
+		if (fab != null) {
+			updateFabLongClickAccessibilityAction();
+		}
 		Object timelines = AccountSessionManager.get(accountID).getLocalPreferences().timelines;
 		if (timelines != null && timelinesList!= timelines) UiUtils.restartApp();
 	}

@@ -240,7 +240,9 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	protected void onShown(){
 		super.onShown();
 		imgLoader.activate();
-		updateFabLongClickAccessibilityAction();
+		if (fab != null) {
+			updateFabLongClickAccessibilityAction();
+		}
 	}
 
 	@Override
