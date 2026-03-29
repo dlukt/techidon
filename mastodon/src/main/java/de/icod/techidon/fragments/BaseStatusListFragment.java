@@ -20,6 +20,8 @@ import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import de.icod.techidon.E;
@@ -556,6 +558,11 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 			fab.setVisibility(View.VISIBLE);
 			fab.setOnClickListener(this::onFabClick);
 			fab.setOnLongClickListener(this::onFabLongClick);
+			if(AccountSessionManager.getInstance().getLoggedInAccounts().size()>1){
+				ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
+			}else{
+				ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
+			}
 		} else if (fab != null) {
 			fab.setVisibility(View.GONE);
 		}

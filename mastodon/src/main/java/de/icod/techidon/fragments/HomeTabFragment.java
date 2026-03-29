@@ -33,6 +33,8 @@ import android.widget.TextView;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -148,6 +150,11 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 		fab = view.findViewById(R.id.fab);
 		fab.setOnClickListener(this::onFabClick);
 		fab.setOnLongClickListener(this::onFabLongClick);
+		if(AccountSessionManager.getInstance().getLoggedInAccounts().size()>1){
+			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
+		}else{
+			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
+		}
 		pager = new ViewPager2(getContext());
 		toolbarFrame = (FrameLayout) LayoutInflater.from(getContext()).inflate(R.layout.home_toolbar, getToolbar(), false);
 
