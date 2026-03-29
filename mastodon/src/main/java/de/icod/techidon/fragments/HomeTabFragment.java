@@ -150,9 +150,9 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 		fab = view.findViewById(R.id.fab);
 		fab.setOnClickListener(this::onFabClick);
 		fab.setOnLongClickListener(this::onFabLongClick);
-		if(AccountSessionManager.getInstance().getLoggedInAccounts().size()>1){
+		if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
 			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
-		}else{
+		} else {
 			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
 		}
 		pager = new ViewPager2(getContext());
