@@ -19,6 +19,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_gravity="center_vertical"
+			android:contentDescription="@string/sk_switch_timeline"
 			android:src="@drawable/ic_fluent_home_24_regular"/>
 		<FrameLayout
 			android:layout_width="wrap_content"
