@@ -702,10 +702,6 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 
 		boolean multipleAccounts = AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1;
 		fab.setLongClickable(multipleAccounts);
-		if (!multipleAccounts) {
-			// Ensure any existing long-click listener is cleared when only one account is available
-			fab.setOnLongClickListener(null);
-		}
 
 		if (multipleAccounts) {
 			ViewCompat.replaceAccessibilityAction(
