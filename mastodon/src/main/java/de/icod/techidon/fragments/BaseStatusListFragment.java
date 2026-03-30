@@ -576,9 +576,6 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		// Only expose a long-click action (including to accessibility services)
 		// when there are multiple accounts to manage.
 		fab.setLongClickable(multipleAccounts);
-		if (!multipleAccounts) {
-			fab.setOnLongClickListener(null);
-		}
 
 		if (multipleAccounts) {
 			ViewCompat.replaceAccessibilityAction(
