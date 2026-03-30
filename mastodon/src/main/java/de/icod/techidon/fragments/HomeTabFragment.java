@@ -699,10 +699,28 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 	private void updateFabLongClickAccessibilityAction() {
 		if (fab == null)
 			return;
-		if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
-			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
+
+		boolean multipleAccounts = AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1;
+		fab.setLongClickable(multipleAccounts);
+		if (!multipleAccounts) {
+			// Ensure any existing long-click listener is cleared when only one account is available
+			fab.setOnLongClickListener(null);
+		}
+
+		if (multipleAccounts) {
+			ViewCompat.replaceAccessibilityAction(
+					fab,
+					AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK,
+					getString(R.string.manage_accounts),
+					null
+			);
 		} else {
-			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
+			ViewCompat.replaceAccessibilityAction(
+					fab,
+					AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK,
+					null,
+					null
+			);
 		}
 	}
 
