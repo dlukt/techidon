@@ -707,7 +707,7 @@ public class HomeTabFragment extends MastodonToolbarFragment implements Scrollab
 			ViewCompat.replaceAccessibilityAction(
 					fab,
 					AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK,
-					getString(R.string.manage_accounts),
+					getString(R.string.choose_account),
 					null
 			);
 		} else {
