@@ -570,10 +570,30 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 	private void updateFabLongClickAccessibilityAction() {
 		if (fab == null)
 			return;
-		if (AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1) {
-			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, getString(R.string.manage_accounts), null);
+
+		boolean multipleAccounts = AccountSessionManager.getInstance().getLoggedInAccounts().size() > 1;
+
+		// Only expose a long-click action (including to accessibility services)
+		// when there are multiple accounts to manage.
+		fab.setLongClickable(multipleAccounts);
+		if (!multipleAccounts) {
+			fab.setOnLongClickListener(null);
+		}
+
+		if (multipleAccounts) {
+			ViewCompat.replaceAccessibilityAction(
+					fab,
+					AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK,
+					getString(R.string.manage_accounts),
+					null
+			);
 		} else {
-			ViewCompat.replaceAccessibilityAction(fab, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
+			ViewCompat.replaceAccessibilityAction(
+					fab,
+					AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK,
+					null,
+					null
+			);
 		}
 	}
 
