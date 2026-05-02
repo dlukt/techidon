@@ -692,7 +692,11 @@ public class PhotoViewer implements ZoomPanView.Listener{
 			return;
 		holder.player.pause();
 		videoPlayPauseButton.setImageResource(R.drawable.ic_fluent_play_24_filled);
-		videoPlayPauseButton.setContentDescription(activity.getString(R.string.play));
+		String desc = activity.getString(R.string.play);
+		videoPlayPauseButton.setContentDescription(desc);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			videoPlayPauseButton.setTooltipText(desc);
+		}
 		stopUpdatingVideoPosition();
 		windowView.removeCallbacks(uiAutoHider);
 		// Some MediaPlayer implementations clear the texture when the app goes into background.
@@ -706,7 +710,11 @@ public class PhotoViewer implements ZoomPanView.Listener{
 			return;
 		player.start();
 		videoPlayPauseButton.setImageResource(R.drawable.ic_fluent_pause_24_filled);
-		videoPlayPauseButton.setContentDescription(activity.getString(R.string.pause));
+		String desc = activity.getString(R.string.pause);
+		videoPlayPauseButton.setContentDescription(desc);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			videoPlayPauseButton.setTooltipText(desc);
+		}
 		startUpdatingVideoPosition(player);
 	}
 
@@ -1161,7 +1169,11 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		@Override
 		public void onCompletion(MediaPlayer mp){
 			videoPlayPauseButton.setImageResource(R.drawable.ic_fluent_play_24_filled);
-			videoPlayPauseButton.setContentDescription(activity.getString(R.string.play));
+			String desc = activity.getString(R.string.play);
+			videoPlayPauseButton.setContentDescription(desc);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				videoPlayPauseButton.setTooltipText(desc);
+			}
 			stopUpdatingVideoPosition();
 			if(!uiVisible)
 				toggleUI();

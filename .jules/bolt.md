@@ -57,3 +57,6 @@
 ## 2025-10-29 - [Stream Allocation and O(N^2) trap in HomeTimelineFragment]
 **Learning:** `HomeTimelineFragment.loadNewPosts` used a Java Stream to collect `existingIds` into a `List`, and then called `toAdd.removeIf(s -> existingIds.contains(s.getID()))`. Since `List.contains` is O(N), this created an O(N * M) operation in a hot path, causing both allocation overhead from Streams and quadratic performance degradation for duplicate checking.
 **Action:** Replaced the Stream with a simple `for` loop that populates a `HashSet<String>`. This eliminates the Stream allocations and reduces the time complexity of the duplicate check from O(N * M) to O(N + M) because `HashSet.contains` is O(1). Additionally, replaced other `Optional` and `Stream` usages in `loadNewPosts` and `onGapClick` with simple loops to further reduce GC pressure.
+## 2025-02-12 - [Dynamic TooltipText Parity for Icon-only Buttons]
+**Learning:** When dynamically updating the `contentDescription` of icon-only buttons (like play/pause states) in Java code, the `tooltipText` attribute must also be updated to ensure continued accessibility support for hover and long-press interactions.
+**Action:** Always mirror `setContentDescription()` calls with `setTooltipText()` (wrapped in `Build.VERSION.SDK_INT >= Build.VERSION_CODES.O`) for icon-only interactive elements.
