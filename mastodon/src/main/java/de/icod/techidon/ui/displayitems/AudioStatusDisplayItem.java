@@ -216,7 +216,11 @@ public class AudioStatusDisplayItem extends StatusDisplayItem{
 
 		private void setPlayButtonPlaying(boolean playing, boolean animated){
 			playPauseBtn.setImageResource(playing ? R.drawable.ic_fluent_pause_48_regular : R.drawable.ic_fluent_play_48_regular);
-			playPauseBtn.setContentDescription(item.parentFragment.getString(playing ? R.string.pause : R.string.play));
+			String desc = item.parentFragment.getString(playing ? R.string.pause : R.string.play);
+			playPauseBtn.setContentDescription(desc);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				playPauseBtn.setTooltipText(desc);
+			}
 			if(playing)
 				bgDrawable.startAnimation();
 			else

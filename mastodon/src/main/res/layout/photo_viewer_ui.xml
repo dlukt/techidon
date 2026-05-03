@@ -57,6 +57,7 @@
 				android:src="@drawable/ic_fluent_pause_24_filled"
 				android:tint="?colorGray50"
 				android:contentDescription="@string/pause"
+				android:tooltipText="@string/pause"
 				android:background="?android:selectableItemBackgroundBorderless"/>
 
 			<TextView
