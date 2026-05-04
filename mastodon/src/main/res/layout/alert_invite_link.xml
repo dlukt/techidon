@@ -82,7 +82,8 @@
 			android:layout_gravity="end|top"
 			android:src="@drawable/ic_m3_cancel"
 			android:background="?android:actionBarItemBackground"
-			android:contentDescription="@string/clear"/>
+			android:contentDescription="@string/clear"
+			android:tooltipText="@string/clear"/>
 	</FrameLayout>
 
 </LinearLayout>
