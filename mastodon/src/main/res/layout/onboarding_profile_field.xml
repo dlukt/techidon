@@ -17,6 +17,7 @@
 		android:scaleType="center"
 		android:tint="?colorM3OnSurface"
 		android:contentDescription="@string/reorder"
+		android:tooltipText="@string/reorder"
 		android:src="@drawable/ic_fluent_re_order_dots_vertical_24_regular"/>
 
 	<ImageButton
@@ -30,6 +31,7 @@
 		android:tint="?colorM3OnSurface"
 		android:background="?android:actionBarItemBackground"
 		android:contentDescription="@string/delete"
+		android:tooltipText="@string/delete"
 		android:src="@drawable/ic_fluent_delete_24_regular"/>
 
 	<EditText

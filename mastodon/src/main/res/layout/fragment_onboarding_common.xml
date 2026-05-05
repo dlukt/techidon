@@ -59,6 +59,7 @@
 			android:background="?android:selectableItemBackgroundBorderless"
 			android:tint="?colorM3OnSurface"
 			android:contentDescription="@string/back"
+			android:tooltipText="@string/back"
 			android:src="@drawable/ic_arrow_back"/>
 
 		<ImageButton
@@ -70,6 +71,7 @@
 			android:layout_alignTop="@id/search_edit"
 			android:layout_margin="12dp"
 			android:contentDescription="@string/clear"
+			android:tooltipText="@string/clear"
 			android:tint="?colorM3OnSurfaceVariant"
 			android:visibility="gone"
 			android:src="@drawable/ic_fluent_dismiss_20_filled"/>

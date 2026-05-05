@@ -36,3 +36,6 @@
 ## 2024-05-29 - Semantic Role for Clickable Layouts
 **Learning:** Clickable `LinearLayout`s (like poll duration/style selectors) are often announced as generic groups by screen readers, hiding their interactive nature. Setting an `AccessibilityDelegate` to define the class name as `android.widget.Button` effectively communicates that the element is actionable.
 **Action:** Always verify that custom clickable containers expose a specific role (Button, Spinner, etc.) via `AccessibilityDelegate` or `ViewCompat` to ensure users know they can interact with them.
+## 2024-05-24 - Missing Tooltips on API 26+
+**Learning:** Many icon-only buttons (`ImageButton`, `ImageView`) throughout the app have `android:contentDescription` set but lack a corresponding `android:tooltipText`. This means screen readers will announce them, but users relying on mouse hover or long-press will not see a descriptive text box.
+**Action:** Always add `android:tooltipText` matching `android:contentDescription` on icon-only interactive elements in XML to ensure visual parity with screen reader text.
