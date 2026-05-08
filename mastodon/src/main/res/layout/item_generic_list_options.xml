@@ -18,6 +18,7 @@
 		android:layout_marginStart="8dp"
 		android:layout_gravity="top"
 		android:contentDescription="@string/more_options"
+		android:tooltipText="@string/more_options"
 		android:src="@drawable/ic_more_vert_24px"
 		android:tint="?colorM3OnSurface"
 		android:background="?android:actionBarItemBackground"/>
