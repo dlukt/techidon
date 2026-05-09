@@ -147,6 +147,7 @@
 			android:background="?android:actionBarItemBackground"
 			android:tint="?colorM3OnSurfaceVariant"
 			android:contentDescription="@string/more_options"
+			android:tooltipText="@string/more_options"
 			android:src="@drawable/ic_more_vert_24px"
 			android:visibility="gone"/>
 
