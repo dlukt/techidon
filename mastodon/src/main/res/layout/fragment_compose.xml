@@ -241,7 +241,8 @@
 							android:src="@drawable/ic_fluent_add_24_filled"
 							android:tint="@color/button_text_m3_tonal"
 							android:background="@drawable/bg_button_m3_tonal"
-							android:contentDescription="@string/add_poll_option"/>
+							android:contentDescription="@string/add_poll_option"
+							android:tooltipText="@string/add_poll_option"/>
 
 						<ImageView
 							android:id="@+id/delete_poll_option"
@@ -255,7 +256,8 @@
 							android:background="@drawable/bg_button_m3_tonal_error"
 							android:visibility="gone"
 							tools:visibility="visible"
-							android:contentDescription="@string/delete_poll_option"/>
+							android:contentDescription="@string/delete_poll_option"
+							android:tooltipText="@string/delete_poll_option"/>
 
 						<LinearLayout
 							android:id="@+id/poll_duration"
