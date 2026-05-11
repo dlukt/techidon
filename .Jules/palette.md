@@ -39,3 +39,7 @@
 ## 2024-05-24 - Missing Tooltips on API 26+
 **Learning:** Many icon-only buttons (`ImageButton`, `ImageView`) throughout the app have `android:contentDescription` set but lack a corresponding `android:tooltipText`. This means screen readers will announce them, but users relying on mouse hover or long-press will not see a descriptive text box.
 **Action:** Always add `android:tooltipText` matching `android:contentDescription` on icon-only interactive elements in XML to ensure visual parity with screen reader text.
+
+## 2026-05-11 - Add tooltip to search clear button in onboarding login
+**Learning:** The 'clear' button in `header_onboarding_login.xml` was missing `tooltipText`, which helps mouse/stylus users understand icon-only buttons on Android API 26+.
+**Action:** Add `android:tooltipText` matching the `android:contentDescription` to all icon-only buttons.

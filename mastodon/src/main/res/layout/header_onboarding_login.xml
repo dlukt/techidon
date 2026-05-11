@@ -63,6 +63,7 @@
 			android:visibility="gone"
 			tools:visibility="visible"
 			android:contentDescription="@string/clear"
+			android:tooltipText="@string/clear"
 			android:stateListAnimator="@null"
 			android:elevation="0dp"
 			android:tint="?colorM3OnSurfaceVariant"
