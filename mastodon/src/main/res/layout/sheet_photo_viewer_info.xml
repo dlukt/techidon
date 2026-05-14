@@ -130,6 +130,7 @@
 				android:background="?android:actionBarItemBackground"
 				android:tint="?colorM3OnSurfaceVariant"
 				android:contentDescription="@string/help"
+				android:tooltipText="@string/help"
 				android:src="@drawable/ic_help_24px"/>
 
 		</LinearLayout>
