@@ -42,6 +42,7 @@
 							android:duplicateParentState="true"
 							android:src="@drawable/ic_fluent_chat_multiple_24_selector_text"
 							android:tint="?colorM3OnSurfaceVariant"
+							android:importantForAccessibility="no"
 							android:gravity="center_vertical" />
 						<TextView
 							android:id="@+id/reply"
@@ -79,6 +80,7 @@
 							android:duplicateParentState="true"
 							android:src="@drawable/ic_boost"
 							android:tint="@color/boost_icon"
+							android:importantForAccessibility="no"
 							android:gravity="center_vertical" />
 						<TextView
 							android:id="@+id/boost"
@@ -118,6 +120,7 @@
 							android:duplicateParentState="true"
 							android:src="@drawable/ic_fluent_star_24_selector"
 							android:tint="@color/favorite_icon"
+							android:importantForAccessibility="no"
 							android:gravity="center_vertical" />
 						<TextView
 							android:id="@+id/favorite"
@@ -154,6 +157,7 @@
 							android:layout_margin="12dp"
 							android:src="@drawable/ic_fluent_bookmark_24_selector"
 							android:tint="@color/bookmark_icon"
+							android:importantForAccessibility="no"
 							android:gravity="center_vertical"
 							android:textAppearance="@style/m3_label_large" />
 					</FrameLayout>
@@ -174,6 +178,7 @@
 						android:layout_marginHorizontal="12dp"
 						android:src="@drawable/ic_fluent_share_24_regular"
 						android:tint="?colorM3OnSurfaceVariant"
+						android:importantForAccessibility="no"
 						android:gravity="center_vertical"/>
 				</FrameLayout>
 
