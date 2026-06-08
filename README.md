@@ -84,3 +84,5 @@ This project is released under the [GPL-3 License](./LICENSE).
 
 [Techidon's CSAE policy](CSAE-POLICY.md)
 
+[Fediverse](@techidon@f.gp-net.de)
+
