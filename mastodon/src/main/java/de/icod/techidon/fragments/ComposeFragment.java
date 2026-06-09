@@ -80,6 +80,7 @@ import de.icod.techidon.events.TakePictureRequestEvent;
 import de.icod.techidon.events.ScheduledStatusCreatedEvent;
 import de.icod.techidon.events.ScheduledStatusDeletedEvent;
 import de.icod.techidon.events.StatusCountersUpdatedEvent;
+import de.icod.techidon.events.AccountInfoUpdatedEvent;
 import de.icod.techidon.events.StatusCreatedEvent;
 import de.icod.techidon.events.StatusUpdatedEvent;
 import de.icod.techidon.fragments.account_list.AccountSearchFragment;
@@ -1621,6 +1622,17 @@ public class ComposeFragment extends MastodonToolbarFragment implements OnBackPr
 			}else{
 				Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
 			}
+		}
+	}
+
+	@Subscribe
+	public void onAccountInfoUpdated(AccountInfoUpdatedEvent ev){
+		if(!ev.accountID.equals(accountID))
+			return;
+		if(ev.account.avatar!=null) {
+			UrlImageLoaderRequest req = new UrlImageLoaderRequest(ev.account.avatar);
+			me.grishka.appkit.imageloader.ImageCache.getInstance(getActivity()).remove(req);
+			ViewImageLoader.load(selfAvatar, null, req);
 		}
 	}
 
