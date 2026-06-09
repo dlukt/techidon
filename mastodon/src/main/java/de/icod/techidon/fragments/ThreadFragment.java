@@ -25,6 +25,7 @@ import de.icod.techidon.api.requests.statuses.GetStatusByID;
 import de.icod.techidon.api.requests.statuses.GetStatusContext;
 import de.icod.techidon.api.session.AccountSessionManager;
 import de.icod.techidon.events.StatusCountersUpdatedEvent;
+import de.icod.techidon.events.AccountInfoUpdatedEvent;
 import de.icod.techidon.events.StatusMuteChangedEvent;
 import de.icod.techidon.events.StatusUpdatedEvent;
 import de.icod.techidon.model.Account;
@@ -133,6 +134,17 @@ public class ThreadFragment extends StatusListFragment implements ProvidesAssist
 	public void onDestroy(){
 		super.onDestroy();
 		E.unregister(this);
+	}
+
+	@Subscribe
+	public void onAccountInfoUpdated(AccountInfoUpdatedEvent ev){
+		if(!ev.accountID.equals(accountID))
+			return;
+		if(!TextUtils.isEmpty(ev.account.avatar) && replyButtonAva != null) {
+			UrlImageLoaderRequest req = new UrlImageLoaderRequest(ev.account.avatar, V.dp(24), V.dp(24));
+			me.grishka.appkit.imageloader.ImageCache.getInstance(getActivity()).remove(req);
+			ViewImageLoader.loadWithoutAnimation(replyButtonAva, getResources().getDrawable(R.drawable.image_placeholder), req);
+		}
 	}
 
 	@Subscribe

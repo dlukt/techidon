@@ -101,7 +101,9 @@ import de.icod.techidon.ui.views.LinkedTextView;
 import de.icod.techidon.ui.views.NestedRecyclerScrollView;
 import de.icod.techidon.ui.views.ProgressBarButton;
 import de.icod.techidon.utils.ElevationOnScrollListener;
+import de.icod.techidon.events.AccountInfoUpdatedEvent;
 import de.icod.techidon.utils.ProvidesAssistContent;
+import com.squareup.otto.Subscribe;
 import org.parceler.Parcels;
 
 import java.time.LocalDateTime;
@@ -264,6 +266,31 @@ public class ProfileFragment extends LoaderFragment implements OnBackPressedList
 	public void onAttach(Context activity){
 		super.onAttach(activity);
 		setHasOptionsMenuCompat(true);
+	}
+
+	@Override
+	public void onResume(){
+		super.onResume();
+		de.icod.techidon.E.register(this);
+	}
+
+	@Override
+	public void onPause(){
+		de.icod.techidon.E.unregister(this);
+		super.onPause();
+	}
+
+	@Subscribe
+	public void onAccountInfoUpdated(AccountInfoUpdatedEvent ev){
+		if(!ev.accountID.equals(account.id))
+			return;
+		if(!TextUtils.isEmpty(ev.account.avatar)) {
+			UrlImageLoaderRequest req = new UrlImageLoaderRequest(
+					GlobalUserPreferences.playGifs ? ev.account.avatar : ev.account.avatarStatic,
+					V.dp(100), V.dp(100));
+			me.grishka.appkit.imageloader.ImageCache.getInstance(getActivity()).remove(req);
+			ViewImageLoader.load(avatar, null, req);
+		}
 	}
 
 	@Override
