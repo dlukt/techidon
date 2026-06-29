@@ -222,8 +222,8 @@ public class Regex {
 
   public static final String URL_VALID_PATH = "(?:" +
     "(?:" +
-      URL_VALID_GENERAL_PATH_CHARS + "*" +
-      "(?:" + URL_BALANCED_PARENS + URL_VALID_GENERAL_PATH_CHARS + "*)*" +
+      URL_VALID_GENERAL_PATH_CHARS + "{0,2000}" +
+      "(?:" + URL_BALANCED_PARENS + URL_VALID_GENERAL_PATH_CHARS + "{0,2000}){0,100}" +
       URL_VALID_PATH_ENDING_CHARS +
     ")|(?:@" + URL_VALID_GENERAL_PATH_CHARS + "+/)" +
   ")";
