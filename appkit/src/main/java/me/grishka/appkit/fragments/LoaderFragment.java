@@ -3,8 +3,6 @@ package me.grishka.appkit.fragments;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -36,9 +34,10 @@ public abstract class LoaderFragment extends AppKitFragment implements SwipeRefr
 	private ConnectivityManager connectivityManager;
 	private ConnectivityManager.NetworkCallback networkCallback;
 	private boolean networkCallbackRegistered=false;
+	private volatile Network networkAtError;
 
 	private final Runnable networkRetryRunnable=()->{
-		if(isAdded())
+		if(isAdded() && networkCallbackRegistered)
 			onErrorRetryClick();
 	};
 
@@ -47,6 +46,9 @@ public abstract class LoaderFragment extends AppKitFragment implements SwipeRefr
 			networkCallback=new ConnectivityManager.NetworkCallback(){
 				@Override
 				public void onAvailable(Network network){
+					// The current default network is reported right after registering, only retry once it changes
+					if(network.equals(networkAtError))
+						return;
 					if(getActivity()!=null)
 						getActivity().runOnUiThread(networkRetryRunnable);
 				}
@@ -56,21 +58,16 @@ public abstract class LoaderFragment extends AppKitFragment implements SwipeRefr
 	}
 
 	private void registerNetworkCallback(){
-		if(networkCallbackRegistered || !autoRetry || getActivity()==null)
+		// Needs the default network callback, a callback for a NetworkRequest reports every connected network
+		if(networkCallbackRegistered || !autoRetry || getActivity()==null || Build.VERSION.SDK_INT<Build.VERSION_CODES.N)
 			return;
 		if(connectivityManager==null)
 			connectivityManager=(ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		if(connectivityManager==null)
 			return;
 		try{
-			if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
-				connectivityManager.registerDefaultNetworkCallback(getNetworkCallback());
-			}else{
-				NetworkRequest request=new NetworkRequest.Builder()
-						.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-						.build();
-				connectivityManager.registerNetworkCallback(request, getNetworkCallback());
-			}
+			networkAtError=connectivityManager.getActiveNetwork();
+			connectivityManager.registerDefaultNetworkCallback(getNetworkCallback());
 			networkCallbackRegistered=true;
 		}catch(Exception ignore){}
 	}
