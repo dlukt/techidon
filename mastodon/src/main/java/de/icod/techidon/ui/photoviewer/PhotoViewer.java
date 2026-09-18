@@ -51,6 +51,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import de.icod.techidon.GlobalUserPreferences;
 import de.icod.techidon.R;
@@ -124,6 +126,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 			toggleUI();
 	};
 	private Animator currentSheetRelatedToolbarAnimation;
+	private OnBackInvokedCallback backCallback;
 
 	private boolean videoPositionNeedsUpdating;
 	private Runnable videoPositionUpdater=this::updateVideoPosition;
@@ -261,6 +264,11 @@ public class PhotoViewer implements ZoomPanView.Listener{
 			wlp.layoutInDisplayCutoutMode=Build.VERSION.SDK_INT>=30 ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 		windowView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
 		wm.addView(windowView, wlp);
+		if(Build.VERSION.SDK_INT>=33){
+			// Predictive back (default when targeting API 36 on Android 16+) invokes this instead of dispatching KEYCODE_BACK
+			backCallback=()->onStartSwipeToDismissTransition(0f);
+			windowView.findOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+		}
 
 		windowView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
 			@Override
@@ -356,6 +364,10 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		wlp.flags|=WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 		windowView.setSystemUiVisibility(windowView.getSystemUiVisibility() | (activity.getWindow().getDecorView().getSystemUiVisibility() & (View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR)));
 		wm.updateViewLayout(windowView, wlp);
+		if(Build.VERSION.SDK_INT>=33 && backCallback!=null){
+			windowView.findOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+			backCallback=null;
+		}
 
 		int index=pager.getCurrentItem();
 		listener.setPhotoViewVisibility(index, true);

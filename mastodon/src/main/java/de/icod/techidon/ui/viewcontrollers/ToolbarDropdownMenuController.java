@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -19,6 +20,8 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toolbar;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import de.icod.techidon.R;
 import de.icod.techidon.ui.OutlineProviders;
@@ -39,6 +42,7 @@ public class ToolbarDropdownMenuController{
 	private boolean dismissing;
 	private List<DropdownSubmenuController> controllerStack=new ArrayList<>();
 	private Animator currentTransition;
+	private OnBackInvokedCallback backCallback;
 
 	public ToolbarDropdownMenuController(HostFragment fragment){
 		this.fragment=fragment;
@@ -70,6 +74,11 @@ public class ToolbarDropdownMenuController{
 		wlp.flags=WindowManager.LayoutParams.FLAG_LAYOUT_ATTACHED_IN_DECOR;
 		wlp.setTitle(fragment.getActivity().getString(R.string.dropdown_menu));
 		fragment.getActivity().getWindowManager().addView(windowView, wlp);
+		if(Build.VERSION.SDK_INT>=33){
+			// Predictive back (default when targeting API 36 on Android 16+) invokes this instead of dispatching KEYCODE_BACK
+			backCallback=this::goBack;
+			windowView.findOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+		}
 
 		menuContainer.setPivotX(V.dp(100));
 		menuContainer.setPivotY(0);
@@ -91,6 +100,10 @@ public class ToolbarDropdownMenuController{
 		if(windowView==null || dismissing)
 			return;
 		dismissing=true;
+		if(Build.VERSION.SDK_INT>=33 && backCallback!=null){
+			windowView.findOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+			backCallback=null;
+		}
 		fragment.onDropdownWillDismiss();
 		menuContainer.animate()
 				.scaleX(.8f)
@@ -109,6 +122,13 @@ public class ToolbarDropdownMenuController{
 					fragment.onDropdownDismissed();
 				})
 				.start();
+	}
+
+	private void goBack(){
+		if(controllerStack.size()>1)
+			popSubmenuController();
+		else
+			dismiss();
 	}
 
 	public void pushSubmenuController(DropdownSubmenuController controller){
@@ -247,10 +267,7 @@ public class ToolbarDropdownMenuController{
 		public boolean dispatchKeyEvent(KeyEvent event){
 			if(event.getKeyCode()==KeyEvent.KEYCODE_BACK){
 				if(event.getAction()==KeyEvent.ACTION_DOWN){
-					if(controllerStack.size()>1)
-						popSubmenuController();
-					else
-						dismiss();
+					goBack();
 				}
 				return true;
 			}

@@ -200,16 +200,15 @@ public class MainActivity extends FragmentStackActivity implements ProvidesAssis
 	 * screen in megalodon, for some reason, so i'm working around this that way.
  	 */
 	@Override
-	public void onBackPressed() {
+	protected boolean onInterceptBackPressed() {
+		if (fragmentContainers.size() != 1) return false;
 		Fragment currentFragment = getSupportFragmentManager().findFragmentById(
-				(fragmentContainers.get(fragmentContainers.size() - 1)).getId()
+				(fragmentContainers.get(0)).getId()
 		);
 		Bundle currentArgs = currentFragment.getArguments();
-		if (fragmentContainers.size() != 1
-				|| currentArgs == null
+		if (currentArgs == null
 				|| !currentArgs.getBoolean("_can_go_back", false)) {
-			super.onBackPressed();
-			return;
+			return false;
 		}
 		if (currentArgs.getBoolean("_finish_on_back", false)) {
 			finish();
@@ -223,6 +222,7 @@ public class MainActivity extends FragmentStackActivity implements ProvidesAssis
 			fragment.setArguments(args);
 			showFragmentClearingBackStack(fragment);
 		}
+		return true;
 	}
 
 	public Fragment getCurrentFragment() {

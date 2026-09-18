@@ -25,12 +25,12 @@ base {
 }
 
 android {
-	compileSdk = 35
+	compileSdk = 36
 	defaultConfig {
 		manifestPlaceholders = [oAuthScheme:"techidon-android-auth"]
 		applicationId = "de.icod.techidon"
 		minSdk = 23
-		targetSdk = 35
+		targetSdk = 36
 		versionCode = autoVersionCode
 		versionName = "1.4.0"
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
