@@ -13,6 +13,15 @@ def autoVersionCode = explicitVersionCode != null
 // This used to be the build time, which the configuration cache reused from older builds, so a release could get
 // a lower versionCode than the last one. The git output is a configuration input, a new commit invalidates the cache.
 int versionCodeFromGitHistory(){
+	def shallow=providers.exec{
+		commandLine 'git', 'rev-parse', '--is-shallow-repository'
+		ignoreExitValue=true
+	}
+	if(shallow.result.get().exitValue!=0)
+		throw new GradleException("Can't get the commit history for versionCode from git, set VERSION_CODE instead: "+shallow.standardError.asText.get().trim())
+	// A shallow clone shows the oldest commit it has as if it had no parents
+	if(shallow.standardOutput.asText.get().trim()=='true')
+		throw new GradleException("versionCode needs the full git history, but this is a shallow clone. Run 'git fetch --unshallow' or set VERSION_CODE.")
 	def git=providers.exec{
 		commandLine 'git', 'log', '--reverse', '--topo-order', '--no-show-signature', '--format=%H %ct %P', 'HEAD'
 		ignoreExitValue=true
