@@ -5,20 +5,34 @@ plugins {
 def explicitVersionCode = project.findProperty("VERSION_CODE") ?: System.getenv("VERSION_CODE")
 def autoVersionCode = explicitVersionCode != null
 	? Integer.parseInt(explicitVersionCode.toString())
-	: versionCodeFromHeadCommit()
+	: versionCodeFromGitHistory()
 
-// Seconds between 2024-01-01 UTC and the commit being built. Every new commit gets a higher versionCode than
-// anything built before it, and rebuilding a commit gives the same one. This used to be the build time, which
-// the configuration cache reused from older builds, so a release could get a lower versionCode than the last one.
-// The git output is a configuration input, a new commit invalidates the cache.
-int versionCodeFromHeadCommit(){
+// Seconds between 2024-01-01 UTC and the commit being built, but at least one more than the versionCode of each of its
+// parents, because git timestamps don't always increase (commits made within the same second, clock skew). So every
+// commit has a higher versionCode than all commits it's based on, and rebuilding a commit gives the same one.
+// This used to be the build time, which the configuration cache reused from older builds, so a release could get
+// a lower versionCode than the last one. The git output is a configuration input, a new commit invalidates the cache.
+int versionCodeFromGitHistory(){
 	def git=providers.exec{
-		commandLine 'git', 'log', '-1', '--no-show-signature', '--format=%ct', 'HEAD'
+		commandLine 'git', 'log', '--reverse', '--topo-order', '--no-show-signature', '--format=%H %ct %P', 'HEAD'
 		ignoreExitValue=true
 	}
 	if(git.result.get().exitValue!=0)
-		throw new GradleException("Can't get the commit time for versionCode from git, set VERSION_CODE instead: "+git.standardError.asText.get().trim())
-	return (int) (Long.parseLong(git.standardOutput.asText.get().trim())-1704067200L)
+		throw new GradleException("Can't get the commit history for versionCode from git, set VERSION_CODE instead: "+git.standardError.asText.get().trim())
+	Map<String, Long> versionCodes=[:]
+	long versionCode=0
+	// Parents come before their children, HEAD comes last
+	for(String line:git.standardOutput.asText.get().readLines()){
+		String[] commit=line.split(' ')
+		versionCode=Long.parseLong(commit[1])-1704067200L
+		for(int i=2;i<commit.length;i++){
+			Long parentVersionCode=versionCodes[commit[i]]
+			if(parentVersionCode!=null && parentVersionCode>=versionCode)
+				versionCode=parentVersionCode+1
+		}
+		versionCodes[commit[0]]=versionCode
+	}
+	return (int) versionCode
 }
 
 configurations.configureEach {
