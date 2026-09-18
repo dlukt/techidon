@@ -3,6 +3,7 @@ package me.grishka.appkit.fragments;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -44,11 +45,31 @@ public abstract class LoaderFragment extends AppKitFragment implements SwipeRefr
 	private ConnectivityManager.NetworkCallback getNetworkCallback(){
 		if(networkCallback==null){
 			networkCallback=new ConnectivityManager.NetworkCallback(){
+				// Only used on the callback's thread
+				private Network currentNetwork;
+				private Boolean currentNetworkValidated;
+
 				@Override
 				public void onAvailable(Network network){
+					currentNetwork=network;
+					currentNetworkValidated=null;
 					// The current default network is reported right after registering, only retry once it changes
-					if(network.equals(networkAtError))
+					if(!network.equals(networkAtError))
+						retry();
+				}
+
+				@Override
+				public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities){
+					if(!network.equals(currentNetwork))
 						return;
+					// The default network can also lose internet access and get it back without being replaced
+					boolean validated=capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+					if(currentNetworkValidated!=null && !currentNetworkValidated && validated)
+						retry();
+					currentNetworkValidated=validated;
+				}
+
+				private void retry(){
 					if(getActivity()!=null)
 						getActivity().runOnUiThread(networkRetryRunnable);
 				}
