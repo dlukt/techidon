@@ -104,10 +104,19 @@ public class SecurityUtils {
 				displayName.equals(".") ||
 				displayName.equals("..") ||
 				displayName.matches("(?i)^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\\..*)?$") ||
-				displayName.chars().anyMatch(c -> c < 32 || c == 127)) {
+				containsControlCharacters(displayName)) {
 			return "file";
 		}
 
 		return displayName;
+	}
+
+	// Not using String.chars(): it needs API 24 and core library desugaring doesn't backport it
+	private static boolean containsControlCharacters(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c < 32 || c == 127) return true;
+		}
+		return false;
 	}
 }

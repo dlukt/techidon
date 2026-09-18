@@ -136,5 +136,13 @@ public class SecurityUtilsTest {
         // Whitespace trimming
         assertEquals("spaced.txt", SecurityUtils.sanitizeFileName("  spaced.txt  "));
         assertEquals("file.txt", SecurityUtils.sanitizeFileName("path/to/  file.txt  "));
+
+        // Control characters
+        assertEquals("file", SecurityUtils.sanitizeFileName("evil\u0000.jpg"));
+        assertEquals("file", SecurityUtils.sanitizeFileName("new\nline.txt"));
+        assertEquals("file", SecurityUtils.sanitizeFileName("tab\tbed.txt"));
+        assertEquals("file", SecurityUtils.sanitizeFileName("del\u007f.txt"));
+        assertEquals("tab.txt", SecurityUtils.sanitizeFileName("\ttab.txt\n")); // Trimmed before the check
+        assertEquals("caf\u00e9 \u2615.jpg", SecurityUtils.sanitizeFileName("caf\u00e9 \u2615.jpg"));
     }
 }
