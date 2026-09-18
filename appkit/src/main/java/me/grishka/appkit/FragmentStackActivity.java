@@ -78,6 +78,8 @@ public class FragmentStackActivity extends FragmentActivity{
 		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true){
 			@Override
 			public void handleOnBackPressed(){
+				if(onInterceptBackPressed())
+					return;
 				if(!fragmentContainers.isEmpty()){
 					Fragment currentFragment=getSupportFragmentManager().findFragmentById(fragmentContainers.get(fragmentContainers.size()-1).getId());
 					if(currentFragment instanceof OnBackPressedListener && ((OnBackPressedListener) currentFragment).onBackPressed())
@@ -92,6 +94,15 @@ public class FragmentStackActivity extends FragmentActivity{
 				setEnabled(true);
 			}
 		});
+	}
+
+	/**
+	 * Called on back navigation before the topmost fragment gets a chance to handle it.
+	 * Override this instead of the deprecated {@link #onBackPressed()}, which Android 16+ doesn't call for apps targeting API 36+.
+	 * @return true if the back navigation was handled
+	 */
+	protected boolean onInterceptBackPressed(){
+		return false;
 	}
 
 	private void applySystemBarColors(boolean lightStatus, boolean lightNav){

@@ -35,8 +35,12 @@ jobs:
           cache: gradle
       - name: Set up Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          # The default also installs the obsolete "tools" package, which current sdkmanager versions fail to find.
+          # The next step installs what the build needs.
+          packages: ''
       - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35"
+        run: sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-36"
       - name: Create local.properties for CI
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build debug and run unit tests
