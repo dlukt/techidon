@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -36,17 +35,41 @@ public abstract class LoaderFragment extends AppKitFragment implements SwipeRefr
 	private ConnectivityManager connectivityManager;
 	private ConnectivityManager.NetworkCallback networkCallback;
 	private boolean networkCallbackRegistered=false;
+	private volatile Network networkAtError;
 
 	private final Runnable networkRetryRunnable=()->{
-		if(isAdded())
+		if(isAdded() && networkCallbackRegistered)
 			onErrorRetryClick();
 	};
 
 	private ConnectivityManager.NetworkCallback getNetworkCallback(){
 		if(networkCallback==null){
 			networkCallback=new ConnectivityManager.NetworkCallback(){
+				// Only used on the callback's thread
+				private Network currentNetwork;
+				private Boolean currentNetworkValidated;
+
 				@Override
 				public void onAvailable(Network network){
+					currentNetwork=network;
+					currentNetworkValidated=null;
+					// The current default network is reported right after registering, only retry once it changes
+					if(!network.equals(networkAtError))
+						retry();
+				}
+
+				@Override
+				public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities){
+					if(!network.equals(currentNetwork))
+						return;
+					// The default network can also lose internet access and get it back without being replaced
+					boolean validated=capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+					if(currentNetworkValidated!=null && !currentNetworkValidated && validated)
+						retry();
+					currentNetworkValidated=validated;
+				}
+
+				private void retry(){
 					if(getActivity()!=null)
 						getActivity().runOnUiThread(networkRetryRunnable);
 				}
@@ -56,21 +79,16 @@ public abstract class LoaderFragment extends AppKitFragment implements SwipeRefr
 	}
 
 	private void registerNetworkCallback(){
-		if(networkCallbackRegistered || !autoRetry || getActivity()==null)
+		// Needs the default network callback, a callback for a NetworkRequest reports every connected network
+		if(networkCallbackRegistered || !autoRetry || getActivity()==null || Build.VERSION.SDK_INT<Build.VERSION_CODES.N)
 			return;
 		if(connectivityManager==null)
 			connectivityManager=(ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		if(connectivityManager==null)
 			return;
 		try{
-			if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
-				connectivityManager.registerDefaultNetworkCallback(getNetworkCallback());
-			}else{
-				NetworkRequest request=new NetworkRequest.Builder()
-						.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-						.build();
-				connectivityManager.registerNetworkCallback(request, getNetworkCallback());
-			}
+			networkAtError=connectivityManager.getActiveNetwork();
+			connectivityManager.registerDefaultNetworkCallback(getNetworkCallback());
 			networkCallbackRegistered=true;
 		}catch(Exception ignore){}
 	}
