@@ -5,7 +5,21 @@ plugins {
 def explicitVersionCode = project.findProperty("VERSION_CODE") ?: System.getenv("VERSION_CODE")
 def autoVersionCode = explicitVersionCode != null
 	? Integer.parseInt(explicitVersionCode.toString())
-	: (int) ((System.currentTimeMillis() / 1000L) - 1704067200L) // Seconds since 2024-01-01 UTC
+	: versionCodeFromHeadCommit()
+
+// Seconds between 2024-01-01 UTC and the commit being built. Every new commit gets a higher versionCode than
+// anything built before it, and rebuilding a commit gives the same one. This used to be the build time, which
+// the configuration cache reused from older builds, so a release could get a lower versionCode than the last one.
+// The git output is a configuration input, a new commit invalidates the cache.
+int versionCodeFromHeadCommit(){
+	def git=providers.exec{
+		commandLine 'git', 'log', '-1', '--no-show-signature', '--format=%ct', 'HEAD'
+		ignoreExitValue=true
+	}
+	if(git.result.get().exitValue!=0)
+		throw new GradleException("Can't get the commit time for versionCode from git, set VERSION_CODE instead: "+git.standardError.asText.get().trim())
+	return (int) (Long.parseLong(git.standardOutput.asText.get().trim())-1704067200L)
+}
 
 configurations.configureEach {
 	exclude group: 'androidx.collection', module: 'collection'
