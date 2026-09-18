@@ -104,6 +104,9 @@ public class ToolbarDropdownMenuController{
 			windowView.findOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
 			backCallback=null;
 		}
+		// Let open submenus cancel what they're loading, their callbacks would otherwise pop them after the dropdown is gone
+		for(DropdownSubmenuController controller:controllerStack)
+			controller.onDismiss();
 		fragment.onDropdownWillDismiss();
 		menuContainer.animate()
 				.scaleX(.8f)
@@ -113,6 +116,9 @@ public class ToolbarDropdownMenuController{
 				.setDuration(150)
 				.withLayer()
 				.withEndAction(()->{
+					// A submenu transition can outlast this animation, finish it while the views it touches are still there
+					if(currentTransition!=null)
+						currentTransition.cancel();
 					controllerStack.clear();
 					fragment.getActivity().getWindowManager().removeView(windowView);
 					menuContainer.removeAllViews();

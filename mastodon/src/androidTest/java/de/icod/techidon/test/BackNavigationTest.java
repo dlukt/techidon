@@ -1,25 +1,20 @@
 package de.icod.techidon.test;
 
-import android.app.Activity;
 import android.app.Instrumentation;
-import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.KeyEvent;
-import android.widget.Toolbar;
 
 import de.icod.techidon.MainActivity;
 import de.icod.techidon.model.Attachment;
 import de.icod.techidon.ui.photoviewer.PhotoViewer;
-import de.icod.techidon.ui.viewcontrollers.DropdownSubmenuController;
 import de.icod.techidon.ui.viewcontrollers.ToolbarDropdownMenuController;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -97,26 +92,23 @@ public class BackNavigationTest{
 
 	@Test
 	public void backPopsDropdownSubmenuThenDismissesDropdown() throws InterruptedException{
-		DropdownHost host=new DropdownHost();
-		TestSubmenu[] submenu={null};
+		TestDropdownHost[] host={null};
+		TestDropdownSubmenu[] submenu={null};
 		waitForActivityWindowFocus(true);
 		activityScenarioRule.getScenario().onActivity(activity->{
-			host.activity=activity;
-			host.toolbar=new Toolbar(activity);
-			ToolbarDropdownMenuController controller=new ToolbarDropdownMenuController(host);
-			controller.show(new TestSubmenu(controller, null));
-			submenu[0]=new TestSubmenu(controller, "Back");
+			host[0]=new TestDropdownHost(activity);
+			ToolbarDropdownMenuController controller=new ToolbarDropdownMenuController(host[0]);
+			controller.show(new TestDropdownSubmenu(controller, null));
+			submenu[0]=new TestDropdownSubmenu(controller, "Back");
 			controller.pushSubmenuController(submenu[0]);
 		});
 
 		pressBackInOverlayWindow();
 		assertTrue("Submenu wasn't popped on back", submenu[0].dismissed.await(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-		assertEquals(1, host.willDismiss.getCount());
+		assertEquals(1, host[0].willDismiss.getCount());
 
-		// Let the submenu transition finish before pressing back again
-		SystemClock.sleep(500);
 		instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
-		assertTrue("Dropdown wasn't dismissed on back", host.dismissed.await(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+		assertTrue("Dropdown wasn't dismissed on back", host[0].dismissed.await(TIMEOUT_MS, TimeUnit.MILLISECONDS));
 	}
 
 	/**
@@ -163,63 +155,5 @@ public class BackNavigationTest{
 
 		@Override
 		public void onRequestPermissions(String[] permissions){}
-	}
-
-	private static class DropdownHost implements ToolbarDropdownMenuController.HostFragment{
-		final CountDownLatch willDismiss=new CountDownLatch(1);
-		final CountDownLatch dismissed=new CountDownLatch(1);
-		Activity activity;
-		Toolbar toolbar;
-
-		@Override
-		public Activity getActivity(){
-			return activity;
-		}
-
-		@Override
-		public Resources getResources(){
-			return activity.getResources();
-		}
-
-		@Override
-		public Toolbar getToolbar(){
-			return toolbar;
-		}
-
-		@Override
-		public String getAccountID(){
-			return null;
-		}
-
-		@Override
-		public void onDropdownWillDismiss(){
-			willDismiss.countDown();
-		}
-
-		@Override
-		public void onDropdownDismissed(){
-			dismissed.countDown();
-		}
-	}
-
-	private static class TestSubmenu extends DropdownSubmenuController{
-		final CountDownLatch dismissed=new CountDownLatch(1);
-		private final CharSequence backItemTitle;
-
-		TestSubmenu(ToolbarDropdownMenuController dropdownController, CharSequence backItemTitle){
-			super(dropdownController);
-			this.backItemTitle=backItemTitle;
-			items=new ArrayList<>();
-		}
-
-		@Override
-		protected CharSequence getBackItemTitle(){
-			return backItemTitle;
-		}
-
-		@Override
-		public void onDismiss(){
-			dismissed.countDown();
-		}
 	}
 }
